@@ -3,6 +3,7 @@ import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
+import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
 
@@ -11,14 +12,7 @@ import 'device_detail_screen.dart';
 
 part 'device_list.g.dart';
 //ignore_for_file: annotate_overrides
-final deviceName = TextEditingController();
-int valU = 1;
-String electricSN = ' ';
-String waterSN = ' ';
-late String type;
-bool isDeviceFound = false;
-late String meterName;
-late DiscoveredDevice dataStored;
+
 
 class DeviceListScreen extends StatelessWidget {
   const DeviceListScreen({Key? key}) : super(key: key);

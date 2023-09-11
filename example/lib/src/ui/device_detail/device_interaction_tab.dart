@@ -1,17 +1,18 @@
 import 'dart:async';
+
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart';
+import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
+import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/dataPage.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
+import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
-import 'device_list.dart';
-import 'characteristic_interaction_dialog.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'device_list.dart';
 
 part 'device_interaction_tab.g.dart';
 //ignore_for_file: annotate_overrides
@@ -105,7 +106,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   late String readOutput;
   late String writeOutput;
   late String subscribeOutput;
-  // late List output;
   late TextEditingController textEditingController;
   StreamSubscription<List<int>>? subscribeStream;
   @override
@@ -129,32 +129,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   void dispose() {
     subscribeStream?.cancel();
     super.dispose();
-  }
-
-  void callFunctionOnce() {
-    if (!isFunctionCalled) {
-      isFunctionCalled = true;
-      addData(); // Call the function you want to execute once
-    }
-  }
-  void addData() async {
-    currentTime = DateTime.now();
-    if(valU == 1){
-      response = await sqlDb.insertData(
-          '''
-                              INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,` lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
-                              VALUES ("${clientID.toString()}","$meterName","${totalReading.toString()}","${pulses.toString()}","${totalCredit.toString()}","${currentTarrif.toString()}","${tarrifVersion.toString()}","${valveStatus.toString()}","${leackageFlag.toString()}","${fraudFlag.toString()}","${fraudHours.toString()}","${fraudMinutes.toString()}","${fraudDayOfWeek.toString()}","${fraudDayOfMonth.toString()}","${fraudMonth.toString()}","${fraudYear.toString()}","${totalDebit.toString()}","${currentConsumption.toString()}","${lcHour.toString()}","${lcMinutes.toString()}","${lcDayWeek.toString()}","${lcDayMonth.toString()}","${lcMonth.toString()}","${lcYear.toString()}","${lastChargeValueNumber.toString()}","${month1.toString()}","${month2.toString()}","${month3.toString()}","${month4.toString()}","${month5.toString()}","${month6.toString()}","${warningLimit.toString()}","$currentTime")
-                              '''
-      );
-    }
-    if(valU == 2){
-      response = await sqlDb.insertData(
-          '''
-                              INSERT INTO Water (`data`,`title`,`time`)
-                              VALUES ("${clientID.toString()}","$meterName","$currentTime")
-                              '''
-      );
-    }
   }
 
   Future<void> subscribeCharacteristic() async {
@@ -181,12 +155,12 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                 valveStatus = convertToInt(subscribeOutput, 18, 1);
                 leackageFlag = convertToInt(subscribeOutput, 19, 1);
                 fraudFlag = convertToInt(subscribeOutput, 20, 1);
-                fraudHours = convertToInt(subscribeOutput, 21, 1);//0
-                fraudMinutes = convertToInt(subscribeOutput, 22, 1);//0
-                fraudDayOfWeek = convertToInt(subscribeOutput, 23, 1);//0
-                fraudDayOfMonth = convertToInt(subscribeOutput, 24, 1);//0
-                fraudMonth = convertToInt(subscribeOutput, 25, 1);//0
-                fraudYear = convertToInt(subscribeOutput, 26, 1);//0
+                fraudHours = convertToInt(subscribeOutput, 21, 1);
+                fraudMinutes = convertToInt(subscribeOutput, 22, 1);
+                fraudDayOfWeek = convertToInt(subscribeOutput, 23, 1);
+                fraudDayOfMonth = convertToInt(subscribeOutput, 24, 1);
+                fraudMonth = convertToInt(subscribeOutput, 25, 1);
+                fraudYear = convertToInt(subscribeOutput, 26, 1);
                 totalDebit = convertToInt(subscribeOutput, 27, 4);
                 currentConsumption = convertToInt(subscribeOutput, 31, 4);
                 lcHour = convertToInt(subscribeOutput, 35, 1);
@@ -209,9 +183,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                 totalCreditWater = convertToInt(subscribeOutput, 11, 4);
               }
             }
-          // print("subscribeOutput = $subscribeOutput");
         });
-    print("subscribeOutput = $subscribeOutput");
+    if (kDebugMode) {
+      print("subscribeOutput = $subscribeOutput");
+    }
     setState(() {
       subscribeOutput = '';
     });
@@ -227,7 +202,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: CurvedNavigationBar(
@@ -248,14 +223,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         onTap: (index) {
           setState(() async {
             if (index == 0) {
-              Navigator.of(context).pushAndRemoveUntil<void>(
+              await Navigator.of(context).pushAndRemoveUntil<void>(
                 MaterialPageRoute<void>(builder: (context) => StoreData(device: dataStored,)),
                     (route) => false,
               );
             }
             else if (index == 1) {}
             else if (index == 2) {
-              Navigator.of(context).pushAndRemoveUntil<void>(
+              await Navigator.of(context).pushAndRemoveUntil<void>(
                 MaterialPageRoute<void>(builder: (context) => WaterData(device: dataStored,)),
                     (route) => false,
               );
@@ -315,7 +290,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                       child: Container(
                         height: 200 - 48 / 2, // remove half title box height
                         decoration: BoxDecoration(
-                          // color:Colors.deepPurple.shade50,
                           border: Border.all(
                               color: Colors.deepPurple.shade50, width: 2),
                           borderRadius: BorderRadius.circular(20),
@@ -330,7 +304,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                       color: Colors.white,
                       width: width * .3,
                       height: 35,
-                      // padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Text(
                         electricSN,
                         style: const TextStyle(
@@ -359,9 +332,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                 fontSize: 18,
                               ),
                             ),
-                            Text(
+                            const Text(
                               "electric",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 17,
                               ),
@@ -396,7 +369,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                     ),
                                     Text(
                                       totalCredit.toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.black,
                                         fontSize: 17,
                                       ),
@@ -425,7 +398,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                     ),
                                     Text(
                                       totalReading.toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.black,
                                         fontSize: 17,
                                       ),
@@ -450,7 +423,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                             ),
                             Row(
                               children: [
-                                Text(
+                                const Text(
                                   'Your Balance: ',
                                   style: TextStyle(
                                     color: Colors.black,
@@ -460,7 +433,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                 ),
                                 Text(
                                   clientID.toString(),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 17,
@@ -476,7 +449,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                 foregroundColor: Colors.white,
                                 disabledBackgroundColor: Colors.purple.shade100,
                               ),
-                              // icon: const Icon(Icons.money),
                               onPressed: () {},
                               child: const Text(
                                 'Recharge',
@@ -523,9 +495,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                         foregroundColor: Colors.transparent,
                       ),
                       child: Container(
-                        height: 200 - 48 / 2, // remove half title box height
+                        height: 200 - 48 / 2,
                         decoration: BoxDecoration(
-                          // color:Colors.deepPurple.shade50,
                           border: Border.all(
                               color: Colors.deepPurple.shade50, width: 2),
                           borderRadius: BorderRadius.circular(20),
@@ -540,7 +511,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                       color: Colors.white,
                       width: width * .3,
                       height: 35,
-                      // padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Text(
                         waterSN,
                         style: const TextStyle(
@@ -569,9 +539,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                 fontSize: 18,
                               ),
                             ),
-                            Text(
+                            const Text(
                               "electric",
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 17,
                               ),
@@ -606,7 +576,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                     ),
                                     Text(
                                       currentConsumption.toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.black,
                                         fontSize: 17,
                                       ),
@@ -635,7 +605,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                     ),
                                     Text(
                                       totalReading.toString(),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.black,
                                         fontSize: 17,
                                       ),
@@ -660,7 +630,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                             ),
                             Row(
                               children: [
-                                Text(
+                                const Text(
                                   'Your Balance: ',
                                   style: TextStyle(
                                     color: Colors.black,
@@ -670,7 +640,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                 ),
                                 Text(
                                   totalCreditWater.toString(),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 17,
@@ -686,7 +656,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                 foregroundColor: Colors.white,
                                 disabledBackgroundColor: Colors.purple.shade100,
                               ),
-                              // icon: const Icon(Icons.money),
                               onPressed: () {},
                               child: const Text(
                                 'Recharge',
@@ -747,7 +716,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     );
   }
 }
-
+/*
 class _ServiceDiscoveryList extends StatefulWidget {
   const _ServiceDiscoveryList({
     required this.deviceId,
@@ -791,7 +760,7 @@ class _ServiceDiscoveryListState extends State<_ServiceDiscoveryList> {
 
     return props.join("\n");
   }
-
+/*
   Widget _characteristicTile(
           DiscoveredCharacteristic characteristic, String deviceId) =>
       ListTile(
@@ -884,4 +853,5 @@ class _ServiceDiscoveryListState extends State<_ServiceDiscoveryList> {
           ),
           child: buildPanels(),
         );
-}
+  */
+}*/
