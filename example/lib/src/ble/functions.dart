@@ -42,3 +42,46 @@ void addData() async {
     );
   }
 }
+void calculate(String subscribeOutput) {
+  if(valU == 1){
+    clientID = convertToInt(subscribeOutput, 1, 4);
+    pulses = convertToInt(subscribeOutput, 9, 2);
+    totalCredit = convertToInt(subscribeOutput, 11, 4);
+    currentTarrif = convertToInt(subscribeOutput, 15, 1);
+    tarrifVersion = convertToInt(subscribeOutput, 16, 2);
+    valveStatus = convertToInt(subscribeOutput, 18, 1);
+    leackageFlag = convertToInt(subscribeOutput, 19, 1);
+    fraudFlag = convertToInt(subscribeOutput, 20, 1);
+    fraudHours = convertToInt(subscribeOutput, 21, 1);
+    fraudMinutes = convertToInt(subscribeOutput, 22, 1);
+    fraudDayOfWeek = convertToInt(subscribeOutput, 23, 1);
+    fraudDayOfMonth = convertToInt(subscribeOutput, 24, 1);
+    fraudMonth = convertToInt(subscribeOutput, 25, 1);
+    fraudYear = convertToInt(subscribeOutput, 26, 1);
+    totalDebit = convertToInt(subscribeOutput, 27, 4);
+    currentConsumption = convertToInt(subscribeOutput, 31, 4);
+    lcHour = convertToInt(subscribeOutput, 35, 1);
+    lcMinutes = convertToInt(subscribeOutput, 36, 1);
+    lcDayWeek = convertToInt(subscribeOutput, 37, 1);
+    lcDayMonth = convertToInt(subscribeOutput, 38, 1);
+    lcMonth = convertToInt(subscribeOutput, 39, 1);
+    lcYear = convertToInt(subscribeOutput, 40, 1);
+    lastChargeValueNumber = convertToInt(subscribeOutput, 41, 5);
+    month1 = convertToInt(subscribeOutput, 46, 4);
+    month2 = convertToInt(subscribeOutput, 50, 4);
+    month3 = convertToInt(subscribeOutput, 54, 4);
+    month4 = convertToInt(subscribeOutput, 58, 4);
+    month5 = convertToInt(subscribeOutput, 62, 4);
+    month6 = convertToInt(subscribeOutput, 66, 4);
+    warningLimit = convertToInt(subscribeOutput, 70, 1);
+    checkSum = convertToInt(subscribeOutput, 71, 1);
+  }
+  else if(valU == 2){
+    totalCreditWater = convertToInt(subscribeOutput, 11, 4);
+  }
+  callFunctionOnce();
+}
+Future<List<Map>> readData() async {
+  final response  = await sqlDb.readData("SELECT * FROM Meters");
+  return response;
+}

@@ -136,7 +136,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
           var newEventData ='';
           newEventData = event.join(', ',);
-          // print("newEventData$newEventData");
             if (newEventData != previousEventData) {
               previousEventData = newEventData;
               if (subscribeOutput.length < 229) {
@@ -144,44 +143,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               }
               else{
                 subscribeOutput = '${event.join(', ')}, ';
-                callFunctionOnce();
               }
-              if(valU == 1){
-                clientID = convertToInt(subscribeOutput, 1, 4);
-                pulses = convertToInt(subscribeOutput, 9, 2);
-                totalCredit = convertToInt(subscribeOutput, 11, 4);
-                currentTarrif = convertToInt(subscribeOutput, 15, 1);
-                tarrifVersion = convertToInt(subscribeOutput, 16, 2);
-                valveStatus = convertToInt(subscribeOutput, 18, 1);
-                leackageFlag = convertToInt(subscribeOutput, 19, 1);
-                fraudFlag = convertToInt(subscribeOutput, 20, 1);
-                fraudHours = convertToInt(subscribeOutput, 21, 1);
-                fraudMinutes = convertToInt(subscribeOutput, 22, 1);
-                fraudDayOfWeek = convertToInt(subscribeOutput, 23, 1);
-                fraudDayOfMonth = convertToInt(subscribeOutput, 24, 1);
-                fraudMonth = convertToInt(subscribeOutput, 25, 1);
-                fraudYear = convertToInt(subscribeOutput, 26, 1);
-                totalDebit = convertToInt(subscribeOutput, 27, 4);
-                currentConsumption = convertToInt(subscribeOutput, 31, 4);
-                lcHour = convertToInt(subscribeOutput, 35, 1);
-                lcMinutes = convertToInt(subscribeOutput, 36, 1);
-                lcDayWeek = convertToInt(subscribeOutput, 37, 1);
-                lcDayMonth = convertToInt(subscribeOutput, 38, 1);
-                lcMonth = convertToInt(subscribeOutput, 39, 1);
-                lcYear = convertToInt(subscribeOutput, 40, 1);
-                lastChargeValueNumber = convertToInt(subscribeOutput, 41, 5);
-                month1 = convertToInt(subscribeOutput, 46, 4);
-                month2 = convertToInt(subscribeOutput, 50, 4);
-                month3 = convertToInt(subscribeOutput, 54, 4);
-                month4 = convertToInt(subscribeOutput, 58, 4);
-                month5 = convertToInt(subscribeOutput, 62, 4);
-                month6 = convertToInt(subscribeOutput, 66, 4);
-                warningLimit = convertToInt(subscribeOutput, 70, 1);
-                checkSum = convertToInt(subscribeOutput, 71, 1);
-              }
-              else if(valU == 2){
-                totalCreditWater = convertToInt(subscribeOutput, 11, 4);
-              }
+              calculate(subscribeOutput);
             }
         });
     if (kDebugMode) {
@@ -221,21 +184,21 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         animationCurve: Curves.easeInOut,
         animationDuration: const Duration(milliseconds: 600),
         onTap: (index) {
-          setState(() async {
+          // setState(() {
             if (index == 0) {
-              await Navigator.of(context).pushAndRemoveUntil<void>(
+              Navigator.of(context).pushAndRemoveUntil<void>(
                 MaterialPageRoute<void>(builder: (context) => StoreData(device: dataStored,)),
                     (route) => false,
               );
             }
             else if (index == 1) {}
             else if (index == 2) {
-              await Navigator.of(context).pushAndRemoveUntil<void>(
+              Navigator.of(context).pushAndRemoveUntil<void>(
                 MaterialPageRoute<void>(builder: (context) => WaterData(device: dataStored,)),
                     (route) => false,
               );
             }
-          });
+          // });
         },
       ),
       body:   ListView(
@@ -691,10 +654,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                 else if(widget.viewModel.deviceConnected){
                   subscribeCharacteristic();
                   writeCharacteristicWithResponse();
-
                 }
               },
-
               child: const Text(
                 "update data",
                 style: TextStyle(

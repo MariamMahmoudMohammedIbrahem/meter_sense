@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
-import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_log_tab.dart';
+import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_list.dart';
 import 'package:provider/provider.dart';
 
 import 'device_interaction_tab.dart';
@@ -33,7 +33,9 @@ class _DeviceDetail extends StatelessWidget {
   Widget build(BuildContext context) => WillPopScope(
         onWillPop: () async {
           disconnect(device.id);
-
+          await Navigator.of(context).push<void>(
+            MaterialPageRoute<void>(builder: (context) => const DeviceListScreen()),
+          ).then((value) => debugPrint("sdfghjk"));
           return true;
         },
         child: Scaffold(

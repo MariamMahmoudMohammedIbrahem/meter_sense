@@ -8,6 +8,7 @@ import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
 
 import '../../ble/ble_logger.dart';
+import '../../ble/functions.dart';
 import 'device_detail_screen.dart';
 
 part 'device_list.g.dart';
@@ -33,39 +34,6 @@ class DeviceListScreen extends StatelessWidget {
       );
 
 }
-/*class DeviceInteractionTab extends StatelessWidget {
-  final DiscoveredDevice device;
-
-  const DeviceInteractionTab({
-    required this.device,
-    required this.characteristic,
-    Key? key,
-  }) : super(key: key);
-  final QualifiedCharacteristic characteristic;
-
-  @override
-  Widget build(BuildContext context) =>
-      Consumer4<BleDeviceConnector,  BleDeviceInteractor,BleScanner, BleScannerState?>(
-        builder: (_, deviceConnector,  serviceDiscoverer,bleScanner, bleScannerState,
-  __) =>
-            DeviceList(
-              viewModel: DeviceInteractionViewModel(
-                  deviceId: device.id,
-                  deviceConnector: deviceConnector,
-                  discoverServices: () =>
-                      serviceDiscoverer.discoverServices(device.id)),
-              scannerState: bleScannerState ??
-                  const BleScannerState(
-                    discoveredDevices: [],
-                    scanIsInProgress: false,
-                  ),
-              startScan: bleScanner.startScan,
-              stopScan: bleScanner.stopScan,
-              deviceConnector: deviceConnector,
-            ),
-      );
-
-}*/
 @immutable
 @FunctionalData()
 class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
@@ -307,8 +275,7 @@ class _DeviceListState extends State<DeviceList> {
                         (device) {
                       if (device.name == deviceName.text && deviceName.text != "") {
                         isDeviceFound = true;
-                        final devoff= device.name;
-
+                        id = device.id;
                         return Column(
                           children: [
                             ElevatedButton(
@@ -324,25 +291,19 @@ class _DeviceListState extends State<DeviceList> {
                                 widget.deviceConnector.connect(device.id);
                                 print("connected inshallah");
                                 dataStored = device;
-
-                                // if(valU ==1){
-                                  await Navigator.push<void>(
+                                meterTable = await sqlDb.insertData(
+                                    '''
+                              INSERT OR IGNORE INTO Meters (`id`, `name`,`serviceData`,`serviceUuids`,`manufacturerData`,`rssi`,`connectable`)
+                              VALUES ("${device.id}","${device.name}","${device.serviceData.map}","${device.serviceUuids.map((uuid) => uuid.toString()).toList()}","${device.manufacturerData}","${device.rssi}","${device.connectable}")
+                              '''
+                                );
+                                await Navigator.push<void>(
                                     context,
                                     MaterialPageRoute(
                                       builder: (_) =>
                                           DeviceDetailScreen(device: device),
                                     ),
                                   ).then((value) => deviceName.clear(),);
-                                // }
-                                // await Navigator.push<void>(
-                                //   context,
-                                //   MaterialPageRoute(
-                                //     builder: (_) =>
-                                //         DeviceDetailScreen(device: device),
-                                //   ),
-                                // ).then((value) => widget.deviceConnector.connect(device.id));
-
-                                print("navigate");
                               }
                                   : null,
                               child: Text("Open Device",
@@ -352,7 +313,6 @@ class _DeviceListState extends State<DeviceList> {
                                 fontSize: 16,
                               ),),
                             ),
-                            ElevatedButton(onPressed: (){}, child: Text(devoff),),
                           ],
                         );
                       } else {
@@ -361,6 +321,39 @@ class _DeviceListState extends State<DeviceList> {
                     },
                   )
                       .toList(),
+                ),
+                FutureBuilder(
+                    future: readData(),
+                    builder: (BuildContext context, AsyncSnapshot<List<Map>> snapshot){
+                      if(snapshot.hasData){
+                        return ListView.builder(
+                            itemCount: snapshot.data!.length,
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemBuilder: (context,i)=> ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                shape: const StadiumBorder(),
+                                backgroundColor: Colors.grey.shade200,
+                                foregroundColor: Colors.white,
+                                disabledBackgroundColor: Colors.grey.shade100,
+                              ),
+                              onPressed:() async {
+                                final idd = "${snapshot.data![i]['meterId']}";
+                                await widget.deviceConnector.connect(idd);
+                                await Navigator.push<void>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        DeviceDetailScreen(device: dataStored),
+                                  ),
+                                );
+                              },
+                              child: Text("${snapshot.data![i]['name']}"),
+                            )
+                        );
+                      }
+                      return Center(child: CircularProgressIndicator(),);
+                    }
                 ),
               ],
             ),

@@ -37,7 +37,7 @@ class SqlDb{
     CREATE TABLE "Electricity"(
       'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
       'title' TEXT NOT NULL,
-      'clientId' TEXT NOT NULL,
+      'clientId' INTEGER NOT NULL,
       'totalReading' TEXT NOT NULL,
       'pulses' TEXT NOT NULL,
       'totalCredit' TEXT NOT NULL,
@@ -77,6 +77,17 @@ class SqlDb{
       'title' TEXT NOT NULL,
       'data' TEXT NOT NULL,
       'time' DATETIME NOT NULL
+    )
+    ''');
+    await db.execute('''
+    CREATE TABLE "Meters"(
+      'id' TEXT NOT NULL PRIMARY KEY,
+      'name' TEXT NOT NULL,
+      'serviceData' TEXT NOT NULL,
+      'serviceUuids' TEXT NOT NULL,
+      'manufacturerData' TEXT NOT NULL,
+      'rssi' INTEGER NOT NULL,
+      'connectable' ENUM NOT NULL
     )
     ''');
     // Batch batch = db.batch();
