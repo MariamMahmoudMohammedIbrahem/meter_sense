@@ -6,10 +6,7 @@ import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_interaction_tab.dart';
 
 class WaterData extends StatefulWidget {
-  const WaterData({required this.device,
-    Key? key,
-  }) : super(key: key);
-  final DiscoveredDevice device;
+  const WaterData({Key? key,}) : super(key: key);
   @override
   State<WaterData> createState() => _WaterDataState();
 }
@@ -48,7 +45,7 @@ class _WaterDataState extends State<WaterData> {
 
           }
           else if (index == 1) {
-            Navigator.of(context).pushAndRemoveUntil<void>(
+            Navigator.of(context).push<void>(
               MaterialPageRoute<void>(builder: (context) => DeviceInteractionTab(
                 device: dataStored, characteristic: QualifiedCharacteristic(
                   characteristicId: Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb"),
@@ -56,7 +53,6 @@ class _WaterDataState extends State<WaterData> {
                   //device id get from register page when connected
                   deviceId: dataStored.id),
               )),
-                  (route) => false,
             );
 
           }

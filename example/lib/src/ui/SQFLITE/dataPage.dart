@@ -6,10 +6,10 @@ import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_interaction_tab.dart';
 
 class StoreData extends StatefulWidget {
-  const StoreData({required this.device,
+  const StoreData({
     Key? key,
   }) : super(key: key);
-  final DiscoveredDevice device;
+  // final DiscoveredDevice device;
   @override
   State<StoreData> createState() => _StoreDataState();
 }
@@ -46,7 +46,7 @@ class _StoreDataState extends State<StoreData> {
         onTap: (index) {
             if (index == 0) {}
             else if (index == 1) {
-              Navigator.of(context).pushAndRemoveUntil<void>(
+              Navigator.of(context).push<void>(
                 MaterialPageRoute<void>(builder: (context) => DeviceInteractionTab(
                   device: dataStored, characteristic: QualifiedCharacteristic(
                     characteristicId: Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb"),
@@ -55,7 +55,6 @@ class _StoreDataState extends State<StoreData> {
                     deviceId: dataStored.id),
                   )
                 ),
-                    (route) => false,
               );
             }
             else if (index == 2) {

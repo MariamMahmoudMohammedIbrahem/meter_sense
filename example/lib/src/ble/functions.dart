@@ -46,7 +46,7 @@ void calculate(String subscribeOutput) {
   if(valU == 1){
     clientID = convertToInt(subscribeOutput, 1, 4);
     pulses = convertToInt(subscribeOutput, 9, 2);
-    totalCredit = convertToInt(subscribeOutput, 11, 4);
+    totalCredit = convertToInt(subscribeOutput, 11, 4)/100;
     currentTarrif = convertToInt(subscribeOutput, 15, 1);
     tarrifVersion = convertToInt(subscribeOutput, 16, 2);
     valveStatus = convertToInt(subscribeOutput, 18, 1);

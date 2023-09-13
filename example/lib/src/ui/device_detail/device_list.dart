@@ -9,7 +9,8 @@ import 'package:provider/provider.dart';
 
 import '../../ble/ble_logger.dart';
 import '../../ble/functions.dart';
-import 'device_detail_screen.dart';
+// import 'device_detail_screen.dart';
+import 'device_interaction_tab.dart';
 
 part 'device_list.g.dart';
 //ignore_for_file: annotate_overrides
@@ -301,7 +302,12 @@ class _DeviceListState extends State<DeviceList> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (_) =>
-                                          DeviceDetailScreen(device: device),
+                                          DeviceInteractionTab(
+                                            device: device, characteristic: QualifiedCharacteristic(
+                                              characteristicId: Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                              serviceId: Uuid.parse("0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                              deviceId: device.id),
+                                          ),
                                     ),
                                   ).then((value) => deviceName.clear(),);
                               }
@@ -340,13 +346,13 @@ class _DeviceListState extends State<DeviceList> {
                               onPressed:() async {
                                 final idd = "${snapshot.data![i]['meterId']}";
                                 await widget.deviceConnector.connect(idd);
-                                await Navigator.push<void>(
+                                /*await Navigator.push<void>(
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) =>
                                         DeviceDetailScreen(device: dataStored),
                                   ),
-                                );
+                                );*/
                               },
                               child: Text("${snapshot.data![i]['name']}"),
                             )

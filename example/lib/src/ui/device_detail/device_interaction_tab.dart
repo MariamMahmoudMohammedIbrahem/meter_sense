@@ -9,8 +9,8 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart'
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/dataPage.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
+import 'package:flutter_reactive_ble_example/src/ui/recharge.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
 
@@ -18,13 +18,12 @@ part 'device_interaction_tab.g.dart';
 //ignore_for_file: annotate_overrides
 
 class DeviceInteractionTab extends StatelessWidget {
-  final DiscoveredDevice device;
-
   const DeviceInteractionTab({
     required this.device,
     required this.characteristic,
     Key? key,
   }) : super(key: key);
+  final DiscoveredDevice device;
   final QualifiedCharacteristic characteristic;
 
   @override
@@ -38,9 +37,8 @@ class DeviceInteractionTab extends StatelessWidget {
               connectableStatus: device.connectable,
               connectionStatus: connectionStateUpdate.connectionState,
               deviceConnector: deviceConnector,
-              discoverServices: () =>
-                  serviceDiscoverer.discoverServices(device.id)),
-          characteristic: characteristic,
+              discoverServices: () => serviceDiscoverer.discoverServices(device.id)),
+              characteristic: characteristic,
               writeWithResponse: interactor.writeCharacteristicWithResponse,
               subscribeToCharacteristic: interactor.subScribeToCharacteristic,
             ),
@@ -48,7 +46,7 @@ class DeviceInteractionTab extends StatelessWidget {
 
 }
 
-@immutable
+// @immutable
 @FunctionalData()
 class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
   const DeviceInteractionViewModel({
@@ -73,9 +71,9 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
     deviceConnector.connect(deviceId);
   }
 
-  void disconnect() {
-    deviceConnector.disconnect(deviceId);
-  }
+  // void disconnect() {
+  //   deviceConnector.disconnect(deviceId);
+  // }
 }
 
 class _DeviceInteractionTab extends StatefulWidget {
@@ -102,16 +100,14 @@ class _DeviceInteractionTab extends StatefulWidget {
 
 class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   late List<DiscoveredService> discoveredServices;
-  SqlDb sqlDb = SqlDb();
-  late String readOutput;
+  // late String readOutput;
   late String writeOutput;
   late String subscribeOutput;
-  late TextEditingController textEditingController;
   StreamSubscription<List<int>>? subscribeStream;
   @override
   void initState() {
     discoveredServices = [];
-    readOutput = '';
+    // readOutput = '';
     writeOutput = '';
     subscribeOutput = '';
     textEditingController = TextEditingController();
@@ -120,9 +116,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
   Future<void> discoverServices() async {
     final result = await widget.viewModel.discoverServices();
-    setState(() {
+    // setState(() {
       discoveredServices = result;
-    });
+    // });
   }
 
   @override
@@ -158,9 +154,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
   Future<void> writeCharacteristicWithResponse() async {
     await widget.writeWithResponse(widget.characteristic, [89]);
-    setState(() {
-      writeOutput = 'Ok';
-    });
   }
 
   @override
@@ -184,21 +177,19 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         animationCurve: Curves.easeInOut,
         animationDuration: const Duration(milliseconds: 600),
         onTap: (index) {
-          // setState(() {
             if (index == 0) {
-              Navigator.of(context).pushAndRemoveUntil<void>(
-                MaterialPageRoute<void>(builder: (context) => StoreData(device: dataStored,)),
-                    (route) => false,
+              Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                    builder: (context) => const StoreData()),
               );
             }
-            else if (index == 1) {}
+            else if(index == 1){}
             else if (index == 2) {
-              Navigator.of(context).pushAndRemoveUntil<void>(
-                MaterialPageRoute<void>(builder: (context) => WaterData(device: dataStored,)),
-                    (route) => false,
+              Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                    builder: (context) => const WaterData()),
               );
             }
-          // });
         },
       ),
       body:   ListView(
@@ -228,424 +219,364 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-          const SizedBox(
-            height: 10,
-          ),
           Padding(
-            padding: EdgeInsets.only(left: width * 0.07, right: width * 0.07),
-            child: SizedBox(
-              height: 200,
-              width: 400,
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pushAndRemoveUntil<void>(
-                          MaterialPageRoute<void>(builder: (context) => StoreData(device: dataStored,)),
-                              (route) => false,
-                        );
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.transparent,
-                      ),
-                      child: Container(
-                        height: 200 - 48 / 2, // remove half title box height
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Colors.deepPurple.shade50, width: 2),
-                          borderRadius: BorderRadius.circular(20),
+            padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0),
+                    side: BorderSide(color: Colors.deepPurple.shade100)),
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.white,
+              ),
+                onPressed: (){
+                  Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(builder: (context) => const StoreData()),
+                  );
+                },
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(width:width*.07),
+                        const Text(
+                          'Meter Name: ',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      alignment: Alignment.center,
-                      color: Colors.white,
-                      width: width * .3,
-                      height: 35,
-                      child: Text(
-                        electricSN,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
+                        Text(
+                          electricSN,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 17,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Column(
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      children: [
+                        SizedBox(width:width*.07),
+                        const Text(
+                          'Current Tarrif: ',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        Text(
+                          currentTarrif.toString(),
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 17,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const SizedBox(
-                          height: 50,
+                          width: 1,
                         ),
-                        Row(
+                        Column(
                           children: [
-                            SizedBox(width:width*.08),
                             const Text(
-                              'Serial Number: ',
+                              'Today',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
                               ),
                             ),
-                            const Text(
-                              "electric",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 17,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const SizedBox(
-                              width: 1,
-                            ),
-                            Column(
-                              children: [
-                                const Text(
-                                  'Today',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 25,
-                                      child: Image.asset(
-                                          'icons/electricityToday.png'),
-                                    ),
-                                    Text(
-                                      totalCredit.toString(),
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 17,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 30),
-                            Column(
-                              children: [
-                                const Text(
-                                  'This Month',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 25,
-                                      child: Image.asset(
-                                          'icons/electricityMonth.png'),
-                                    ),
-                                    Text(
-                                      totalReading.toString(),
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 17,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              width: 1,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const SizedBox(
-                              width: 1,
-                            ),
                             Row(
                               children: [
-                                const Text(
-                                  'Your Balance: ',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
+                                SizedBox(
+                                  width: 25,
+                                  child: Image.asset(
+                                      'icons/electricityToday.png'),
                                 ),
                                 Text(
-                                  clientID.toString(),
+                                  currentConsumption.toString(),
                                   style: const TextStyle(
                                     color: Colors.black,
-                                    fontWeight: FontWeight.bold,
                                     fontSize: 17,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(width: 30),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                shape: const StadiumBorder(),
-                                backgroundColor: Colors.purple.shade50,
-                                foregroundColor: Colors.white,
-                                disabledBackgroundColor: Colors.purple.shade100,
-                              ),
-                              onPressed: () {},
-                              child: const Text(
-                                'Recharge',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 1,
-                            ),
                           ],
                         ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: width * 0.07, right: width * 0.07),
-            child: SizedBox(
-              height: 200,
-              width: 400,
-              child: Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: TextButton(
-                      onPressed: () {
-
-                        Navigator.of(context).pushAndRemoveUntil<void>(
-                          MaterialPageRoute<void>(builder: (context) => WaterData(device: dataStored,)),
-                              (route) => false,
-                        );
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.transparent,
-                      ),
-                      child: Container(
-                        height: 200 - 48 / 2,
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Colors.deepPurple.shade50, width: 2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      alignment: Alignment.center,
-                      color: Colors.white,
-                      width: width * .3,
-                      height: 35,
-                      child: Text(
-                        waterSN,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: Column(
-                      children: [
-                        const SizedBox(
-                          height: 50,
-                        ),
-                        Row(
+                        const SizedBox(width: 30),
+                        Column(
                           children: [
-                            SizedBox(width:width*.08),
                             const Text(
-                              'Serial Number: ',
+                              'This Month',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
                               ),
                             ),
-                            const Text(
-                              "electric",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 17,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const SizedBox(
-                              width: 1,
-                            ),
-                            Column(
-                              children: [
-                                const Text(
-                                  'Today',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 25,
-                                      child: Image.asset(
-                                          'icons/electricityToday.png'),
-                                    ),
-                                    Text(
-                                      currentConsumption.toString(),
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 17,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 30),
-                            Column(
-                              children: [
-                                const Text(
-                                  'This Month',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 25,
-                                      child: Image.asset(
-                                          'icons/electricityMonth.png'),
-                                    ),
-                                    Text(
-                                      totalReading.toString(),
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 17,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              width: 1,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const SizedBox(
-                              width: 1,
-                            ),
                             Row(
                               children: [
-                                const Text(
-                                  'Your Balance: ',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
+                                SizedBox(
+                                  width: 25,
+                                  child: Image.asset(
+                                      'icons/electricityMonth.png'),
                                 ),
                                 Text(
-                                  totalCreditWater.toString(),
+                                  totalReading.toString(),
                                   style: const TextStyle(
                                     color: Colors.black,
-                                    fontWeight: FontWeight.bold,
                                     fontSize: 17,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(width: 30),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                shape: const StadiumBorder(),
-                                backgroundColor: Colors.purple.shade50,
-                                foregroundColor: Colors.white,
-                                disabledBackgroundColor: Colors.purple.shade100,
-                              ),
-                              onPressed: () {},
-                              child: const Text(
-                                'Recharge',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 1,
-                            ),
                           ],
                         ),
                         const SizedBox(
-                          height: 10,
+                          width: 1,
                         ),
                       ],
                     ),
-                  )
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const SizedBox(
+                          width: 1,
+                        ),
+                        Row(
+                          children: [
+                            const Text(
+                              'Your Balance: ',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            Text(
+                              totalCredit.toString(),
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 30),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: const StadiumBorder(),
+                            backgroundColor: Colors.purple.shade50,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: Colors.purple.shade100,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).push<void>(
+                              MaterialPageRoute<void>(builder: (context) => const Recharge()),
+                            );
+                          },
+                          child: const Text(
+                            'Recharge',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 1,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal:width*.07),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0),
+                    side: BorderSide(color: Colors.deepPurple.shade100)),
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: (){
+                Navigator.of(context).push<void>(
+                  MaterialPageRoute<void>(builder: (context) => const WaterData()),
+                );
+              },
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(width:width*.08),
+                      const Text(
+                        'Serial Number: ',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const Text(
+                        "water",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 17,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(
+                        width: 1,
+                      ),
+                      Column(
+                        children: [
+                          const Text(
+                            'Today',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 25,
+                                child: Image.asset(
+                                    'icons/waterToday.png'),
+                              ),
+                              Text(
+                                totalCredit.toString(),
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 17,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 30),
+                      Column(
+                        children: [
+                          const Text(
+                            'This Month',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 25,
+                                child: Image.asset(
+                                    'icons/waterMonth.png'),
+                              ),
+                              Text(
+                                totalCreditWater.toString(),
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 17,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        width: 1,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(
+                        width: 1,
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            'Your Balance: ',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          Text(
+                            clientID.toString(),
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 30),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder(),
+                          backgroundColor: Colors.purple.shade50,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.purple.shade100,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).push<void>(
+                            MaterialPageRoute<void>(builder: (context) => const Recharge()),
+                          );
+                        },
+                        child: const Text(
+                          'Recharge',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 1,
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
           Padding(
-            padding:  EdgeInsets.symmetric(horizontal: width*.65/2),
+            padding:  EdgeInsets.symmetric(horizontal: width*.65/2,vertical: 10.0),
             child: ElevatedButton(
               onPressed: (){
                 if(!widget.viewModel.deviceConnected){
@@ -677,142 +608,3 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     );
   }
 }
-/*
-class _ServiceDiscoveryList extends StatefulWidget {
-  const _ServiceDiscoveryList({
-    required this.deviceId,
-    required this.discoveredServices,
-    Key? key,
-  }) : super(key: key);
-
-  final String deviceId;
-  final List<DiscoveredService> discoveredServices;
-
-  @override
-  _ServiceDiscoveryListState createState() => _ServiceDiscoveryListState();
-}
-
-class _ServiceDiscoveryListState extends State<_ServiceDiscoveryList> {
-  late final List<int> _expandedItems;
-
-  @override
-  void initState() {
-    _expandedItems = [];
-    super.initState();
-  }
-
-  String _characteristicsSummary(DiscoveredCharacteristic c) {
-    final props = <String>[];
-    if (c.isReadable) {
-      props.add("read");
-    }
-    if (c.isWritableWithoutResponse) {
-      props.add("write without response");
-    }
-    if (c.isWritableWithResponse) {
-      props.add("write with response");
-    }
-    if (c.isNotifiable) {
-      props.add("notify");
-    }
-    if (c.isIndicatable) {
-      props.add("indicate");
-    }
-
-    return props.join("\n");
-  }
-/*
-  Widget _characteristicTile(
-          DiscoveredCharacteristic characteristic, String deviceId) =>
-      ListTile(
-        onTap: () => showDialog<void>(
-            context: context,
-            builder: (context) => CharacteristicInteractionDialog(
-                  characteristic: QualifiedCharacteristic(
-                      // characteristicId: characteristic.characteristicId,
-                      // serviceId: characteristic.serviceId,
-                      characteristicId: Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb"),
-                      serviceId: Uuid.parse("0000ffe0-0000-1000-8000-00805f9b34fb"),
-                      deviceId: deviceId),
-                )),
-        title: Text(
-          '${characteristic.characteristicId}\n(${_characteristicsSummary(characteristic)})',
-          style: const TextStyle(
-            fontSize: 14,
-          ),
-        ),
-      );
-
-
-  Column buildPanels() {
-    final columns = <Column>[];
-
-    widget.discoveredServices.asMap().forEach(
-          (index, service) {
-        final isExpanded = _expandedItems.contains(index);
-
-        columns.add(
-          Column(
-            children: [
-              // ListTile(
-              //   title:
-              //   Text(
-              //     'Service ID: ${service.serviceId}',
-              //     style: const TextStyle(fontSize: 14),
-              //   ),
-              //   onTap: () {
-              //     setState(() {
-              //       if (isExpanded) {
-              //         _expandedItems.remove(index);
-              //       } else {
-              //         _expandedItems.add(index);
-              //       }
-              //     });
-              //   },
-              // ),
-              // if (isExpanded)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.only(left: 16.0),
-                      child: Text(
-                        'Characteristics',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) => _characteristicTile(
-                        service.characteristics[index],
-                        widget.deviceId,
-                      ),
-                      itemCount: service.characteristicIds.length,
-                    ),
-                  ],
-                ),
-              const Divider(),
-            ],
-          ),
-        );
-      },
-    );
-    return Column(children: columns);
-  }
-
-
-  @override
-  Widget build(BuildContext context) => widget.discoveredServices.isEmpty
-      ? const SizedBox()
-      : Padding(
-          padding: const EdgeInsetsDirectional.only(
-            top: 20.0,
-            start: 20.0,
-            end: 20.0,
-          ),
-          child: buildPanels(),
-        );
-  */
-}*/
