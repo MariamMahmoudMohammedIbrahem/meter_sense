@@ -35,7 +35,7 @@ class _DeviceDetail extends StatelessWidget {
           disconnect(device.id);
           await Navigator.of(context).push<void>(
             MaterialPageRoute<void>(builder: (context) => const DeviceListScreen()),
-          ).then((value) => debugPrint("sdfghjk"));
+          );
           return true;
         },
         child: Scaffold(

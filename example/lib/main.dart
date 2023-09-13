@@ -60,7 +60,7 @@ void main() {
         ),
       ],
       child: MaterialApp(
-        title: 'Flutter Reactive BLE example',
+        title: 'EOIP',
         color: _themeColor,
         theme: ThemeData(primaryColor: _themeColor, primarySwatch: Colors.grey),
         home: const HomeScreen(),
