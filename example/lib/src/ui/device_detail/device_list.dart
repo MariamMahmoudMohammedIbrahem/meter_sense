@@ -256,7 +256,7 @@ class _DeviceListState extends State<DeviceList> {
                 disabledBackgroundColor: Colors.grey.shade100,
               ),
               onPressed: (){},
-              child: Text("QR Scanning",
+              child: const Text("QR Scanning",
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
@@ -270,7 +270,7 @@ class _DeviceListState extends State<DeviceList> {
               children: [
                 ListView(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   children: widget.scannerState.discoveredDevices
                       .map(
                         (device) {
@@ -294,8 +294,8 @@ class _DeviceListState extends State<DeviceList> {
                                 dataStored = device;
                                 meterTable = await sqlDb.insertData(
                                     '''
-                              INSERT OR IGNORE INTO Meters (`id`, `name`,`serviceData`,`serviceUuids`,`manufacturerData`,`rssi`,`connectable`)
-                              VALUES ("${device.id}","${device.name}","${device.serviceData.map}","${device.serviceUuids.map((uuid) => uuid.toString()).toList()}","${device.manufacturerData}","${device.rssi}","${device.connectable}")
+                              INSERT OR IGNORE INTO Meters (`id`, `name`)
+                              VALUES ("${device.id}","${device.name}")
                               '''
                                 );
                                 await Navigator.push<void>(
@@ -312,7 +312,7 @@ class _DeviceListState extends State<DeviceList> {
                                   ).then((value) => deviceName.clear(),);
                               }
                                   : null,
-                              child: Text("Open Device",
+                              child: const Text("Open Device",
                                 style: TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
@@ -322,7 +322,7 @@ class _DeviceListState extends State<DeviceList> {
                           ],
                         );
                       } else {
-                        return SizedBox.shrink(); // Return an empty SizedBox for devices that don't match the desired name
+                        return const SizedBox.shrink(); // Return an empty SizedBox for devices that don't match the desired name
                       }
                     },
                   )
@@ -334,7 +334,7 @@ class _DeviceListState extends State<DeviceList> {
                       if(snapshot.hasData){
                         return ListView.builder(
                             itemCount: snapshot.data!.length,
-                            physics: NeverScrollableScrollPhysics(),
+                            physics: const NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
                             itemBuilder: (context,i)=> ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -344,7 +344,7 @@ class _DeviceListState extends State<DeviceList> {
                                 disabledBackgroundColor: Colors.grey.shade100,
                               ),
                               onPressed:() async {
-                                final idd = "${snapshot.data![i]['meterId']}";
+                                final idd = "${snapshot.data![i]['id']}";
                                 await widget.deviceConnector.connect(idd);
                                 /*await Navigator.push<void>(
                                   context,
@@ -358,7 +358,7 @@ class _DeviceListState extends State<DeviceList> {
                             )
                         );
                       }
-                      return Center(child: CircularProgressIndicator(),);
+                      return const Center(child: CircularProgressIndicator(),);
                     }
                 ),
               ],

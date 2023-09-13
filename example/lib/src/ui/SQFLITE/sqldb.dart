@@ -82,12 +82,7 @@ class SqlDb{
     await db.execute('''
     CREATE TABLE "Meters"(
       'id' TEXT NOT NULL PRIMARY KEY,
-      'name' TEXT NOT NULL,
-      'serviceData' TEXT NOT NULL,
-      'serviceUuids' TEXT NOT NULL,
-      'manufacturerData' TEXT NOT NULL,
-      'rssi' INTEGER NOT NULL,
-      'connectable' ENUM NOT NULL
+      'name' TEXT NOT NULL UNIQUE
     )
     ''');
     // Batch batch = db.batch();
