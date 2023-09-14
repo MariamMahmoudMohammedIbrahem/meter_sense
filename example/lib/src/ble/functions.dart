@@ -82,6 +82,12 @@ void calculate(String subscribeOutput) {
   callFunctionOnce();
 }
 Future<List<Map>> readData() async {
-  final response  = await sqlDb.readData("SELECT * FROM Meters");
+  final response  = await sqlDb.readData("SELECT `name` FROM Meters");
   return response;
+}
+Future<void> fetchData() async {
+  final testing = await readData();
+  for (Map<dynamic, dynamic> map in testing) {
+    name = map['name'];
+  }
 }

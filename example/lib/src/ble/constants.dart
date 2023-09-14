@@ -54,3 +54,4 @@ late String meterName;
 late DiscoveredDevice dataStored;
 late String id;
 late TextEditingController textEditingController;
+dynamic name;

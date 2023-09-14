@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -86,8 +87,9 @@ class _DeviceListState extends State<DeviceList> {
   @override
   void initState() {
     super.initState();
-    _uuidController = TextEditingController()
-      ..addListener(() => setState(() {}));
+    _uuidController = TextEditingController()..addListener(() => setState(() {}));
+    fetchData();
+    _handleScanButtonPress();
   }
 
   @override
@@ -96,19 +98,19 @@ class _DeviceListState extends State<DeviceList> {
     _uuidController.dispose();
     super.dispose();
   }
-  bool _isValidUuidInput() {
-    final uuidText = _uuidController.text;
-    if (uuidText.isEmpty) {
-      return true;
-    } else {
-      try {
-        Uuid.parse(uuidText);
-        return true;
-      } on Exception {
-        return false;
-      }
-    }
-  }
+  // bool _isValidUuidInput() {
+  //   final uuidText = _uuidController.text;
+  //   if (uuidText.isEmpty) {
+  //     return true;
+  //   } else {
+  //     try {
+  //       Uuid.parse(uuidText);
+  //       return true;
+  //     } on Exception {
+  //       return false;
+  //     }
+  //   }
+  // }
 
   void _startScanning() {
     final text = _uuidController.text;
@@ -116,7 +118,7 @@ class _DeviceListState extends State<DeviceList> {
   }
 
   void _handleScanButtonPress() {
-    if (!widget.scannerState.scanIsInProgress && _isValidUuidInput()) {
+    if (!widget.scannerState.scanIsInProgress ) {
       _startScanning();
     }
   }
@@ -137,234 +139,192 @@ class _DeviceListState extends State<DeviceList> {
               color: Colors.grey.shade200,
             ),
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            // width:width,
-            height: height*.25,
-            child: Image.asset('images/logo.jpg'),
-          ),
-          SizedBox(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SizedBox(
-                  width: 1,
-                ),
-                Row(
-                  children: [
-                    Radio<int>(
-                        value: 1,
-                        groupValue: valU,
-                        onChanged: (value){
-                          setState(() {
-                            valU = value!;
-                            type = 'Electricity';
-                          });
-                        }
-                    ),
-                    Text(
-                      'Electricity',
-                      style: TextStyle(
-                          fontSize: 17.0,
-                          color:Colors.grey.shade800
-                      ),),
-                  ],
-                ),
-                const SizedBox(width: 30),
-                Row(
-                  children: [
-                    Radio<int>(
-                        value: 2,
-                        groupValue: valU,
-                        onChanged: (value){
-                          setState(() {
-                            valU = value!;
-                            type = 'Water';
-                          });
-                        }
-                    ),
-                    Text(
-                      'Water',
-                      style: TextStyle(
-                          fontSize: 17.0,
-                          color:Colors.grey.shade800
-                      ),),
-                  ],
-                ),
-                const SizedBox(
-                  width: 1,
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            width: width*.83,
-            child: TextField(
-              controller: deviceName,
-              onChanged: (value) {
-                if (valU == 1){
-                  electricSN = value;
-                }else if (valU == 2){
-                  waterSN = value;
-                }
-                meterName = deviceName.text;
-              },
-              decoration: InputDecoration(
-                border:  UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey.shade200)
-                ),
-                labelText: 'Device Name',
-                floatingLabelStyle:
-                MaterialStateTextStyle.resolveWith((Set<MaterialState> states) {
-                  final Color color = states.contains(MaterialState.error)
-                      ? Theme.of(context).colorScheme.error
-                      : Colors.brown.shade900;
-                  return TextStyle(color: color, letterSpacing: 1.3);
-                }),
-                labelStyle:
-                MaterialStateTextStyle.resolveWith((Set<MaterialState> states) {
-                  final Color color = states.contains(MaterialState.error)
-                      ? Theme.of(context).colorScheme.error
-                      : Colors.brown.shade800;
-                  return TextStyle(color: color, letterSpacing: 1.3);
-                }),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              shape: const StadiumBorder(),
-              backgroundColor: Colors.grey.shade200,
-              foregroundColor: Colors.white,
-              disabledBackgroundColor: Colors.grey.shade100,
-            ),
-            child: const Text('Scan',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            onPressed: _handleScanButtonPress,
-          ),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: const StadiumBorder(),
-                backgroundColor: Colors.grey.shade200,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: Colors.grey.shade100,
-              ),
-              onPressed: (){},
-              child: const Text("QR Scanning",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-          ),
-          const SizedBox(height: 8),
-          Flexible(
-            child: ListView(
-              children: [
-                ListView(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: widget.scannerState.discoveredDevices
-                      .map(
-                        (device) {
-                      if (device.name == deviceName.text && deviceName.text != "") {
-                        isDeviceFound = true;
-                        id = device.id;
-                        return Column(
+          Expanded(
+            child:Column(
+                children: [
+                  SizedBox(
+                    // width:width,
+                    height: height*.25,
+                    child: Image.asset('images/logo.jpg'),
+                  ),
+                  SizedBox(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const SizedBox(
+                          width: 1,
+                        ),
+                        Row(
                           children: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                shape: const StadiumBorder(),
-                                backgroundColor: Colors.grey.shade200,
-                                foregroundColor: Colors.white,
-                                disabledBackgroundColor: Colors.grey.shade100,
-                              ),
-                              onPressed: isDeviceFound
-                                  ? () async {
-                                widget.stopScan();
-                                widget.deviceConnector.connect(device.id);
-                                print("connected inshallah");
-                                dataStored = device;
-                                meterTable = await sqlDb.insertData(
-                                    '''
-                              INSERT OR IGNORE INTO Meters (`id`, `name`)
-                              VALUES ("${device.id}","${device.name}")
-                              '''
-                                );
-                                await Navigator.push<void>(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          DeviceInteractionTab(
-                                            device: device, characteristic: QualifiedCharacteristic(
-                                              characteristicId: Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb"),
-                                              serviceId: Uuid.parse("0000ffe0-0000-1000-8000-00805f9b34fb"),
-                                              deviceId: device.id),
-                                          ),
-                                    ),
-                                  ).then((value) => deviceName.clear(),);
-                              }
-                                  : null,
-                              child: const Text("Open Device",
-                                style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),),
+                            Radio<int>(
+                                value: 1,
+                                groupValue: valU,
+                                onChanged: (value){
+                                  setState(() {
+                                    valU = value!;
+                                    type = 'Electricity';
+                                  });
+                                }
                             ),
+                            Text(
+                              'Electricity',
+                              style: TextStyle(
+                                  fontSize: 17.0,
+                                  color:Colors.grey.shade800
+                              ),),
                           ],
-                        );
-                      } else {
-                        return const SizedBox.shrink(); // Return an empty SizedBox for devices that don't match the desired name
-                      }
-                    },
-                  )
-                      .toList(),
-                ),
-                FutureBuilder(
-                    future: readData(),
-                    builder: (BuildContext context, AsyncSnapshot<List<Map>> snapshot){
-                      if(snapshot.hasData){
-                        return ListView.builder(
-                            itemCount: snapshot.data!.length,
-                            physics: const NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            itemBuilder: (context,i)=> ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                shape: const StadiumBorder(),
-                                backgroundColor: Colors.grey.shade200,
-                                foregroundColor: Colors.white,
-                                disabledBackgroundColor: Colors.grey.shade100,
-                              ),
-                              onPressed:() async {
-                                final idd = "${snapshot.data![i]['id']}";
-                                await widget.deviceConnector.connect(idd);
-                                /*await Navigator.push<void>(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        DeviceDetailScreen(device: dataStored),
+                        ),
+                        const SizedBox(width: 30),
+                        Row(
+                          children: [
+                            Radio<int>(
+                                value: 2,
+                                groupValue: valU,
+                                onChanged: (value){
+                                  setState(() {
+                                    valU = value!;
+                                    type = 'Water';
+                                  });
+                                }
+                            ),
+                            Text(
+                              'Water',
+                              style: TextStyle(
+                                  fontSize: 17.0,
+                                  color:Colors.grey.shade800
+                              ),),
+                          ],
+                        ),
+                        const SizedBox(
+                          width: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      SizedBox(
+                        width: width*.5,
+                        child: TextField(
+                          controller: deviceName,
+                          onChanged: (value) {
+                            if (valU == 1){
+                              electricSN = value;
+                            }else if (valU == 2){
+                              waterSN = value;
+                            }
+                          },
+                          decoration: InputDecoration(
+                            border:  UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey.shade200)
+                            ),
+                            labelText: 'Device Name',
+                            floatingLabelStyle:
+                            MaterialStateTextStyle.resolveWith((Set<MaterialState> states) {
+                              final Color color = states.contains(MaterialState.error)
+                                  ? Theme.of(context).colorScheme.error
+                                  : Colors.brown.shade900;
+                              return TextStyle(color: color, letterSpacing: 1.3);
+                            }),
+                            labelStyle:
+                            MaterialStateTextStyle.resolveWith((Set<MaterialState> states) {
+                              final Color color = states.contains(MaterialState.error)
+                                  ? Theme.of(context).colorScheme.error
+                                  : Colors.brown.shade800;
+                              return TextStyle(color: color, letterSpacing: 1.3);
+                            }),
+                          ),
+                        ),
+                      ),
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: const StadiumBorder(),
+                            backgroundColor: Colors.grey.shade200,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: Colors.grey.shade100,
+                          ),
+                          onPressed: (){},
+                          child: const Text("QR Scanning",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                      ),
+                    ],
+                  ),
+                  Flexible(
+                    child: ListView(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: widget.scannerState.discoveredDevices
+                          .map(
+                            (device) {
+                          if (device.name == deviceName.text && deviceName.text != "" || device.name == name) {
+                            isDeviceFound = true;
+                            id = device.id;
+                            return Column(
+                              children: [
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const StadiumBorder(),
+                                    backgroundColor: Colors.grey.shade200,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: Colors.grey.shade100,
                                   ),
-                                );*/
-                              },
-                              child: Text("${snapshot.data![i]['name']}"),
-                            )
-                        );
-                      }
-                      return const Center(child: CircularProgressIndicator(),);
-                    }
-                ),
-              ],
-            ),
+                                  onPressed: isDeviceFound
+                                      ? () async {
+                                    widget.stopScan();
+                                    await widget.deviceConnector.connect(device.id);
+                                    dataStored = device;
+                                    meterTable = await sqlDb.insertData(
+                                        '''
+                                        INSERT OR IGNORE INTO Meters (`id`, `name`)
+                                        VALUES ("${device.id}","${device.name}")
+                                        '''
+                                    );
+                                    if (valU == 1){
+                                      electricSN = device.name;
+                                    }else if (valU == 2){
+                                      waterSN = device.name;
+                                    }
+                                    meterName = device.name;
+                                    await Navigator.push<void>(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              DeviceInteractionTab(
+                                                device: device, characteristic: QualifiedCharacteristic(
+                                                  characteristicId: Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                                  serviceId: Uuid.parse("0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                                  deviceId: device.id),
+                                              ),
+                                        ),
+                                      ).then((value) => deviceName.clear(),);
+                                  }
+                                      : null,
+                                  child: Text(device.name,
+                                    style: const TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),),
+                                ),
+                              ],
+                            );
+                          } else {
+                            return const SizedBox.shrink();
+                          }
+                        },
+                      )
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
           ),
-
           ClipPath(
             clipper: WaveClipperTwo(reverse: true),
             child: Container(
@@ -380,7 +340,6 @@ class _DeviceListState extends State<DeviceList> {
 class WaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    // debugPrint(size.width.toString());
     var path = new Path();
     path.lineTo(0, size.height);
     var firstStart = Offset(size.width / 5, size.height);
