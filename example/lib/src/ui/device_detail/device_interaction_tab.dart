@@ -102,15 +102,16 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   late List<DiscoveredService> discoveredServices;
   // late String readOutput;
   late String writeOutput;
-  late String subscribeOutput;
+  late List<int> subscribeOutput;
   StreamSubscription<List<int>>? subscribeStream;
   @override
   void initState() {
     discoveredServices = [];
     // readOutput = '';
     writeOutput = '';
-    subscribeOutput = '';
+    subscribeOutput = [];
     textEditingController = TextEditingController();
+    widget.viewModel.connect();
     super.initState();
   }
 
@@ -128,26 +129,29 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   }
 
   Future<void> subscribeCharacteristic() async {
+    var newEventData =<int>[];
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-          var newEventData ='';
-          newEventData = event.join(', ',);
-            if (newEventData != previousEventData) {
-              previousEventData = newEventData;
-              if (subscribeOutput.length < 229) {
-                subscribeOutput += '$newEventData, ';
+          newEventData = event;
+          setState(() {
+            if (subscribeOutput.length < 72) {
+              final equal = newEventData.length == previousEventData.length && newEventData.every(previousEventData.contains);
+              if (!equal) {
+                subscribeOutput += newEventData ;
+                previousEventData = newEventData;
               }
               else{
-                subscribeOutput = '${event.join(', ')}, ';
+                newEventData= [];
               }
-              calculate(subscribeOutput);
             }
+            else{
+              print("subscribeOutput$subscribeOutput");
+            }
+          });
         });
-    if (kDebugMode) {
-      print("subscribeOutput = $subscribeOutput");
-    }
+    calculate(subscribeOutput);
     setState(() {
-      subscribeOutput = '';
+      subscribeOutput = [];
     });
   }
 

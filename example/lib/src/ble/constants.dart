@@ -7,7 +7,7 @@ late int response1;
 late int meterTable;
 bool isFunctionCalled = false;
 int maxOutputLength = 72*3;
-String previousEventData = '';
+List<int> previousEventData = [];
 num clientID = 0;
 num totalReading = 0;
 num pulses = 0;
