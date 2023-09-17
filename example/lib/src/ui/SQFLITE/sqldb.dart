@@ -150,10 +150,9 @@ class SqlDb{
     String path = join(databasepath,'eoip.db');
     await deleteDatabase(path);
   }
-  /*
   Future<int> getMetersTableLength() async {
-    final sql = 'SELECT COUNT(*) as count FROM Meters';
-    final List<Map> result = await sqlDb.readData(sql);
+    const sql = 'SELECT COUNT(*) as count FROM Meters';
+    final result = await sqlDb.readData(sql);
 
     if (result.isNotEmpty) {
       final count = result.first['count'] as int;
@@ -162,7 +161,7 @@ class SqlDb{
       return 0; // Return 0 if the table is empty or there's an error.
     }
   }
-  */
+
 
 
 }

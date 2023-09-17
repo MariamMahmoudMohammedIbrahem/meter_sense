@@ -291,8 +291,9 @@ class _DeviceListState extends State<DeviceList> {
                                       waterSN = device.name;
                                     }
                                     paddingType = meterType.toString();
-                                    print("padd$paddingType");
                                     meterName = device.name;
+                                    count = await sqlDb.getMetersTableLength();
+                                    print("count$count");
                                     await Navigator.push<void>(
                                         context,
                                         MaterialPageRoute(

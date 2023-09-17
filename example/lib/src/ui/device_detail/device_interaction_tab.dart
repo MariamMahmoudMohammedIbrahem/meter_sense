@@ -214,7 +214,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             }
         },
       ),
-      body:   ListView(
+      body: Column(
         children: [
           Padding(
             padding: EdgeInsets.only(
@@ -241,386 +241,400 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18.0),
-                    side: BorderSide(color: Colors.deepPurple.shade100)),
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.white,
-              ),
-                onPressed: (){
-                  Navigator.of(context).push<void>(
-                    MaterialPageRoute<void>(builder: (context) => const StoreData()),
-                  );
-                },
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(width:width*.07),
-                        const Text(
-                          'Meter Name: ',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        Text(
-                          electricSN,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 17,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      children: [
-                        SizedBox(width:width*.07),
-                        const Text(
-                          'Current Tarrif: ',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        Text(
-                          currentTarrif.toString(),
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 17,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const SizedBox(
-                          width: 1,
-                        ),
-                        Column(
-                          children: [
-                            const Text(
-                              'Today',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 25,
-                                  child: Image.asset(
-                                      'icons/electricityToday.png'),
-                                ),
-                                Text(
-                                  currentConsumption.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 17,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 30),
-                        Column(
-                          children: [
-                            const Text(
-                              'This Month',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 25,
-                                  child: Image.asset(
-                                      'icons/electricityMonth.png'),
-                                ),
-                                Text(
-                                  totalReading.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 17,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          width: 1,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const SizedBox(
-                          width: 1,
-                        ),
-                        Row(
-                          children: [
-                            const Text(
-                              'Your Balance: ',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            Text(
-                              totalCredit.toString(),
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 30),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            shape: const StadiumBorder(),
-                            backgroundColor: Colors.purple.shade50,
-                            foregroundColor: Colors.white,
-                            disabledBackgroundColor: Colors.purple.shade100,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).push<void>(
-                              MaterialPageRoute<void>(builder: (context) => const Recharge()),
-                            );
-                          },
-                          child: const Text(
-                            'Recharge',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 1,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal:width*.07),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18.0),
-                    side: BorderSide(color: Colors.deepPurple.shade100)),
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: (){
-                Navigator.of(context).push<void>(
-                  MaterialPageRoute<void>(builder: (context) => const WaterData()),
-                );
-              },
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      SizedBox(width:width*.08),
-                      const Text(
-                        'Meter Name: ',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      Text(
-                        waterSN,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 17,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    children: [
-                      SizedBox(width:width*.07),
-                      const Text(
-                        'Current Tarrif: ',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                      Text(
-                        currentTarrifWater.toString(),
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 17,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const SizedBox(
-                        width: 1,
-                      ),
-                      Column(
-                        children: [
-                          const Text(
-                            'Today',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 25,
-                                child: Image.asset(
-                                    'icons/waterToday.png'),
-                              ),
-                              Text(
-                                currentConsumptionWater.toString(),
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 17,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 30),
-                      Column(
-                        children: [
-                          const Text(
-                            'This Month',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 25,
-                                child: Image.asset(
-                                    'icons/waterMonth.png'),
-                              ),
-                              Text(
-                                totalCreditWater.toString(),
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 17,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(
-                        width: 1,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const SizedBox(
-                        width: 1,
-                      ),
-                      Row(
-                        children: [
-                          const Text(
-                            'Your Balance: ',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          Text(
-                            totalCreditWater.toString(),
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 30),
-                      ElevatedButton(
+          Flexible(
+            child: ListView.builder(
+              itemCount: count,
+              itemBuilder: (BuildContext context, int index) {
+                // Check if the item is a padding item (empty string)
+                if (count>0) {
+                  if(paddingType == "Electricity"){
+                    return Padding(
+                      padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
+                      child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          shape: const StadiumBorder(),
-                          backgroundColor: Colors.purple.shade50,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.0),
+                              side: BorderSide(color: Colors.deepPurple.shade100)),
+                          backgroundColor: Colors.white,
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor: Colors.purple.shade100,
                         ),
-                        onPressed: () {
+                        onPressed: (){
                           Navigator.of(context).push<void>(
-                            MaterialPageRoute<void>(builder: (context) => const Recharge()),
+                            MaterialPageRoute<void>(builder: (context) => const StoreData()),
                           );
                         },
-                        child: const Text(
-                          'Recharge',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                SizedBox(width:width*.07),
+                                const Text(
+                                  'Meter Name: ',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                Text(
+                                  electricSN,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              children: [
+                                SizedBox(width:width*.07),
+                                const Text(
+                                  'Current Tarrif: ',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                Text(
+                                  currentTarrif.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const SizedBox(
+                                  width: 1,
+                                ),
+                                Column(
+                                  children: [
+                                    const Text(
+                                      'Today',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 25,
+                                          child: Image.asset(
+                                              'icons/electricityToday.png'),
+                                        ),
+                                        Text(
+                                          currentConsumption.toString(),
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 17,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 30),
+                                Column(
+                                  children: [
+                                    const Text(
+                                      'This Month',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 25,
+                                          child: Image.asset(
+                                              'icons/electricityMonth.png'),
+                                        ),
+                                        Text(
+                                          totalReading.toString(),
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 17,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  width: 1,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const SizedBox(
+                                  width: 1,
+                                ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'Your Balance: ',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    Text(
+                                      totalCredit.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 17,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 30),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const StadiumBorder(),
+                                    backgroundColor: Colors.purple.shade50,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: Colors.purple.shade100,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).push<void>(
+                                      MaterialPageRoute<void>(builder: (context) => const Recharge()),
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Recharge',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 1,
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(
-                        width: 1,
+                    );
+                  }
+                  else if(paddingType == "Water"){
+                    return Padding(
+                      padding: EdgeInsets.symmetric(horizontal:width*.07),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.0),
+                              side: BorderSide(color: Colors.deepPurple.shade100)),
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: (){
+                          Navigator.of(context).push<void>(
+                            MaterialPageRoute<void>(builder: (context) => const WaterData()),
+                          );
+                        },
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                SizedBox(width:width*.08),
+                                const Text(
+                                  'Meter Name: ',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                Text(
+                                  waterSN,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              children: [
+                                SizedBox(width:width*.07),
+                                const Text(
+                                  'Current Tarrif: ',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                Text(
+                                  currentTarrifWater.toString(),
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 17,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const SizedBox(
+                                  width: 1,
+                                ),
+                                Column(
+                                  children: [
+                                    const Text(
+                                      'Today',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 25,
+                                          child: Image.asset(
+                                              'icons/waterToday.png'),
+                                        ),
+                                        Text(
+                                          currentConsumptionWater.toString(),
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 17,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 30),
+                                Column(
+                                  children: [
+                                    const Text(
+                                      'This Month',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 25,
+                                          child: Image.asset(
+                                              'icons/waterMonth.png'),
+                                        ),
+                                        Text(
+                                          totalCreditWater.toString(),
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 17,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(
+                                  width: 1,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const SizedBox(
+                                  width: 1,
+                                ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'Your Balance: ',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    Text(
+                                      totalCreditWater.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 17,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 30),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const StadiumBorder(),
+                                    backgroundColor: Colors.purple.shade50,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: Colors.purple.shade100,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).push<void>(
+                                      MaterialPageRoute<void>(builder: (context) => const Recharge()),
+                                    );
+                                  },
+                                  child: const Text(
+                                    'Recharge',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 1,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    );
+                  }
+                }
+              },
             ),
           ),
           Padding(
@@ -651,27 +665,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               ),
             ),
           ),
-          /*
-          FutureBuilder(
-              future: MetersData(),
-              builder: (BuildContext context, AsyncSnapshot<List<Map>> snapshot){
-                if(snapshot.hasData){
-                  return ListView.builder(
-                      itemCount: snapshot.data!.length,
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (context,i)=> Card(
-                        child: ListTile(
-                          title: Text("meter name: ${snapshot.data![i]['name']}"),
-                          subtitle: Text("Device type: ${snapshot.data![i]['type']}"),
-                        ),
-                      )
-                  );
-                }
-                return const Center(child: CircularProgressIndicator(),);
-              }
-          ),
-          */
         ]
       ),
     );
