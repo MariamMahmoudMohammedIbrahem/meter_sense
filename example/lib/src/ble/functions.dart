@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'constants.dart';
 /*
 num convertToInt(String data, int start, int size) {
@@ -182,4 +184,10 @@ Future<void> fetchData() async {
     name = map['name'];
     meterType = map['type'];
   }
+}
+
+Future<String> prepareDataForTransfer() async {
+  final data = await sqlDb.queryElectricityData();
+  final jsonData = jsonEncode(data);
+  return jsonData;
 }

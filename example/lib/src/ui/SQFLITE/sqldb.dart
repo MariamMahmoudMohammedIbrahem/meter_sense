@@ -119,7 +119,6 @@ class SqlDb{
     return response;
   }
 
-
   //INSERT
   Future<int> insertData(String sql) async{
     Database? mydb = await db ;
@@ -150,6 +149,7 @@ class SqlDb{
     String path = join(databasepath,'eoip.db');
     await deleteDatabase(path);
   }
+
   Future<int> getMetersTableLength() async {
     const sql = 'SELECT COUNT(*) as count FROM Meters';
     final result = await sqlDb.readData(sql);
@@ -161,7 +161,10 @@ class SqlDb{
       return 0; // Return 0 if the table is empty or there's an error.
     }
   }
-
-
+  Future<List<Map<String, dynamic>>> queryElectricityData() async {
+    Database? mydb = await db ;
+    final result = await mydb!.query('Electricity');
+    return result;
+  }
 
 }

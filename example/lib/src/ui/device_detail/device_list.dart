@@ -5,6 +5,7 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
+import 'package:flutter_reactive_ble_example/src/ui/master/master_station.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
 
@@ -263,38 +264,67 @@ class _DeviceListState extends State<DeviceList> {
                           .map(
                             (device) {
                           if (device.name == deviceName.text && deviceName.text != "" || device.name == name) {
-                            isDeviceFound = true;
-                            id = device.id;
-                            return Column(
-                              children: [
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    shape: const StadiumBorder(),
-                                    backgroundColor: Colors.grey.shade200,
-                                    foregroundColor: Colors.white,
-                                    disabledBackgroundColor: Colors.grey.shade100,
-                                  ),
-                                  onPressed: isDeviceFound
-                                      ? () async {
-                                    widget.stopScan();
-                                    await widget.deviceConnector.connect(device.id);
-                                    dataStored = device;
-                                    meterTable = await sqlDb.insertData(
-                                        '''
+                            if(deviceName.text != "MasterStation"){
+                              return ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  shape: const StadiumBorder(),
+                                  backgroundColor: Colors.grey.shade200,
+                                  foregroundColor: Colors.white,
+                                  disabledBackgroundColor: Colors.grey.shade100,
+                                ),
+                                onPressed: isDeviceFound
+                                    ? () async {
+                                  widget.stopScan();
+                                  await widget.deviceConnector.connect(device.id);
+                                  await Navigator.push<void>(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const MasterStation(),
+                                    ),
+                                  ).then((value) => deviceName.clear(),);
+                                }
+                                    : null,
+                                child: Text(device.name,
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),),
+                              );
+                            }else{
+                              isDeviceFound = true;
+                              id = device.id;
+                              return Column(
+                                children: [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      shape: const StadiumBorder(),
+                                      backgroundColor: Colors.grey.shade200,
+                                      foregroundColor: Colors.white,
+                                      disabledBackgroundColor: Colors.grey.shade100,
+                                    ),
+                                    onPressed: isDeviceFound
+                                        ? () async {
+                                      widget.stopScan();
+                                      await widget.deviceConnector.connect(device.id);
+                                      dataStored = device;
+                                      meterTable = await sqlDb.insertData(
+                                          '''
                                         INSERT OR IGNORE INTO Meters (`name`, `type`)
                                         VALUES ("${device.name}","$type")
                                         '''
-                                    );
-                                    if (valU == 1){
-                                      electricSN = device.name;
-                                    }else if (valU == 2){
-                                      waterSN = device.name;
-                                    }
-                                    paddingType = meterType.toString();
-                                    meterName = device.name;
-                                    count = await sqlDb.getMetersTableLength();
-                                    print("count$count");
-                                    await Navigator.push<void>(
+                                      );
+                                      if (valU == 1){
+                                        electricSN = device.name;
+                                      }else if (valU == 2){
+                                        waterSN = device.name;
+                                      }
+                                      paddingType = meterType.toString();
+                                      meterName = device.name;
+                                      count = await sqlDb.getMetersTableLength();
+                                      print("count$count");
+                                      await Navigator.push<void>(
                                         context,
                                         MaterialPageRoute(
                                           builder: (_) =>
@@ -306,18 +336,21 @@ class _DeviceListState extends State<DeviceList> {
                                               ),
                                         ),
                                       ).then((value) => deviceName.clear(),);
-                                  }
-                                      : null,
-                                  child: Text(device.name,
-                                    style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),),
-                                ),
-                              ],
-                            );
-                          } else {
+                                    }
+                                        : null,
+                                    child: Text(device.name,
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),),
+                                  ),
+                                ],
+                              );
+                            }
+
+                          }
+                          else {
                             return const SizedBox.shrink();
                           }
                         },
