@@ -208,13 +208,13 @@ class _DeviceListState extends State<DeviceList> {
                         width: width*.5,
                         child: TextField(
                           controller: deviceName,
-                          onChanged: (value) {
-                            if (valU == 1){
-                              electricSN = value;
-                            }else if (valU == 2){
-                              waterSN = value;
-                            }
-                          },
+                          // onChanged: (value) {
+                          //   if (valU == 1){
+                          //     electricSN = value;
+                          //   }else if (valU == 2){
+                          //     waterSN = value;
+                          //   }
+                          // },
                           decoration: InputDecoration(
                             border:  UnderlineInputBorder(
                               borderSide: BorderSide(color: Colors.grey.shade200)
@@ -281,8 +281,8 @@ class _DeviceListState extends State<DeviceList> {
                                     dataStored = device;
                                     meterTable = await sqlDb.insertData(
                                         '''
-                                        INSERT OR IGNORE INTO Meters (`id`, `name`)
-                                        VALUES ("${device.id}","${device.name}")
+                                        INSERT OR IGNORE INTO Meters (`name`, `type`)
+                                        VALUES ("${device.name}","$type")
                                         '''
                                     );
                                     if (valU == 1){
@@ -290,6 +290,8 @@ class _DeviceListState extends State<DeviceList> {
                                     }else if (valU == 2){
                                       waterSN = device.name;
                                     }
+                                    paddingType = meterType.toString();
+                                    print("padd$paddingType");
                                     meterName = device.name;
                                     await Navigator.push<void>(
                                         context,

@@ -20,12 +20,12 @@ class _StoreDataState extends State<StoreData> {
   }
   @override
   Widget build(BuildContext context) => Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          sqlDb.mydeleteDatabase();
-        },
-        child: const Icon(Icons.add),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: (){
+      //     sqlDb.mydeleteDatabase();
+      //   },
+      //   child: const Icon(Icons.add),
+      // ),
       bottomNavigationBar: CurvedNavigationBar(
         index: 0,
         items: const [

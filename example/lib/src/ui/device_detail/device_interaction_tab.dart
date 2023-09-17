@@ -100,18 +100,29 @@ class _DeviceInteractionTab extends StatefulWidget {
 
 class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   late List<DiscoveredService> discoveredServices;
-  // late String readOutput;
-  late String writeOutput;
   late List<int> subscribeOutput;
   StreamSubscription<List<int>>? subscribeStream;
   @override
   void initState() {
     discoveredServices = [];
-    // readOutput = '';
-    writeOutput = '';
     subscribeOutput = [];
     textEditingController = TextEditingController();
-    widget.viewModel.connect();
+    // Define a duration for the interval
+    const interval = Duration(seconds: 1);
+    // Start a periodic timer that calls your function
+    timer = Timer.periodic(interval, (Timer t) {
+      if(!widget.viewModel.deviceConnected){
+        widget.viewModel.connect();
+      }
+      else if(subscribeOutput.length != 72 ){
+        subscribeCharacteristic();
+        writeCharacteristicWithResponse();
+      }
+      else if(subscribeOutput.length == 72 ){
+        t.cancel();
+      }
+
+    });
     super.initState();
   }
 
@@ -126,6 +137,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   void dispose() {
     subscribeStream?.cancel();
     super.dispose();
+    timer.cancel();
   }
 
   Future<void> subscribeCharacteristic() async {
@@ -146,10 +158,16 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             }
             else{
               print("subscribeOutput$subscribeOutput");
+              if(paddingType == "Electricity"){
+                calculateElectric(subscribeOutput);
+              }
+              else if(paddingType == "Water"){
+                calculateWater(subscribeOutput);
+              }
+
             }
           });
         });
-    calculate(subscribeOutput);
     setState(() {
       subscribeOutput = [];
     });
@@ -282,6 +300,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(
+                      height: 10,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -432,16 +453,39 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                     children: [
                       SizedBox(width:width*.08),
                       const Text(
-                        'Serial Number: ',
+                        'Meter Name: ',
                         style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
                       ),
+                      Text(
+                        waterSN,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 17,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    children: [
+                      SizedBox(width:width*.07),
                       const Text(
-                        "water",
+                        'Current Tarrif: ',
                         style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      Text(
+                        currentTarrifWater.toString(),
+                        style: const TextStyle(
                           color: Colors.black,
                           fontSize: 17,
                         ),
@@ -475,7 +519,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                     'icons/waterToday.png'),
                               ),
                               Text(
-                                totalCredit.toString(),
+                                currentConsumptionWater.toString(),
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 17,
@@ -539,7 +583,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                             ),
                           ),
                           Text(
-                            clientID.toString(),
+                            totalCreditWater.toString(),
                             style: const TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
@@ -607,6 +651,27 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               ),
             ),
           ),
+          /*
+          FutureBuilder(
+              future: MetersData(),
+              builder: (BuildContext context, AsyncSnapshot<List<Map>> snapshot){
+                if(snapshot.hasData){
+                  return ListView.builder(
+                      itemCount: snapshot.data!.length,
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemBuilder: (context,i)=> Card(
+                        child: ListTile(
+                          title: Text("meter name: ${snapshot.data![i]['name']}"),
+                          subtitle: Text("Device type: ${snapshot.data![i]['type']}"),
+                        ),
+                      )
+                  );
+                }
+                return const Center(child: CircularProgressIndicator(),);
+              }
+          ),
+          */
         ]
       ),
     );

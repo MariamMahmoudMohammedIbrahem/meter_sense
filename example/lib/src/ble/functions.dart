@@ -72,8 +72,7 @@ num convertToInt(List<int> data, int start, int size) {
   return converted;
 }
 
-void calculate(List<int> subscribeOutput) {
-  if (valU == 1) {
+void calculateElectric(List<int> subscribeOutput) {
     clientID = convertToInt(subscribeOutput, 1, 4);
     pulses = convertToInt(subscribeOutput, 9, 2);
     totalCredit = convertToInt(subscribeOutput, 11, 4) / 100;
@@ -105,18 +104,51 @@ void calculate(List<int> subscribeOutput) {
     month6 = convertToInt(subscribeOutput, 66, 4);
     warningLimit = convertToInt(subscribeOutput, 70, 1);
     checkSum = convertToInt(subscribeOutput, 71, 1);
-  } else if (valU == 2) {
-    totalCreditWater = convertToInt(subscribeOutput, 11, 4);
-  }
   callFunctionOnce();
 }
 
+void calculateWater(List<int> subscribeOutput) {
+    clientIDWater = convertToInt(subscribeOutput, 1, 4);
+    pulsesWater = convertToInt(subscribeOutput, 9, 2);
+    totalCreditWater = convertToInt(subscribeOutput, 11, 4)/100;
+    currentTarrifWater = convertToInt(subscribeOutput, 15, 1);
+    tarrifVersionWater = convertToInt(subscribeOutput, 16, 2);
+    valveStatusWater = convertToInt(subscribeOutput, 18, 1);
+    leackageFlagWater = convertToInt(subscribeOutput, 19, 1);
+    fraudFlagWater = convertToInt(subscribeOutput, 20, 1);
+    fraudHoursWater = convertToInt(subscribeOutput, 21, 1);
+    fraudMinutesWater = convertToInt(subscribeOutput, 22, 1);
+    fraudDayOfWeekWater = convertToInt(subscribeOutput, 23, 1);
+    fraudDayOfMonthWater = convertToInt(subscribeOutput, 24, 1);
+    fraudMonthWater = convertToInt(subscribeOutput, 25, 1);
+    fraudYearWater = convertToInt(subscribeOutput, 26, 1);
+    totalDebitWater = convertToInt(subscribeOutput, 27, 4);
+    currentConsumptionWater = convertToInt(subscribeOutput, 31, 4);
+    lcHourWater = convertToInt(subscribeOutput, 35, 1);
+    lcMinutesWater = convertToInt(subscribeOutput, 36, 1);
+    lcDayWeekWater = convertToInt(subscribeOutput, 37, 1);
+    lcDayMonthWater = convertToInt(subscribeOutput, 38, 1);
+    lcMonthWater = convertToInt(subscribeOutput, 39, 1);
+    lcYearWater = convertToInt(subscribeOutput, 40, 1);
+    lastChargeValueNumberWater = convertToInt(subscribeOutput, 41, 5);
+    month1Water = convertToInt(subscribeOutput, 46, 4);
+    month2Water = convertToInt(subscribeOutput, 50, 4);
+    month3Water = convertToInt(subscribeOutput, 54, 4);
+    month4Water = convertToInt(subscribeOutput, 58, 4);
+    month5Water = convertToInt(subscribeOutput, 62, 4);
+    month6Water = convertToInt(subscribeOutput, 66, 4);
+    warningLimitWater = convertToInt(subscribeOutput, 70, 1);
+    checkSumWater = convertToInt(subscribeOutput, 71, 1);
+  callFunctionOnce();
+}
 void callFunctionOnce() {
   if (!isFunctionCalled) {
     isFunctionCalled = true;
     addData();
   }
 }
+
+//insert into electricity and water tables
 void addData() async {
   currentTime = DateTime.now();
   if(valU == 1){
@@ -136,13 +168,18 @@ void addData() async {
     );
   }
 }
+
+// read all data from meter
 Future<List<Map>> readData() async {
-  final response  = await sqlDb.readData("SELECT `name` FROM Meters");
+  final response  = await sqlDb.readData("SELECT `name`,`type` FROM Meters");
   return response;
 }
+
+//fetch meter data
 Future<void> fetchData() async {
   final testing = await readData();
   for (Map<dynamic, dynamic> map in testing) {
     name = map['name'];
+    meterType = map['type'];
   }
 }
