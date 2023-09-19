@@ -3,67 +3,9 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 import 'constants.dart';
-/*
-num convertToInt(String data, int start, int size) {
-  final dataArrayTwoDgit = data.split(", ");
-  final buffer = List<String>.filled(size, '');
-  final sb = StringBuffer();
-  final hex = StringBuffer();
-  for (var x = start, y = 0; x < start + size && y < size; x++, y++) {
-    buffer[y] = dataArrayTwoDgit[x];
-    final value = int.parse(buffer[y]);
-    final hexadecimalValue = value.toRadixString(16).toUpperCase().padLeft(2, '0');
-    sb.write(buffer[y]);
-    hex.write(hexadecimalValue);
-  }
-  final hexa = hex.toString();
-  final converted = int.parse(hexa, radix: 16);
-  return converted;
-
-}
-void calculate(String subscribeOutput) {
-  if(valU == 1){
-    clientID = convertToInt(subscribeOutput, 1, 4);
-    pulses = convertToInt(subscribeOutput, 9, 2);
-    totalCredit = convertToInt(subscribeOutput, 11, 4)/100;
-    currentTarrif = convertToInt(subscribeOutput, 15, 1);
-    tarrifVersion = convertToInt(subscribeOutput, 16, 2);
-    valveStatus = convertToInt(subscribeOutput, 18, 1);
-    leackageFlag = convertToInt(subscribeOutput, 19, 1);
-    fraudFlag = convertToInt(subscribeOutput, 20, 1);
-    fraudHours = convertToInt(subscribeOutput, 21, 1);
-    fraudMinutes = convertToInt(subscribeOutput, 22, 1);
-    fraudDayOfWeek = convertToInt(subscribeOutput, 23, 1);
-    fraudDayOfMonth = convertToInt(subscribeOutput, 24, 1);
-    fraudMonth = convertToInt(subscribeOutput, 25, 1);
-    fraudYear = convertToInt(subscribeOutput, 26, 1);
-    totalDebit = convertToInt(subscribeOutput, 27, 4);
-    currentConsumption = convertToInt(subscribeOutput, 31, 4);
-    lcHour = convertToInt(subscribeOutput, 35, 1);
-    lcMinutes = convertToInt(subscribeOutput, 36, 1);
-    lcDayWeek = convertToInt(subscribeOutput, 37, 1);
-    lcDayMonth = convertToInt(subscribeOutput, 38, 1);
-    lcMonth = convertToInt(subscribeOutput, 39, 1);
-    lcYear = convertToInt(subscribeOutput, 40, 1);
-    lastChargeValueNumber = convertToInt(subscribeOutput, 41, 5);
-    month1 = convertToInt(subscribeOutput, 46, 4);
-    month2 = convertToInt(subscribeOutput, 50, 4);
-    month3 = convertToInt(subscribeOutput, 54, 4);
-    month4 = convertToInt(subscribeOutput, 58, 4);
-    month5 = convertToInt(subscribeOutput, 62, 4);
-    month6 = convertToInt(subscribeOutput, 66, 4);
-    warningLimit = convertToInt(subscribeOutput, 70, 1);
-    checkSum = convertToInt(subscribeOutput, 71, 1);
-  }
-  else if(valU == 2){
-    totalCreditWater = convertToInt(subscribeOutput, 11, 4);
-  }
-  callFunctionOnce();
-}
-*/
 num convertToInt(List<int> data, int start, int size) {
   final buffer = List<int>.filled(size, 0);
-  int converted = 0;
+  var converted = 0;
 
   for (var i = start, j = 0; i < start + size && j < size; i++, j++) {
     buffer[j] = data[i];
@@ -77,6 +19,7 @@ num convertToInt(List<int> data, int start, int size) {
 }
 
 void calculateElectric(List<int> subscribeOutput) {
+  print("in");
   clientID = convertToInt(subscribeOutput, 1, 4);
   pulses = convertToInt(subscribeOutput, 9, 2);
   totalCredit = convertToInt(subscribeOutput, 11, 4) / 100;
@@ -103,14 +46,59 @@ void calculateElectric(List<int> subscribeOutput) {
   month1 = convertToInt(subscribeOutput, 46, 4);
   month2 = convertToInt(subscribeOutput, 50, 4);
   month3 = convertToInt(subscribeOutput, 54, 4);
-  month4 = convertToInt(subscribeOutput, 58, 4);
-  month5 = convertToInt(subscribeOutput, 62, 4);
-  month6 = convertToInt(subscribeOutput, 66, 4);
-  warningLimit = convertToInt(subscribeOutput, 70, 1);
-  checkSum = convertToInt(subscribeOutput, 71, 1);
+  // month4 = convertToInt(subscribeOutput, 58, 4);
+  // month5 = convertToInt(subscribeOutput, 62, 4);
+  // month6 = convertToInt(subscribeOutput, 66, 4);
+  // warningLimit = convertToInt(subscribeOutput, 70, 1);
+  // checkSum = convertToInt(subscribeOutput, 71, 1);
   callFunctionOnce();
 }
+/*
+void calculateElectric(List<int> subscribeOutput) {
+  print("object");
+  for (var i = 0; i < conversionIndices.length; i++) {
+    final startIndex = conversionIndices[i];
+    final size = conversionSizes[i];
+    final value = convertToInt(subscribeOutput, startIndex, size);
 
+    switch (i) {
+      case 0: clientID = value; break;
+      case 1: pulses = value; break;
+      case 2: totalCredit = value / 100; break;
+      case 3: currentTarrif = value; break;
+      case 4: tarrifVersion = value; break;
+      case 5: valveStatus = value; break;
+      case 6: leackageFlag = value; break;
+      case 7: fraudFlag = value; break;
+      case 8: fraudHours = value; break;
+      case 9: fraudMinutes = value; break;
+      case 10: fraudDayOfWeek = value; break;
+      case 11: fraudDayOfMonth = value; break;
+      case 12: fraudMonth = value; break;
+      case 13: fraudYear = value; break;
+      case 14: totalDebit = value; break;
+      case 15: currentConsumption = value; break;
+      case 16: lcHour = value; break;
+      case 17: lcMinutes = value; break;
+      case 18: lcDayWeek = value; break;
+      case 19: lcDayMonth = value; break;
+      case 20: lcMonth = value; break;
+      case 21: lcYear = value; break;
+      case 22: lastChargeValueNumber = value; break;
+      case 23: month1 = value; break;
+      case 24: month2 = value; break;
+      case 25: month3 = value; break;
+      case 26: month4 = value; break;
+      case 27: month5 = value; break;
+      case 28: month6 = value; break;
+      case 29: warningLimit = value; break;
+      case 30: checkSum = value; break;
+    }
+  }
+
+  callFunctionOnce();
+}
+*/
 void calculateWater(List<int> subscribeOutput) {
   clientIDWater = convertToInt(subscribeOutput, 1, 4);
   pulsesWater = convertToInt(subscribeOutput, 9, 2);
@@ -153,7 +141,7 @@ void callFunctionOnce() {
 }
 
 //insert into electricity and water tables
-void addData() async {
+Future<void> addData() async {
   now = DateTime.now();
   currentTime =DateFormat.yMMMEd().format(now);
   if(valU == 1){
@@ -183,7 +171,7 @@ Future<List<Map>> readData() async {
 //fetch meter data
 Future<void> fetchData() async {
   final testing = await readData();
-  for (Map<dynamic, dynamic> map in testing) {
+  for (final map in testing) {
     name = map['name'];
     meterType = map['type'];
   }

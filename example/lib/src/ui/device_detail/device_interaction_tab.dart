@@ -108,21 +108,25 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     subscribeOutput = [];
     textEditingController = TextEditingController();
     // Define a duration for the interval
-    const interval = Duration(seconds: 1);
-    // Start a periodic timer that calls your function
-    timer = Timer.periodic(interval, (Timer t) {
-      if(!widget.viewModel.deviceConnected){
-        widget.viewModel.connect();
-      }
-      else if(subscribeOutput.length != 72 ){
-        subscribeCharacteristic();
-        writeCharacteristicWithResponse();
-      }
-      else if(subscribeOutput.length == 72 ){
-        t.cancel();
-      }
+    setState(() {
+      const interval = Duration(seconds: 1);
+      // Start a periodic timer that calls your function
+      timer = Timer.periodic(interval, (Timer t) {
+        if(!widget.viewModel.deviceConnected){
+          widget.viewModel.connect();
+        }
+        else if(subscribeOutput.length != 72 ){
+          print("setss");
+          subscribeCharacteristic();
+          writeCharacteristicWithResponse();
+        }
+        else if(subscribeOutput.length == 72 ){
+          t.cancel();
+        }
 
+      });
     });
+
     super.initState();
   }
 
@@ -159,6 +163,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             else{
               print("subscribeOutput$subscribeOutput");
               if(paddingType == "Electricity"){
+                print("start");
                 calculateElectric(subscribeOutput);
               }
               else if(paddingType == "Water"){
@@ -168,9 +173,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             }
           });
         });
-    setState(() {
+    // setState(() {
       subscribeOutput = [];
-    });
+    // });
   }
 
 
@@ -1052,6 +1057,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                       ),
                     );
                   }
+                  return null;
                 },
               ),
             ),

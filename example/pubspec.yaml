@@ -22,7 +22,7 @@ dependencies:
   sqflite: ^2.3.0
   curved_navigation_bar: ^1.0.3
   flutter_custom_clippers: ^2.1.0
-
+  fl_chart: ^0.63.0
 
 dev_dependencies:
   build_runner: ^2.3.3
