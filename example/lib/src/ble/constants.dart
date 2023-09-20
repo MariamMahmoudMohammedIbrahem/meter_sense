@@ -85,12 +85,15 @@ final deviceName = TextEditingController();
 int valU = 1;
 String electricSN = ' ';
 String waterSN = ' ';
-String type = 'Electricity';
+String type ="Electricity";
 bool isDeviceFound = false;
 late String meterName;
 late DiscoveredDevice dataStored;
 late String id;
-late TextEditingController textEditingController;
+//devicelist
+TextEditingController deviceNameController = TextEditingController();
+//deviceinteractiontab
+const interval = Duration(seconds: 1);
 dynamic name;
 dynamic meterType;
 late Timer timer;

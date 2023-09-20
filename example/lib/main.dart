@@ -62,8 +62,24 @@ void main() {
       child: MaterialApp(
         title: 'EOIP',
         color: _themeColor,
-        theme: ThemeData(primaryColor: _themeColor, primarySwatch: Colors.grey),
-        home: const HomeScreen(),
+        theme: ThemeData(primaryColor: _themeColor, primarySwatch: Colors.grey,scaffoldBackgroundColor: Colors.white,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              shape: const StadiumBorder(),
+              backgroundColor: Colors.grey.shade200,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: Colors.grey.shade100,
+            ),
+          ),
+          textTheme: const TextTheme(
+            displayLarge: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        ),
+        home: const DeviceListScreen(),
       ),
     ),
   );
@@ -75,13 +91,6 @@ class HomeScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Consumer<BleStatus?>(
-        builder: (_, status, __) {
-          if (status == BleStatus.ready) {
-            return const DeviceListScreen();
-          } else {
-            return BleStatusScreen(status: status ?? BleStatus.unknown);
-          }
-        },
-      );
+  Widget build(BuildContext context) => const DeviceListScreen();
+
 }

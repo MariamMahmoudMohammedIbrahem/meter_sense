@@ -82,10 +82,12 @@ class _DeviceListState extends State<DeviceList> {
 
   @override
   void initState() {
-    super.initState();
     _deviceNameController = TextEditingController();
     fetchData();
-    _handleScanButtonPress();
+    if (!widget.scannerState.scanIsInProgress) {
+      _startScanning();
+    }
+    super.initState();
   }
 
   @override
@@ -100,19 +102,14 @@ class _DeviceListState extends State<DeviceList> {
     widget.startScan(text.isEmpty ? [] : [Uuid.parse(text)]);
   }
 
-  void _handleScanButtonPress() {
-    if (!widget.scannerState.scanIsInProgress) {
-      _startScanning();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
+    final deviceNameText = _deviceNameController.text;
+    final isMasterStation = deviceNameText == "MasterStation";
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
       body: Column(
         children: [
           ClipPath(
@@ -190,7 +187,7 @@ class _DeviceListState extends State<DeviceList> {
                           floatingLabelStyle:
                           MaterialStateTextStyle.resolveWith(
                                 (Set<MaterialState> states) {
-                              final Color color =
+                              final color =
                               states.contains(MaterialState.error)
                                   ? Theme.of(context).colorScheme.error
                                   : Colors.brown.shade900;
@@ -203,7 +200,7 @@ class _DeviceListState extends State<DeviceList> {
                           labelStyle:
                           MaterialStateTextStyle.resolveWith(
                                 (Set<MaterialState> states) {
-                              final Color color =
+                              final color =
                               states.contains(MaterialState.error)
                                   ? Theme.of(context).colorScheme.error
                                   : Colors.brown.shade800;
@@ -217,12 +214,6 @@ class _DeviceListState extends State<DeviceList> {
                       ),
                     ),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shape: const StadiumBorder(),
-                        backgroundColor: Colors.grey.shade200,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: Colors.grey.shade100,
-                      ),
                       onPressed: () {},
                       child: const Text(
                         "QR Scanning",
@@ -239,21 +230,13 @@ class _DeviceListState extends State<DeviceList> {
                   child: ListView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    children: widget.scannerState.discoveredDevices
-                        .map(
-                          (device) {
-                        final deviceNameText = _deviceNameController.text;
-                        final isMasterStation = deviceNameText == "MasterStation" || device.name == "MasterStation";
+                    children: widget.scannerState.discoveredDevices.where((device)=>
 
-                        if ((device.name == deviceNameText || device.name == name || isMasterStation) &&
-                            (deviceNameText.isNotEmpty || isMasterStation)) {
-                          return ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              shape: const StadiumBorder(),
-                              backgroundColor: Colors.grey.shade300,
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: Colors.grey.shade400,
-                            ),
+                      (device.name == deviceNameText || device.name == name || isMasterStation) &&
+                          (deviceNameText.isNotEmpty || isMasterStation),
+                    )
+                        .map(
+                          (device) => ElevatedButton(
                             onPressed: () async {
                               widget.stopScan();
                               await widget.deviceConnector.connect(device.id);
@@ -266,13 +249,14 @@ class _DeviceListState extends State<DeviceList> {
                                 ).then((value) => _deviceNameController.clear());
                               } else {
                                 dataStored = device;
-                                paddingType = meterType.toString();
                                 meterName = device.name;
-                                if (valU == 1) {
-                                  electricSN = device.name;
-                                } else if (valU == 2) {
-                                  waterSN = device.name;
-                                }
+                                meterTable = await sqlDb.insertData(
+                                    '''
+                                        INSERT OR IGNORE INTO Meters (`name`, `type`)
+                                        VALUES ("${device.name}","$type")
+                                        '''
+                                );
+                                paddingType = meterType.toString();
                                 await Navigator.push<void>(
                                   context,
                                   MaterialPageRoute(
@@ -296,11 +280,7 @@ class _DeviceListState extends State<DeviceList> {
                                 fontSize: 16,
                               ),
                             ),
-                          );
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      },
+                          ),
                     )
                         .toList(),
                   ),
