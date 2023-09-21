@@ -18,7 +18,7 @@ num convertToInt(List<int> data, int start, int size) {
 
   return converted;
 }
-
+/*
 void calculateElectric(List<int> subscribeOutput) {
   clientID = convertToInt(subscribeOutput, 1, 4);
   pulses = convertToInt(subscribeOutput, 9, 2);
@@ -53,7 +53,7 @@ void calculateElectric(List<int> subscribeOutput) {
   // checkSum = convertToInt(subscribeOutput, 71, 1);
   callFunctionOnce();
 }
-/*
+*/
 void calculateElectric(List<int> subscribeOutput) {
   for (var i = 0; i < conversionIndices.length; i++) {
     final startIndex = conversionIndices[i];
@@ -87,17 +87,17 @@ void calculateElectric(List<int> subscribeOutput) {
       case 23: month1 = value; break;
       case 24: month2 = value; break;
       case 25: month3 = value; break;
-      case 26: month4 = value; break;
-      case 27: month5 = value; break;
-      case 28: month6 = value; break;
-      case 29: warningLimit = value; break;
-      case 30: checkSum = value; break;
+      // case 26: month4 = value; break;
+      // case 27: month5 = value; break;
+      // case 28: month6 = value; break;
+      // case 29: warningLimit = value; break;
+      // case 30: checkSum = value; break;
     }
   }
 
   callFunctionOnce();
 }
-*/
+
 void calculateWater(List<int> subscribeOutput) {
   clientIDWater = convertToInt(subscribeOutput, 1, 4);
   pulsesWater = convertToInt(subscribeOutput, 9, 2);

@@ -123,6 +123,12 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         }
 
       });
+      if(valveStatus == 1){
+        valve = true;
+      }
+      else {
+        valve = false;
+      }
     });
 
     super.initState();
@@ -279,6 +285,22 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                       fontWeight: FontWeight.bold,
                                                       fontSize: 18,
                                                     ),
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      SizedBox(width:width*.07),
+                                                      Text(
+                                                        'valve status ',
+                                                        style: TextStyle(
+                                                          color: Colors.black,
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 18,
+                                                        ),
+                                                      ),
+                                                      SizedBox(
+                                                          child: valve?const Icon(Icons.lock_outlined,color: Colors.red,):const Icon(Icons.lock_open_outlined,color: Colors.green,),
+                                                      ),
+                                                    ],
                                                   ),
                                                   const SizedBox(
                                                     height: 10,

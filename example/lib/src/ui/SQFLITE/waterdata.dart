@@ -132,7 +132,7 @@ class _WaterDataState extends State<WaterData> {
                       child: Padding(
                         padding: const EdgeInsets.only(left:8.0,right:8.0,top: 8.0,),
                         child: LineChart(
-                          showAvg ? avgData() : mainData(),
+                          mainData(),
                         ),
                       ),
                     ),

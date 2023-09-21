@@ -196,7 +196,7 @@ class _StoreDataState extends State<StoreData> {
                         ),
                       ),
                       SizedBox(
-                        width: 60,
+                        width: 70,
                         height: 34,
                         child: ElevatedButton(
                           onPressed: () {
@@ -204,9 +204,9 @@ class _StoreDataState extends State<StoreData> {
                               showAvg = !showAvg;
                             });
                           },
-                          child: const Text(
-                            'avg',
-                            style: TextStyle(color: Colors.black),
+                          child:  Text(
+                            showAvg?'main':'avg',
+                            style: const TextStyle(color: Colors.black),
                           ),
                         ),
                       ),
