@@ -1,9 +1,11 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
+import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_interaction_tab.dart';
-import 'package:fl_chart/fl_chart.dart';
+
 
 class StoreData extends StatefulWidget {
   const StoreData({
@@ -21,10 +23,8 @@ class _StoreDataState extends State<StoreData> {
   }
   @override
   void initState() {
-    setState(() {
 
-    });
-
+    sqlDb.editingList();
     super.initState();
   }
   @override
@@ -62,127 +62,194 @@ class _StoreDataState extends State<StoreData> {
             );
           }
           else if (index == 2) {
+            Navigator.of(context).push<void>(
+              MaterialPageRoute<void>(
+                  builder: (context) => const WaterData()),
+            );
           }
         },
       ),
-      body: SizedBox(
-        height: height,
-        child: Column(
+      body: RefreshIndicator(
+        onRefresh: ()=> Future.delayed(
+            const Duration(seconds: 1),(){
+          setState(() {
+            Navigator.of(context).push<void>(
+              MaterialPageRoute<void>(
+                  builder: (context) => const StoreData()),
+            );
+          });
+        }),
+        child: ListView(
           children: [
-            Padding(
-              padding: EdgeInsets.only(
-                left: width * .05,
-                right: width * .05,
-                top: 10,
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            SizedBox(
+              height: height*.87,
+              child: Column(
                 children: [
-                  Column(
-                    children: [
-                      Text(
-                        'Usage',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18.0),
+                          border: Border.all(width: 1,color: Colors.deepPurple.shade100,)
+                      ),
+                      child: Column(
+                        children: [
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Row(
+                            children: [
+                              SizedBox(width:width*.07),
+                              const Text(
+                                'Current Tarrif: ',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              Text(
+                                currentTarrif.toString(),
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 17,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Row(
+                            children: [
+                              SizedBox(width:width*.07),
+                              const Text(
+                                'Your Balance: ',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              Text(
+                                totalCredit.toString(),
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: width * .07,
+                      right: width * .07,
+                      top: 5,
+                    ),
+                    child: Container(
+                      height: height * .3,
+                      decoration: BoxDecoration(
+                        color: Colors.deepPurple.shade50,
+                        border: Border.all(color: Colors.deepPurple.shade50, width: 2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left:8.0,right:8.0,top: 8.0,),
+                        child: LineChart(
+                          showAvg ? avgData() : mainData(),
                         ),
                       ),
-                      Text(
-                        'value',
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                      left: width * .07,
+                      right: width * .07,
+                      top: 10,
+                    ),
+                    child: Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 0,
+                      endIndent: 10,
+                      color: Colors.deepPurple.shade50,
+                    ),
+                  ),
+                  const SizedBox(height: 5,),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      const Text(
+                        'History',
                         style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black,
-                          fontSize: 17,
+                        ),
+                      ),
+                      SizedBox(
+                        width: 60,
+                        height: 34,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState((){
+                              showAvg = !showAvg;
+                            });
+                          },
+                          child: const Text(
+                            'avg',
+                            style: TextStyle(color: Colors.black),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  Text(
-                    'Date',
-                    style: TextStyle(color: Colors.black, fontSize: 17),
+                  const SizedBox(height: 5,),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: FutureBuilder(
+                          future: readEle(),
+                          builder: (BuildContext context, AsyncSnapshot<List<Map>> snapshot){
+                            if(snapshot.hasData){
+                              return ListView.builder(
+                                itemCount: snapshot.data!.length,
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemBuilder: (context,i)=> Padding(
+                                  padding:  EdgeInsets.only(left: width*.07,right: width*.07,bottom: 5,),
+                                  child: Container(
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      border:
+                                      Border.all(color: Colors.deepPurple.shade50, width: 2),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        Text("${snapshot.data![i]['time']}"),
+                                        const Text("Consumption:",),
+                                        Text("${snapshot.data![i]['currentConsumption']}"),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            return const Center(child: CircularProgressIndicator(),);
+                          }
+                      ),
+                    ),
                   ),
                 ],
-              ),
-            ),
-            //graph
-            Padding(
-              padding: EdgeInsets.only(
-                left: width * .07,
-                right: width * .07,
-                top: 5,
-              ),
-              child: Container(
-                height: height * .3,
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple.shade50,
-                  border: Border.all(color: Colors.deepPurple.shade50, width: 2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(left:8.0,right:8.0,top: 8.0,),
-                  child: LineChart(
-                    showAvg ? avgData() : mainData(),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(
-                left: width * .07,
-                right: width * .07,
-                top: 10,
-              ),
-              child: Divider(
-                height: 1,
-                thickness: 1,
-                indent: 0,
-                endIndent: 10,
-                color: Colors.deepPurple.shade50,
-              ),
-            ),
-            const SizedBox(height: 5,),
-            const Text(
-              'History',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: FutureBuilder(
-                    future: readEle(),
-                    builder: (BuildContext context, AsyncSnapshot<List<Map>> snapshot){
-                      if(snapshot.hasData){
-                        return ListView.builder(
-                          itemCount: snapshot.data!.length,
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemBuilder: (context,i)=> Padding(
-                            padding:  EdgeInsets.only(left: width*.07,right: width*.07,bottom: 5,),
-                            child: Container(
-                              height: 50,
-                              decoration: BoxDecoration(
-                                border:
-                                Border.all(color: Colors.deepPurple.shade50, width: 2),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Text("${snapshot.data![i]['time']}"),
-                                  const Text("Consumption:",),
-                                  Text("${snapshot.data![i]['currentConsumption']}"),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                      return const Center(child: CircularProgressIndicator(),);
-                    }
-                ),
               ),
             ),
           ],
@@ -201,22 +268,22 @@ Widget bottomTitleWidgets(double value, TitleMeta meta) {
   );
   Widget text;
   switch (value.toInt()) {
-    case 1:
+    case 0:
       text = const Text('1', style: style);
       break;
-    case 2:
+    case 1:
       text = const Text('2', style: style);
       break;
-    case 3:
+    case 2:
       text = const Text('3', style: style);
       break;
-    case 4:
+    case 3:
       text = const Text('4', style: style);
       break;
-    case 5:
+    case 4:
       text = const Text('5', style: style);
       break;
-    case 6:
+    case 5:
       text = const Text('6', style: style);
       break;
     default:
@@ -322,12 +389,12 @@ LineChartData mainData() => LineChartData(
     border: Border.all(color: Colors.grey),
   ),
   minX: 0,
-  maxX: 6,
+  maxX: 5,
   minY: 0,
   maxY: 100,
   lineBarsData: [
     LineChartBarData(
-      spots: data.map((e)=>FlSpot(data.indexOf(e).toDouble(), e)).toList(),
+      spots: readings.map((e)=>FlSpot(readings.indexOf(e).toDouble(), e)).toList(),
       isCurved: true,
       gradient: LinearGradient(
         colors: gradientColors,
@@ -339,12 +406,12 @@ LineChartData mainData() => LineChartData(
         show: true,
       ),
       belowBarData: BarAreaData(
-        show: false,
-        // gradient: LinearGradient(
-        //   colors: gradientColors
-        //       .map((color) => color.withOpacity(0.3))
-        //       .toList(),
-        // ),
+        show: true,
+        gradient: LinearGradient(
+          colors: gradientColors
+              .map((color) => color.withOpacity(0.3))
+              .toList(),
+        ),
       ),
     ),
   ],
@@ -356,13 +423,13 @@ LineChartData avgData() => LineChartData(
     show: true,
     drawHorizontalLine: true,
     verticalInterval: 1,
-    horizontalInterval: 1,
+    horizontalInterval: 10,
     getDrawingVerticalLine: (value) => const FlLine(
-      color: Color(0xff37434d),
+      color: Colors.grey,
       strokeWidth: 1,
     ),
     getDrawingHorizontalLine: (value) => const FlLine(
-      color: Color(0xff37434d),
+      color: Colors.grey,
       strokeWidth: 1,
     ),
   ),
@@ -393,48 +460,30 @@ LineChartData avgData() => LineChartData(
   ),
   borderData: FlBorderData(
     show: true,
-    border: Border.all(color: const Color(0xff37434d)),
+    border: Border.all(color: Colors.grey),
   ),
   minX: 0,
-  maxX: 11,
+  maxX:5,
   minY: 0,
-  maxY: 6,
+  maxY: 100,
   lineBarsData: [
     LineChartBarData(
-      spots: const [
-        FlSpot(0, 3.44),
-        FlSpot(2.6, 3.44),
-        FlSpot(4.9, 3.44),
-        FlSpot(6.8, 3.44),
-        FlSpot(8, 3.44),
-        FlSpot(9.5, 3.44),
-        FlSpot(11, 3.44),
-      ],
+      spots: data.map((e)=>FlSpot(data.indexOf(e).toDouble(), e)).toList(),
       isCurved: true,
       gradient: LinearGradient(
-        colors: [
-          ColorTween(begin: gradientColors[0], end: gradientColors[1])
-              .lerp(0.2)!,
-          ColorTween(begin: gradientColors[0], end: gradientColors[1])
-              .lerp(0.2)!,
-        ],
+        colors: gradientColors,
       ),
       barWidth: 5,
       isStrokeCapRound: true,
       dotData: const FlDotData(
-        show: false,
+        show: true,
       ),
       belowBarData: BarAreaData(
         show: true,
         gradient: LinearGradient(
-          colors: [
-            ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                .lerp(0.2)!
-                .withOpacity(0.1),
-            ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                .lerp(0.2)!
-                .withOpacity(0.1),
-          ],
+          colors: gradientColors
+              .map((color) => color.withOpacity(0.3))
+              .toList(),
         ),
       ),
     ),

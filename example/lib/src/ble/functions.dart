@@ -6,7 +6,7 @@ import 'constants.dart';
 
 num convertToInt(List<int> data, int start, int size) {
   final buffer = List<int>.filled(size, 0);
-  var converted = 0;
+  int converted = 0;
 
   for (var i = start, j = 0; i < start + size && j < size; i++, j++) {
     buffer[j] = data[i];
@@ -20,7 +20,6 @@ num convertToInt(List<int> data, int start, int size) {
 }
 
 void calculateElectric(List<int> subscribeOutput) {
-  print("in");
   clientID = convertToInt(subscribeOutput, 1, 4);
   pulses = convertToInt(subscribeOutput, 9, 2);
   totalCredit = convertToInt(subscribeOutput, 11, 4) / 100;
@@ -56,7 +55,6 @@ void calculateElectric(List<int> subscribeOutput) {
 }
 /*
 void calculateElectric(List<int> subscribeOutput) {
-  print("object");
   for (var i = 0; i < conversionIndices.length; i++) {
     final startIndex = conversionIndices[i];
     final size = conversionSizes[i];
@@ -146,15 +144,15 @@ double merge (num value1, num value2){
   return trial;
 }
 //insert into electricity and water tables
-Future<void> addData() async {
+void addData() async {
   now = DateTime.now();
   currentTime =DateFormat.yMMMEd().format(now);
   final totalPulses = merge(totalReading,pulses);
-  if(valU == 1){
+  if(paddingType == "Electricity"){
     response = await sqlDb.insertData(
         '''
-                              INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,` lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
-                              VALUES ("${clientID.toString()}","$meterName","${totalPulses.toString()}","${totalCredit.toString()}","${currentTarrif.toString()}","${tarrifVersion.toString()}","${valveStatus.toString()}","${leackageFlag.toString()}","${fraudFlag.toString()}","${fraudHours.toString()}","${fraudMinutes.toString()}","${fraudDayOfWeek.toString()}","${fraudDayOfMonth.toString()}","${fraudMonth.toString()}","${fraudYear.toString()}","${totalDebit.toString()}","${currentConsumption.toString()}","${lcHour.toString()}","${lcMinutes.toString()}","${lcDayWeek.toString()}","${lcDayMonth.toString()}","${lcMonth.toString()}","${lcYear.toString()}","${lastChargeValueNumber.toString()}","${month1.toString()}","${month2.toString()}","${month3.toString()}","${month4.toString()}","${month5.toString()}","${month6.toString()}","${warningLimit.toString()}","$currentTime")
+                              INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,` lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
+                              VALUES ("${clientID.toString()}","$meterName","${totalPulses.toString()}","${pulses.toString()}","${totalCredit.toString()}","${currentTarrif.toString()}","${tarrifVersion.toString()}","${valveStatus.toString()}","${leackageFlag.toString()}","${fraudFlag.toString()}","${fraudHours.toString()}","${fraudMinutes.toString()}","${fraudDayOfWeek.toString()}","${fraudDayOfMonth.toString()}","${fraudMonth.toString()}","${fraudYear.toString()}","${totalDebit.toString()}","${currentConsumption.toString()}","${lcHour.toString()}","${lcMinutes.toString()}","${lcDayWeek.toString()}","${lcDayMonth.toString()}","${lcMonth.toString()}","${lcYear.toString()}","${lastChargeValueNumber.toString()}","${month1.toString()}","${month2.toString()}","${month3.toString()}","${month4.toString()}","${month5.toString()}","${month6.toString()}","${warningLimit.toString()}","$currentTime")
                               '''
     );
   }
@@ -173,18 +171,17 @@ Future<List<Map>> readData() async {
   final response  = await sqlDb.readData("SELECT `name`,`type` FROM Meters");
   return response;
 }
-
 //fetch meter data
 Future<void> fetchData() async {
   final testing = await readData();
-  for (final map in testing) {
+  for (Map<dynamic, dynamic> map in testing) {
     name = map['name'];
     meterType = map['type'];
   }
 }
 
-Future<String> prepareDataForTransfer() async {
-  final data = await sqlDb.queryElectricityData();
-  final jsonData = jsonEncode(data);
-  return jsonData;
-}
+// Future<String> prepareDataForTransfer() async {
+//   final data = await sqlDb.queryElectricityData();
+//   final jsonData = jsonEncode(data);
+//   return jsonData;
+// }

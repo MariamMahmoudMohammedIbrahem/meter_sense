@@ -118,6 +118,46 @@ class SqlDb{
     List<Map> response = await mydb!.rawQuery(sql);
     return response;
   }
+  Future<void> editingList() async {
+    Database? mydb = await db;
+    const query = '''
+    SELECT `month1`,`month2`,`month3`,`month4`,`month5`,`month6` 
+    FROM Electricity
+    ORDER BY `month1` DESC  
+    LIMIT 1
+  ''';
+
+    final response = await mydb!.rawQuery(query);
+    print("res:$response");
+    if (response.isNotEmpty) {
+      final map = response.first;
+      readings = [
+        map['month1'],
+        map['month2'],
+        map['month3'],
+        map['month4'],
+        map['month5'],
+        map['month6'],
+      ].map((value) {
+        if (value is double) {
+          return value;
+        } else if (value is String) {
+          final parsedValue = double.tryParse(value);
+          if (parsedValue != null) {
+            return parsedValue;
+          } else {
+            return 0.0;
+          }
+        } else {
+          return 0.0;
+        }
+      }).toList();
+    } else {
+      readings = [0.0];
+    }
+    print("readings$readings");
+  }
+
 
   //INSERT
   Future<int> insertData(String sql) async{
@@ -161,10 +201,10 @@ class SqlDb{
       return 0; // Return 0 if the table is empty or there's an error.
     }
   }
-  Future<List<Map<String, dynamic>>> queryElectricityData() async {
-    Database? mydb = await db ;
-    final result = await mydb!.query('Electricity');
-    return result;
-  }
+  // Future<List<Map<String, dynamic>>> queryElectricityData() async {
+  //   Database? mydb = await db ;
+  //   final result = await mydb!.query('Electricity');
+  //   return result;
+  // }
 
 }

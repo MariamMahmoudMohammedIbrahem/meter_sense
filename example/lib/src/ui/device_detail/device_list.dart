@@ -233,7 +233,7 @@ class _DeviceListState extends State<DeviceList> {
                     children: widget.scannerState.discoveredDevices.where((device)=>
 
                       (device.name == deviceNameText || device.name == name || isMasterStation) &&
-                          (deviceNameText.isNotEmpty || isMasterStation),
+                          (device.name != "" || isMasterStation ) ,
                     )
                         .map(
                           (device) => ElevatedButton(

@@ -19,8 +19,8 @@ class _MasterStationState extends State<MasterStation> {
         children: [
           ElevatedButton(
               onPressed: ()async {
-                final jsonData = await prepareDataForTransfer();
-                final dataBytes = utf8.encode(jsonData);
+                // final jsonData = await prepareDataForTransfer();
+                // final dataBytes = utf8.encode(jsonData);
               },
               child: const Text("get data"),
           ),

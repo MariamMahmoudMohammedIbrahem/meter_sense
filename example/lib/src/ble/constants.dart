@@ -99,7 +99,8 @@ dynamic meterType;
 late Timer timer;
 int count = 0;
 dynamic paddingType;
-List<double> data = [0.0];
+List<double> data = [10.0,20.0,50.0,30.0,40.0,25.0];
+List<double> readings =[];
 List<Color> gradientColors = [
   Colors.grey,
   Colors.grey.shade500,
