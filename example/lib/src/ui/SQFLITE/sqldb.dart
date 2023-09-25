@@ -1,11 +1,12 @@
 
 
+import 'dart:convert';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/utils/utils.dart';
 
 import '../../ble/constants.dart';
-
 class SqlDb{
 
   static Database? _db;
@@ -88,6 +89,13 @@ class SqlDb{
       'type' TEXT NOT NULL
     )
     ''');
+    //create new table with only one row
+    await db.execute('''
+    CREATE TABLE "list_table" (
+    'list_data' TEXT
+    )
+    ''');
+
     // Batch batch = db.batch();
     // batch.execute(
     //   '''
@@ -118,6 +126,7 @@ class SqlDb{
     List<Map> response = await mydb!.rawQuery(sql);
     return response;
   }
+
   Future<void> editingList() async {
     Database? mydb = await db;
     const query = '''
@@ -157,7 +166,6 @@ class SqlDb{
     }
     print("readings$readings");
   }
-
 
   //INSERT
   Future<int> insertData(String sql) async{
@@ -201,7 +209,34 @@ class SqlDb{
       return 0; // Return 0 if the table is empty or there's an error.
     }
   }
-  // Future<List<Map<String, dynamic>>> queryElectricityData() async {
+
+  // Save a list to the database
+  Future<void> saveList(List<int> myList) async {
+    Database? mydb = await db;
+    final jsonList = jsonEncode(myList);
+    await mydb!.rawInsert('INSERT OR REPLACE INTO list_table (list_data) VALUES (?)', [jsonList]);
+  }
+
+// Retrieve the list from the database
+  Future<List<int>> getList() async {
+    Database? mydb = await db;
+    final List<Map<String, dynamic>> result = await mydb!.rawQuery('SELECT * FROM list_table');
+    if (result.isNotEmpty) {
+      final dynamic jsonListDynamic = result[0]['list_data'];
+      final String? jsonList = jsonListDynamic as String?;
+      if (jsonList != null) {
+        final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
+        myList = dynamicList.cast<int>();
+        // Now you can work with myList
+        myList[0]= 0xA0;
+        print("myList: $myList");
+        return myList;
+      }
+    }
+    return [];
+  }
+
+// Future<List<Map<String, dynamic>>> queryElectricityData() async {
   //   Database? mydb = await db ;
   //   final result = await mydb!.query('Electricity');
   //   return result;

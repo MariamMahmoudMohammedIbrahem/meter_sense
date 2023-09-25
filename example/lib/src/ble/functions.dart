@@ -176,6 +176,7 @@ Future<void> fetchData() async {
   final testing = await readData();
   for (Map<dynamic, dynamic> map in testing) {
     name = map['name'];
+    nameList.add(name.toString());
     meterType = map['type'];
   }
 }

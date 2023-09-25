@@ -5,6 +5,7 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
+import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:flutter_reactive_ble_example/src/ui/master/master_station.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
@@ -87,6 +88,8 @@ class _DeviceListState extends State<DeviceList> {
     if (!widget.scannerState.scanIsInProgress) {
       _startScanning();
     }
+    // final myInstance = SqlDb(); // Creating an instanc// e of MyClass
+    // myInstance.getList();
     super.initState();
   }
 
@@ -107,7 +110,7 @@ class _DeviceListState extends State<DeviceList> {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     final deviceNameText = _deviceNameController.text;
-    final isMasterStation = deviceNameText == "MasterStation";
+    // final isMasterStation = deviceNameText == "MasterStation";
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Column(
@@ -214,7 +217,13 @@ class _DeviceListState extends State<DeviceList> {
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        if (kDebugMode) {
+                          // final myInstance = SqlDb(); // Creating an instanc// e of MyClass
+                          // myInstance.getList();
+                          // print("masterList$myList");
+                        }
+                      },
                       child: const Text(
                         "QR Scanning",
                         style: TextStyle(
@@ -232,22 +241,33 @@ class _DeviceListState extends State<DeviceList> {
                     physics: const NeverScrollableScrollPhysics(),
                     children: widget.scannerState.discoveredDevices.where((device)=>
 
-                      (device.name == deviceNameText || device.name == name || isMasterStation) &&
-                          (device.name != "" || isMasterStation ) ,
+                      (device.name == deviceNameText || device.name == name || device.name == "MasterStation") &&
+                          (device.name != ""  ) ,
                     )
                         .map(
                           (device) => ElevatedButton(
                             onPressed: () async {
                               widget.stopScan();
                               await widget.deviceConnector.connect(device.id);
-                              if (isMasterStation) {
+                              if (device.name == "MasterStation") {
+                                DEVID = device.id;
                                 await Navigator.push<void>(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const MasterStation(),
+                                    builder: (_) => MasterInteractionTab(
+                                      device: device,
+                                      characteristic: QualifiedCharacteristic(
+                                        //untill know the caharcteristic and service id
+                                        characteristicId: Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                        serviceId: Uuid.parse("0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                    deviceId: device.id,
+                                  ),
+
+                                    ),
                                   ),
                                 ).then((value) => _deviceNameController.clear());
-                              } else {
+                              }
+                              else {
                                 dataStored = device;
                                 meterName = device.name;
                                 meterTable = await sqlDb.insertData(

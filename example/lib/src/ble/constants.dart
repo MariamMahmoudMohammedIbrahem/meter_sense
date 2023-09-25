@@ -95,6 +95,7 @@ TextEditingController deviceNameController = TextEditingController();
 //deviceinteractiontab
 const interval = Duration(seconds: 1);
 dynamic name;
+List<String> nameList = [];
 dynamic meterType;
 late Timer timer;
 int count = 0;
@@ -174,3 +175,6 @@ final conversionSizes = [
   1,   // checkSum
 ];
 bool valve = true;
+List<int> myList = [];
+String DEVID = "";
+List<int> testing = [];

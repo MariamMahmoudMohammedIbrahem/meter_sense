@@ -107,14 +107,16 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     discoveredServices = [];
     subscribeOutput = [];
     // Define a duration for the interval
-    setState(() {
+    // setState(() {
       // Start a periodic timer that calls your function
       timer = Timer.periodic(interval, (Timer t) {
         if(!widget.viewModel.deviceConnected){
           widget.viewModel.connect();
         }
         else if(subscribeOutput.length != 72 ){
-          print("setss");
+          if (kDebugMode) {
+            print("setss");
+          }
           subscribeCharacteristic();
           writeCharacteristicWithResponse();
         }
@@ -122,7 +124,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
           t.cancel();
         }
 
-      });
+      // });
       if(valveStatus == 1){
         valve = true;
       }
@@ -150,7 +152,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
   Future<void> subscribeCharacteristic() async {
     var newEventData =<int>[];
-    print("subscribe in");
+    if (kDebugMode) {
+      print("subscribe in");
+    }
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
           newEventData = event;
@@ -166,9 +170,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               }
             }
             else{
-              print("subscribeOutput$subscribeOutput");
+              if (kDebugMode) {
+                print("subscribeOutput$subscribeOutput");
+              }
+              sqlDb.saveList(subscribeOutput);
               if(paddingType == "Electricity"){
-                print("start");
+                if (kDebugMode) {
+                  print("start");
+                }
                 calculateElectric(subscribeOutput);
               }
               else if(paddingType == "Water"){
@@ -289,7 +298,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                   Row(
                                                     children: [
                                                       SizedBox(width:width*.07),
-                                                      Text(
+                                                      const Text(
                                                         'valve status ',
                                                         style: TextStyle(
                                                           color: Colors.black,
