@@ -11,7 +11,6 @@ import 'package:provider/provider.dart';
 import '../../ble/ble_device_connector.dart';
 import '../../ble/ble_device_interactor.dart';
 import '../../ble/constants.dart';
-import '../SQFLITE/dataPage.dart';
 import '../device_detail/device_interaction_tab.dart';
 
 List<int> dataList = [89, 0, 0, 0, 153, 0, 0, 0, 0, 0, 0, 0, 0, 67, 148, 0, 0, 0, 1, 0];
@@ -116,7 +115,6 @@ class _MasterStation extends StatefulWidget {
 }
 
 class _MasterStationState extends State<_MasterStation> {
-  @override
   StreamSubscription<List<int>>? subscribeStream;
   Future<void> writeCharacteristicWithoutResponse() async {
     int chunkSize = 20;
