@@ -37,10 +37,21 @@ class SqlDb{
   //JUST CALLED ONCE
   Future _onCreate(Database db, int version) async {
     print("create");
+    // Enable foreign key support when creating the database.
+    await db.execute("PRAGMA foreign_keys = ON;");
+    //create meters table
+    await db.execute('''
+    CREATE TABLE "Meters"(
+      'name' TEXT NOT NULL UNIQUE,
+      'type' TEXT NOT NULL,
+      PRIMARY KEY ('name')
+    )
+    ''');
+    //create electricity table
     await db.execute('''
     CREATE TABLE "Electricity"(
       'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-      'title' TEXT NOT NULL,
+      'title' TEXT,
       'clientId' INTEGER NOT NULL,
       'totalReading' TEXT NOT NULL,
       'pulses' TEXT NOT NULL,
@@ -64,7 +75,7 @@ class SqlDb{
       'lcDayMonth' TEXT NOT NULL,
       'lcMonth' TEXT NOT NULL,
       'lcYear' TEXT NOT NULL,
-      ' lastChargeValueNumber' TEXT NOT NULL,
+      'lastChargeValueNumber' TEXT NOT NULL,
       'month1' TEXT NOT NULL,
       'month2' TEXT NOT NULL,
       'month3' TEXT NOT NULL,
@@ -72,27 +83,57 @@ class SqlDb{
       'month5' TEXT NOT NULL,
       'month6' TEXT NOT NULL,
       'warningLimit' TEXT NOT NULL,
-      'time' DATETIME NOT NULL
+      'time' DATETIME NOT NULL,
+      FOREIGN KEY ('title') REFERENCES 'Meters'('name')
     )
     ''');
+    //create water table
     await db.execute('''
     CREATE TABLE "Water"(
       'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-      'title' TEXT NOT NULL,
-      'data' TEXT NOT NULL,
-      'time' DATETIME NOT NULL
+      'title' TEXT,
+      'clientId' INTEGER NOT NULL,
+      'totalReading' TEXT NOT NULL,
+      'pulses' TEXT NOT NULL,
+      'totalCredit' TEXT NOT NULL,
+      'currentTarrif' TEXT NOT NULL,
+      'tarrifVersion' TEXT NOT NULL,
+      'valveStatus' TEXT NOT NULL,
+      'leackageFlag' TEXT NOT NULL,
+      'fraudFlag' TEXT NOT NULL,
+      'fraudHours' TEXT NOT NULL,
+      'fraudMinutes' TEXT NOT NULL,
+      'fraudDayOfWeek' TEXT NOT NULL,
+      'fraudDayOfMonth' TEXT NOT NULL,
+      'fraudMonth' TEXT NOT NULL,
+      'fraudYear' TEXT NOT NULL,
+      'totalDebit' TEXT NOT NULL,
+      'currentConsumption' TEXT NOT NULL,
+      'lcHour' TEXT NOT NULL,
+      'lcMinutes' TEXT NOT NULL,
+      'lcDayWeek' TEXT NOT NULL,
+      'lcDayMonth' TEXT NOT NULL,
+      'lcMonth' TEXT NOT NULL,
+      'lcYear' TEXT NOT NULL,
+      'lastChargeValueNumber' TEXT NOT NULL,
+      'month1' TEXT NOT NULL,
+      'month2' TEXT NOT NULL,
+      'month3' TEXT NOT NULL,
+      'month4' TEXT NOT NULL,
+      'month5' TEXT NOT NULL,
+      'month6' TEXT NOT NULL,
+      'warningLimit' TEXT NOT NULL,
+      'time' DATETIME NOT NULL,
+      FOREIGN KEY ('title') REFERENCES 'Meters'('name')
     )
     ''');
-    await db.execute('''
-    CREATE TABLE "Meters"(
-      'name' TEXT NOT NULL UNIQUE,
-      'type' TEXT NOT NULL
-    )
-    ''');
-    //create new table with only one row
+    //create list table
     await db.execute('''
     CREATE TABLE "list_table" (
-    'list_data' TEXT
+    'list_data' TEXT NOT NULL,
+    'name' TEXT,
+    'clientId' INTEGER NOT NULL,
+    FOREIGN KEY ('name') REFERENCES 'Meters'('name')
     )
     ''');
 
@@ -176,10 +217,14 @@ class SqlDb{
   }
 
   //UPDATE
-  Future<int> updateData(String sql) async{
+  Future<int> updateData(List<int> myList, int clientId) async{
     Database? mydb = await db ;
     //take returened data from database
-    int response = await mydb!.rawUpdate(sql);
+    int response = await mydb!.rawUpdate(
+      'UPDATE list_table SET list_data = ? WHERE clientId = ?',
+      ['$myList', clientId],
+    );
+    print("done");
     return response;
   }
 
@@ -211,11 +256,20 @@ class SqlDb{
   }
 
   // Save a list to the database
-  Future<void> saveList(List<int> myList) async {
+  // Future<void> saveList(List<int> myList) async {
+  //   Database? mydb = await db;
+  //   final jsonList = jsonEncode(myList);
+  //   await mydb!.rawInsert('INSERT OR REPLACE INTO list_table (list_data) VALUES (?)', [jsonList]);
+  // }
+  Future<void> saveList(List<int> myList, int clientId, String name) async {
     Database? mydb = await db;
     final jsonList = jsonEncode(myList);
-    await mydb!.rawInsert('INSERT OR REPLACE INTO list_table (list_data) VALUES (?)', [jsonList]);
+    await mydb!.rawInsert(
+      'INSERT OR REPLACE INTO list_table (list_data, clientId, name) VALUES (?, ?, ?)',
+      [jsonList, clientId, name],
+    );
   }
+
 
 // Retrieve the list from the database
   Future<List<int>> getList() async {
@@ -223,6 +277,8 @@ class SqlDb{
     final List<Map<String, dynamic>> result = await mydb!.rawQuery('SELECT * FROM list_table');
     if (result.isNotEmpty) {
       final dynamic jsonListDynamic = result[0]['list_data'];
+      listName = result[0]['name'];
+      listClientId =result[0]['clientId'];
       final String? jsonList = jsonListDynamic as String?;
       if (jsonList != null) {
         final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
@@ -230,6 +286,8 @@ class SqlDb{
         // Now you can work with myList
         myList[0]= 0xA0;
         print("myList: $myList");
+        print("listName: $listName");
+        print("listClientId: $listClientId");
         return myList;
       }
     }

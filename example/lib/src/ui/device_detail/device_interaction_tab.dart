@@ -173,15 +173,16 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               if (kDebugMode) {
                 print("subscribeOutput$subscribeOutput");
               }
-              sqlDb.saveList(subscribeOutput);
               if(paddingType == "Electricity"){
                 if (kDebugMode) {
                   print("start");
                 }
                 calculateElectric(subscribeOutput);
+                sqlDb.saveList(subscribeOutput,clientID.toInt(),meterName);
               }
               else if(paddingType == "Water"){
                 calculateWater(subscribeOutput);
+                // sqlDb.saveList(subscribeOutput,);
               }
 
             }

@@ -178,3 +178,7 @@ bool valve = true;
 List<int> myList = [];
 String DEVID = "";
 List<int> testing = [];
+dynamic listName = "";
+dynamic listClientId = 0;
+String myconvertedlist = '';
+int testclient = 153;
