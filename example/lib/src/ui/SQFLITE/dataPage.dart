@@ -19,6 +19,7 @@ class StoreData extends StatefulWidget {
 class _StoreDataState extends State<StoreData> {
   Future<List<Map>> readEle() async {
     final response  = await sqlDb.readData("SELECT * FROM Electricity");
+    print("object$response");
     return response;
   }
   @override
@@ -236,8 +237,8 @@ class _StoreDataState extends State<StoreData> {
                                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                       children: [
                                         Text("${snapshot.data![i]['time']}"),
-                                        const Text("Consumption:",),
-                                        Text("${snapshot.data![i]['currentConsumption']}"),
+                                        const Text("Balance:",),
+                                        Text("${snapshot.data![i]['totalCredit']}"),
                                       ],
                                     ),
                                   ),

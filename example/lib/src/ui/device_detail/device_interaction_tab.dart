@@ -114,9 +114,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
           widget.viewModel.connect();
         }
         else if(subscribeOutput.length != 72 ){
-          if (kDebugMode) {
-            print("setss");
-          }
           subscribeCharacteristic();
           writeCharacteristicWithResponse();
         }

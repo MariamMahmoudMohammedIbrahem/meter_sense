@@ -180,5 +180,4 @@ String DEVID = "";
 List<int> testing = [];
 dynamic listName = "";
 dynamic listClientId = 0;
-String myconvertedlist = '';
-int testclient = 153;
+String listType = "Electricity";

@@ -37,8 +37,6 @@ class SqlDb{
   //JUST CALLED ONCE
   Future _onCreate(Database db, int version) async {
     print("create");
-    // Enable foreign key support when creating the database.
-    await db.execute("PRAGMA foreign_keys = ON;");
     //create meters table
     await db.execute('''
     CREATE TABLE "Meters"(
@@ -51,7 +49,7 @@ class SqlDb{
     await db.execute('''
     CREATE TABLE "Electricity"(
       'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-      'title' TEXT,
+      'title' TEXT NOT NULL,
       'clientId' INTEGER NOT NULL,
       'totalReading' TEXT NOT NULL,
       'pulses' TEXT NOT NULL,
@@ -83,15 +81,14 @@ class SqlDb{
       'month5' TEXT NOT NULL,
       'month6' TEXT NOT NULL,
       'warningLimit' TEXT NOT NULL,
-      'time' DATETIME NOT NULL,
-      FOREIGN KEY ('title') REFERENCES 'Meters'('name')
+      'time' DATETIME NOT NULL
     )
     ''');
     //create water table
     await db.execute('''
     CREATE TABLE "Water"(
       'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-      'title' TEXT,
+      'title' TEXT NOT NULL,
       'clientId' INTEGER NOT NULL,
       'totalReading' TEXT NOT NULL,
       'pulses' TEXT NOT NULL,
@@ -123,17 +120,15 @@ class SqlDb{
       'month5' TEXT NOT NULL,
       'month6' TEXT NOT NULL,
       'warningLimit' TEXT NOT NULL,
-      'time' DATETIME NOT NULL,
-      FOREIGN KEY ('title') REFERENCES 'Meters'('name')
+      'time' DATETIME NOT NULL
     )
     ''');
     //create list table
     await db.execute('''
     CREATE TABLE "list_table" (
     'list_data' TEXT NOT NULL,
-    'name' TEXT,
-    'clientId' INTEGER NOT NULL,
-    FOREIGN KEY ('name') REFERENCES 'Meters'('name')
+    'name' TEXT NOT NULL,
+    'clientId' INTEGER NOT NULL
     )
     ''');
 
@@ -227,6 +222,15 @@ class SqlDb{
     print("done");
     return response;
   }
+
+  Future<int> updateTotalCredit(int clientId, String title, String newTotalCredit) async {
+    Database? mydb = await db;
+    int response = await mydb!.rawUpdate(
+        'UPDATE Electricity SET totalCredit = ? WHERE clientId = ? AND title = ?',
+        [newTotalCredit, clientId, title]);
+    return response;
+  }
+
 
   //DELETE
   Future<int> deleteData(String sql) async{

@@ -135,13 +135,14 @@ class _MasterStationState extends State<_MasterStation> {
     }
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+          testing = event;
           //electric tarrif
           if(event.first == 0xA3){
             print("electric tarrif:$electricTarrif");
           }
           if(event.first == 0xA4){
             electricBalance = convertToInt(event, 0, 1);
-            myconvertedlist = updateMyList(event, 11, 4);
+            updateMyList(event, 11, 4);
             print("electric balance:$electricBalance");
           }
           if(event.first == 0xA5){
@@ -309,12 +310,18 @@ class _MasterStationState extends State<_MasterStation> {
 
                     final myInstance = SqlDb();
                     await myInstance.updateData(myList, int.parse('$listClientId'));
-
+                    // calculateElectric(myList);
+                    double newTotalCredit = convertToInt(myList, 11, 4) / 100;
+                    print("newTotalCredit $newTotalCredit");
+                    // await myInstance.updateTotalCredit(int.parse('$listClientId'), "$listName", '$newTotalCredit');
                     // await myInstance.updateData('''
                     // UPDATE list_table
                     // SET list_data = '$myList',
                     // WHERE clientId = $testclient
                     // ''');
+                    calculateElectric(myList);
+                    final response  = await sqlDb.readData("SELECT * FROM Electricity");
+                    print("object$response");
                   },
                   child: const Text("update", style: TextStyle(color: Colors.black),),
                 ),
