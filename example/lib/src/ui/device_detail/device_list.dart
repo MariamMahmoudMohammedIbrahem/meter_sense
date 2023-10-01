@@ -5,7 +5,6 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:flutter_reactive_ble_example/src/ui/master/master_station.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
@@ -218,11 +217,28 @@ class _DeviceListState extends State<DeviceList> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        if (kDebugMode) {
+                        num value1 = 193.0;
+                        num value2= 164;
+                        var value3  = value1 + value2;
+                        int decimalNumber = value3.round();
+                        List<int> result = [];
+
+                        for (int i = 0; i < 4; i++) {
+                          result.add(decimalNumber & 0xFF);
+                          decimalNumber >>= 8;
+                        }
+
+                        result = result.reversed.toList(); // Reverse the list to get [0, 0, 75, 100]
+
+                        print(result); // This will correctly print [0, 0, 75, 100]
+                        var valzz = convertToInt(result, 0, 4);
+                        print(valzz);
+
+                        // if (kDebugMode) {
                           // final myInstance = SqlDb(); // Creating an instanc// e of MyClass
                           // myInstance.getList();
                           // print("masterList$myList");
-                        }
+                        // }
                       },
                       child: const Text(
                         "QR Scanning",

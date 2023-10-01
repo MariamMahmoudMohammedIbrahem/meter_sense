@@ -175,7 +175,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                   print("start");
                 }
                 calculateElectric(subscribeOutput);
-                sqlDb.saveList(subscribeOutput,clientID.toInt(),meterName);
+                sqlDb.saveList(subscribeOutput,clientID.toInt(),meterName, '$paddingType');
               }
               else if(paddingType == "Water"){
                 calculateWater(subscribeOutput);
@@ -441,9 +441,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                           disabledBackgroundColor: Colors.purple.shade100,
                                                         ),
                                                         onPressed: () {
-                                                          Navigator.of(context).push<void>(
-                                                            MaterialPageRoute<void>(builder: (context) => const Recharge()),
-                                                          );
+                                                          // Navigator.of(context).push<void>(
+                                                          //   MaterialPageRoute<void>(builder: (context) => const Recharge()),
+                                                          // );
+
                                                         },
                                                         child: const Text(
                                                           'Recharge',
@@ -494,7 +495,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        waterSN,
+                                                        'waterSN',
                                                         style: const TextStyle(
                                                           color: Colors.black,
                                                           fontSize: 17,

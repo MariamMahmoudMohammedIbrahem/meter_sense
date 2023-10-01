@@ -2,21 +2,20 @@
 
 import 'dart:convert';
 
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/utils/utils.dart';
+import 'package:sqflite/sqflite.dart';
 
 import '../../ble/constants.dart';
-class SqlDb{
+class SqlDb {
 
   static Database? _db;
 
-  Future <Database?> get db async{
-    if(_db == null){
-      _db =  await initialDb();
+  Future <Database?> get db async {
+    if (_db == null) {
+      _db = await initialDb();
       return _db;
     }
-    else{
+    else {
       return _db;
     }
   }
@@ -24,19 +23,18 @@ class SqlDb{
   Future<Database> initialDb() async {
     String databasePath = await getDatabasesPath();
     String path = join(databasePath, 'eoip.db');
-    Database mydb = await openDatabase(path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade);
+    Database mydb = await openDatabase(
+        path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade);
     return mydb;
   }
 
   //version changed
-  Future<void> _onUpgrade(Database db, int oldversion , int newversion)async {
+  Future<void> _onUpgrade(Database db, int oldversion, int newversion) async {
     print("onUpgrade");
-    // await db.execute("ALTER TABLE meter ADD COLUMN color TEXT");
   }
 
   //JUST CALLED ONCE
   Future _onCreate(Database db, int version) async {
-    print("create");
     //create meters table
     await db.execute('''
     CREATE TABLE "Meters"(
@@ -123,41 +121,20 @@ class SqlDb{
       'time' DATETIME NOT NULL
     )
     ''');
-    //create list table
+    //create master table
     await db.execute('''
-    CREATE TABLE "list_table" (
-    'list_data' TEXT NOT NULL,
+    CREATE TABLE "master_table" (
+    'list' TEXT NOT NULL,
     'name' TEXT NOT NULL,
-    'clientId' INTEGER NOT NULL
+    'clientId' INTEGER NOT NULL,
+    'type' TEXT NOT NULL
     )
     ''');
-
-    // Batch batch = db.batch();
-    // batch.execute(
-    //   '''
-    //   CREATE TABLE "ELECTRICITY" (
-    //   'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    //   'title' TEXT NOT NULL,
-    //   'data' TEXT NOT NULL
-    //   )
-    //   '''
-    // );
-    // batch.execute(
-    //     '''
-    //   CREATE TABLE "WATER" (
-    //   'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    //   'title' TEXT NOT NULL,
-    //   'data' TEXT NOT NULL
-    //   )
-    //   '''
-    // );
-    // await batch.commit();
-    print("create");
   }
 
   //SELECT
-  Future<List<Map>> readData(String sql) async{
-    Database? mydb = await db ;
+  Future<List<Map>> readData(String sql) async {
+    Database? mydb = await db;
     //take returened data from database
     List<Map> response = await mydb!.rawQuery(sql);
     return response;
@@ -204,104 +181,88 @@ class SqlDb{
   }
 
   //INSERT
-  Future<int> insertData(String sql) async{
-    Database? mydb = await db ;
+  Future<int> insertData(String sql) async {
+    Database? mydb = await db;
     //take returened data from database
     int response = await mydb!.rawInsert(sql);
     return response;
   }
 
   //UPDATE
-  Future<int> updateData(List<int> myList, int clientId) async{
-    Database? mydb = await db ;
+  Future<int> updateData(List<int> myList, int clientId) async {
+    Database? mydb = await db;
     //take returened data from database
     int response = await mydb!.rawUpdate(
-      'UPDATE list_table SET list_data = ? WHERE clientId = ?',
+      'UPDATE master_table SET list = ? WHERE clientId = ?',
       ['$myList', clientId],
     );
     print("done");
     return response;
   }
 
-  Future<int> updateTotalCredit(int clientId, String title, String newTotalCredit) async {
-    Database? mydb = await db;
-    int response = await mydb!.rawUpdate(
-        'UPDATE Electricity SET totalCredit = ? WHERE clientId = ? AND title = ?',
-        [newTotalCredit, clientId, title]);
-    return response;
-  }
-
 
   //DELETE
-  Future<int> deleteData(String sql) async{
-    Database? mydb = await db ;
-    //take returened data from database
+  Future<int> deleteData(String sql) async {
+    Database? mydb = await db;
     int response = await mydb!.rawDelete(sql);
     return response;
   }
 
   // delete database
-  Future mydeleteDatabase()async{
+  Future mydeleteDatabase() async {
     String databasepath = await getDatabasesPath();
-    String path = join(databasepath,'eoip.db');
+    String path = join(databasepath, 'eoip.db');
     await deleteDatabase(path);
   }
 
-  Future<int> getMetersTableLength() async {
-    const sql = 'SELECT COUNT(*) as count FROM Meters';
-    final result = await sqlDb.readData(sql);
-
-    if (result.isNotEmpty) {
-      final count = result.first['count'] as int;
-      return count;
-    } else {
-      return 0; // Return 0 if the table is empty or there's an error.
-    }
-  }
-
-  // Save a list to the database
-  // Future<void> saveList(List<int> myList) async {
-  //   Database? mydb = await db;
-  //   final jsonList = jsonEncode(myList);
-  //   await mydb!.rawInsert('INSERT OR REPLACE INTO list_table (list_data) VALUES (?)', [jsonList]);
-  // }
-  Future<void> saveList(List<int> myList, int clientId, String name) async {
-    Database? mydb = await db;
-    final jsonList = jsonEncode(myList);
-    await mydb!.rawInsert(
-      'INSERT OR REPLACE INTO list_table (list_data, clientId, name) VALUES (?, ?, ?)',
-      [jsonList, clientId, name],
-    );
-  }
-
-
-// Retrieve the list from the database
+// Retrieve the list from the database to send to master station
   Future<List<int>> getList() async {
     Database? mydb = await db;
-    final List<Map<String, dynamic>> result = await mydb!.rawQuery('SELECT * FROM list_table');
+    final List<Map<String, dynamic>> result = await mydb!.rawQuery(
+        'SELECT * FROM master_table');
     if (result.isNotEmpty) {
-      final dynamic jsonListDynamic = result[0]['list_data'];
+      final dynamic jsonListDynamic = result[0]['list'];
       listName = result[0]['name'];
-      listClientId =result[0]['clientId'];
+      listClientId = result[0]['clientId'];
+      listType = result[0]['type'];
       final String? jsonList = jsonListDynamic as String?;
       if (jsonList != null) {
         final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
         myList = dynamicList.cast<int>();
-        // Now you can work with myList
-        myList[0]= 0xA0;
-        print("myList: $myList");
-        print("listName: $listName");
-        print("listClientId: $listClientId");
+        myList[0] = 0xA0;
         return myList;
       }
     }
     return [];
   }
 
-// Future<List<Map<String, dynamic>>> queryElectricityData() async {
-  //   Database? mydb = await db ;
-  //   final result = await mydb!.query('Electricity');
-  //   return result;
-  // }
+  Future<void> saveList(List<int> myList, int clientId, String name, String type) async {
+    Database? mydb = await db;
+    final jsonList = jsonEncode(myList);
+    await mydb!.rawInsert(
+      'INSERT OR REPLACE INTO master_table (list, clientId, name, type) VALUES (?, ?, ?, ?)',
+      [jsonList, clientId, name, type],
+    );
+  }
+
+  Future<Map<String, dynamic>> getLastRow() async {
+    Database? mydb = await db;
+
+    List<Map<String, dynamic>> rows = await mydb!.query(
+      '''
+      SELECT 'list' FROM 'master_table',
+      ORDER BY: 'list' DESC,
+      LIMIT : 1
+      '''
+    );
+
+    if (rows.isNotEmpty) {
+      // Return the first (and only) row
+      return rows.first;
+    } else {
+      // Handle the case where the table is empty
+      throw Exception('No rows found in the table.');
+    }
+  }
 
 }

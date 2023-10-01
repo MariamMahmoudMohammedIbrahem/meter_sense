@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:intl/intl.dart';
 
 import 'constants.dart';
@@ -147,20 +145,8 @@ void addData() async {
   now = DateTime.now();
   currentTime =DateFormat.yMMMEd().format(now);
   final totalPulses = merge(totalReading,pulses);
-  if(listType=="Electricity"){
-    print("inside electricity");
-    int response = await sqlDb.insertData(
-        '''
-                              INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,`lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
-                              VALUES ("$clientID","$listName","${totalPulses.toString()}","${pulses.toString()}","${totalCredit.toString()}","${currentTarrif.toString()}","${tarrifVersion.toString()}","${valveStatus.toString()}","${leackageFlag.toString()}","${fraudFlag.toString()}","${fraudHours.toString()}","${fraudMinutes.toString()}","${fraudDayOfWeek.toString()}","${fraudDayOfMonth.toString()}","${fraudMonth.toString()}","${fraudYear.toString()}","${totalDebit.toString()}","${currentConsumption.toString()}","${lcHour.toString()}","${lcMinutes.toString()}","${lcDayWeek.toString()}","${lcDayMonth.toString()}","${lcMonth.toString()}","${lcYear.toString()}","${lastChargeValueNumber.toString()}","${month1.toString()}","${month2.toString()}","${month3.toString()}","${month4.toString()}","${month5.toString()}","${month6.toString()}","${warningLimit.toString()}","$currentTime")
-                              '''
-    );
-    print("object:$response");
-    final rez = await sqlDb.readData("SELECT * FROM Electricity");
-    print("outside insertion:$rez");
-  }
-  if(paddingType == "Electricity"){
-    response = await sqlDb.insertData(
+  if(paddingType == "Electricity" || valU == 1){
+    await sqlDb.insertData(
         '''
                               INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,`lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
                               VALUES ("$clientID","$meterName","${totalPulses.toString()}","${pulses.toString()}","${totalCredit.toString()}","${currentTarrif.toString()}","${tarrifVersion.toString()}","${valveStatus.toString()}","${leackageFlag.toString()}","${fraudFlag.toString()}","${fraudHours.toString()}","${fraudMinutes.toString()}","${fraudDayOfWeek.toString()}","${fraudDayOfMonth.toString()}","${fraudMonth.toString()}","${fraudYear.toString()}","${totalDebit.toString()}","${currentConsumption.toString()}","${lcHour.toString()}","${lcMinutes.toString()}","${lcDayWeek.toString()}","${lcDayMonth.toString()}","${lcMonth.toString()}","${lcYear.toString()}","${lastChargeValueNumber.toString()}","${month1.toString()}","${month2.toString()}","${month3.toString()}","${month4.toString()}","${month5.toString()}","${month6.toString()}","${warningLimit.toString()}","$currentTime")
@@ -198,12 +184,26 @@ Future<void> fetchData() async {
 //   return jsonData;
 // }
 String updateMyList(List<int> data, int start, int size) {// start =11 size = 4
-  //i= 11 i<15
-  for (var i = start; i<start+size;i++) {
-    for(var j = 0; j<size;j++){
-      myList[i] = data[j];
-    }
+  //i= 14 i>11
+  for (var i = start+size -1; i>=start;i--) {
+    // for(var j = size - 1; j>=0;j--){
+    size--;
+      myList[i] = data[size];
+    // }
     print("myUpdatedList:$myList");
   }
   return myList.toString();
+}
+List<int> convertBack (int value){
+  List<int> result = [];
+
+  for (int i = 0; i < 4; i++) {
+    result.add(value & 0xFF);
+    value >>= 8;
+  }
+
+  result = result.reversed.toList(); // Reverse the list to get [0, 0, 75, 100]
+
+  print(result); // This will correctly print [0, 0, 75, 100]
+  return result;
 }

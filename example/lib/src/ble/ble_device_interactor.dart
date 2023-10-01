@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 class BleDeviceInteractor {
@@ -76,7 +75,7 @@ class BleDeviceInteractor {
     try {
       _logMessage(
           'Write with response value : $value to ${characteristic.characteristicId}');
-      await _writeWithResponse(characteristic, value: [89]);
+      await _writeWithResponse(characteristic, value: value);
 
     } on Exception catch (e, s) {
       _logMessage(
