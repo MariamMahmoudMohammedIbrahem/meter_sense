@@ -1,6 +1,7 @@
 
 
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -124,6 +125,7 @@ class SqlDb {
     //create master table
     await db.execute('''
     CREATE TABLE "master_table" (
+    'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     'list' TEXT NOT NULL,
     'name' TEXT NOT NULL,
     'clientId' INTEGER NOT NULL,
@@ -200,7 +202,6 @@ class SqlDb {
     return response;
   }
 
-
   //DELETE
   Future<int> deleteData(String sql) async {
     Database? mydb = await db;
@@ -216,10 +217,13 @@ class SqlDb {
   }
 
 // Retrieve the list from the database to send to master station
-  Future<List<int>> getList() async {
+  Future<List<int>> getList(int i) async {
     Database? mydb = await db;
     final List<Map<String, dynamic>> result = await mydb!.rawQuery(
-        'SELECT * FROM master_table');
+        'SELECT * FROM master_table WHERE `id` = ?',
+      [i],
+    );
+    print("rr$result");
     if (result.isNotEmpty) {
       final dynamic jsonListDynamic = result[0]['list'];
       listName = result[0]['name'];
@@ -229,40 +233,31 @@ class SqlDb {
       if (jsonList != null) {
         final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
         myList = dynamicList.cast<int>();
-        myList[0] = 0xA0;
+        myList[0] = 0xAA;
+        if(i==2){
+          subList = myList.sublist(11,15);
+          subList.insert(0, 0x09);
+          final random = Random();
+          subList.insert(5, int.parse('${random.nextInt(255)}'));
+          int sum = subList.fold(0, (previousValue, element) => previousValue + element);
+          subList.add(sum);
+        }
         return myList;
       }
     }
     return [];
   }
 
-  Future<void> saveList(List<int> myList, int clientId, String name, String type) async {
+  Future<void> saveList(int id, List<int> myList, int clientId, String name, String type) async {
     Database? mydb = await db;
     final jsonList = jsonEncode(myList);
     await mydb!.rawInsert(
-      'INSERT OR REPLACE INTO master_table (list, clientId, name, type) VALUES (?, ?, ?, ?)',
-      [jsonList, clientId, name, type],
+      'INSERT OR REPLACE INTO master_table (id, list, clientId, name, type) VALUES (?, ?, ?, ?, ?)',
+      [id, jsonList, clientId, name, type],
     );
   }
-
-  Future<Map<String, dynamic>> getLastRow() async {
-    Database? mydb = await db;
-
-    List<Map<String, dynamic>> rows = await mydb!.query(
-      '''
-      SELECT 'list' FROM 'master_table',
-      ORDER BY: 'list' DESC,
-      LIMIT : 1
-      '''
-    );
-
-    if (rows.isNotEmpty) {
-      // Return the first (and only) row
-      return rows.first;
-    } else {
-      // Handle the case where the table is empty
-      throw Exception('No rows found in the table.');
-    }
-  }
-
+  // Future<void> updateList(int id, String newValue) async {
+  //   Database? mydb = await db;
+  //   await mydb!.rawUpdate('UPDATE master_table SET list = ? WHERE id = ?', [newValue, id]);
+  // }
 }

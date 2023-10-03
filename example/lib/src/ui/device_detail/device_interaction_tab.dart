@@ -9,6 +9,7 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart'
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/dataPage.dart';
+import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
 import 'package:flutter_reactive_ble_example/src/ui/recharge.dart';
 import 'package:functional_data/functional_data.dart';
@@ -40,6 +41,7 @@ class DeviceInteractionTab extends StatelessWidget {
                   discoverServices: () => serviceDiscoverer.discoverServices(device.id)),
               characteristic: characteristic,
               writeWithResponse: interactor.writeCharacteristicWithResponse,
+              writeWithoutResponse: interactor.writeCharacteristicWithoutResponse,
               subscribeToCharacteristic: interactor.subScribeToCharacteristic,
             ),
       );
@@ -81,6 +83,7 @@ class _DeviceInteractionTab extends StatefulWidget {
     required this.viewModel,
     required this.characteristic,
     required this.writeWithResponse,
+    required this.writeWithoutResponse,
     required this.subscribeToCharacteristic,
     Key? key,
   }) : super(key: key);
@@ -90,7 +93,9 @@ class _DeviceInteractionTab extends StatefulWidget {
   final Future<void> Function(
       QualifiedCharacteristic characteristic, List<int> value)
   writeWithResponse;
-
+  final Future<void> Function(
+      QualifiedCharacteristic characteristic, List<int> value)
+  writeWithoutResponse;
   final Stream<List<int>> Function(QualifiedCharacteristic characteristic)
   subscribeToCharacteristic;
 
@@ -106,6 +111,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   void initState() {
     discoveredServices = [];
     subscribeOutput = [];
+    final myInstance = SqlDb();
+    myInstance.getList(2);
     // Define a duration for the interval
     // setState(() {
       // Start a periodic timer that calls your function
@@ -175,13 +182,12 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                   print("start");
                 }
                 calculateElectric(subscribeOutput);
-                sqlDb.saveList(subscribeOutput,clientID.toInt(),meterName, '$paddingType');
+                sqlDb.saveList(1, subscribeOutput,clientID.toInt(),meterName, '$paddingType');
               }
               else if(paddingType == "Water"){
                 calculateWater(subscribeOutput);
                 // sqlDb.saveList(subscribeOutput,);
               }
-
             }
           });
         });
@@ -190,9 +196,20 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     // });
   }
 
-
   Future<void> writeCharacteristicWithResponse() async {
     await widget.writeWithResponse(widget.characteristic, [89]);
+  }
+  Future<void> writeCharacteristicWithoutResponse(List<int> myList) async {
+    int chunkSize = 20;
+    for (int i = 0; i < myList.length; i += chunkSize) {
+      int end = i + chunkSize;
+      if (end > myList.length) {
+        end = myList.length;
+      }
+      List<int> chunk = myList.sublist(i, end);
+      print("Sending chunk: $chunk");
+      await widget.writeWithoutResponse(widget.characteristic, chunk);
+    }
   }
 
   @override
@@ -282,7 +299,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                     padding: const EdgeInsetsDirectional.only(start: 16.0),
                                                     child: Text(
                                                       "Connection: ${widget.viewModel.connectionStatus}",
-                                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                                      style: const TextStyle(fontWeight: FontWeight.bold ,color: Colors.black),
                                                     ),
                                                   ),
                                                   Text(
@@ -440,10 +457,22 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                           foregroundColor: Colors.white,
                                                           disabledBackgroundColor: Colors.purple.shade100,
                                                         ),
-                                                        onPressed: () {
-                                                          // Navigator.of(context).push<void>(
-                                                          //   MaterialPageRoute<void>(builder: (context) => const Recharge()),
-                                                          // );
+                                                        onPressed: () async {
+                                                              if(!widget.viewModel.deviceConnected){
+                                                                widget.viewModel.connect();
+                                                              }
+                                                              else if(widget.viewModel.deviceConnected){
+                                                                print('sublist$subList');
+                                                                // num result = convertToInt(subList, 1, 4);
+                                                                // print(result);
+                                                                widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+                                                                  print("event$event");
+                                                                }, onError: (dynamic error) {
+                                                                  print("error$error");
+                                                                });
+                                                                await widget.writeWithResponse(widget.characteristic,subList);
+                                                              }
+                                                          print("done ");
 
                                                         },
                                                         child: const Text(
@@ -681,6 +710,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               else if(widget.viewModel.deviceConnected){
                 subscribeCharacteristic();
                 writeCharacteristicWithResponse();
+                final myInstance = SqlDb();
+                myInstance.getList(2);
               }
             });
           }),

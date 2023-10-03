@@ -217,28 +217,10 @@ class _DeviceListState extends State<DeviceList> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        num value1 = 193.0;
-                        num value2= 164;
-                        var value3  = value1 + value2;
-                        int decimalNumber = value3.round();
-                        List<int> result = [];
+                        var list3 = addBytesAndHex([0,2,15,200], [0,0,0,2]);
+                        num result2 = convertToInt(list3, 0, 4);
+                        print('res2 : $result2');
 
-                        for (int i = 0; i < 4; i++) {
-                          result.add(decimalNumber & 0xFF);
-                          decimalNumber >>= 8;
-                        }
-
-                        result = result.reversed.toList(); // Reverse the list to get [0, 0, 75, 100]
-
-                        print(result); // This will correctly print [0, 0, 75, 100]
-                        var valzz = convertToInt(result, 0, 4);
-                        print(valzz);
-
-                        // if (kDebugMode) {
-                          // final myInstance = SqlDb(); // Creating an instanc// e of MyClass
-                          // myInstance.getList();
-                          // print("masterList$myList");
-                        // }
                       },
                       child: const Text(
                         "QR Scanning",

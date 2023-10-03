@@ -108,11 +108,6 @@ class _MasterStation extends StatefulWidget {
 }
 
 class _MasterStationState extends State<_MasterStation> {
-  Future<List<Map>> readEle() async {
-    final response  = await sqlDb.readData("SELECT * FROM master_table");
-    print("object$response");
-    return response;
-  }
   StreamSubscription<List<int>>? subscribeStream;
   Future<void> writeCharacteristicWithoutResponse() async {
     int chunkSize = 20;
@@ -133,19 +128,20 @@ class _MasterStationState extends State<_MasterStation> {
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
           //electric tarrif
-          testing = event;
+          // testing = event;
           if(event.first == 0xA3){
             electricTarrif = convertToInt(event, 0, 1);
             print("electric tarrif:$electricTarrif");
           }
           if(event.first == 0xA4){
             electricBalance = convertToInt(event, 0, 1);
-            totalCredit = convertToInt(myList, 11, 4)/100;
-            var value  = electricBalance + totalCredit;
-            int value2 = value.round();
-            testing = convertBack(value2);
-            updateMyList( testing, 11, 4);
-            print("electric balance:$electricBalance");
+            // testing = addBytesAndHex(myList.sublist(11,15), event.sublist(1,5));
+            // if(!enter){
+            //   enter = true;
+              testing = addBytesAndHex(myList.sublist(11,15), event.sublist(1,5));
+            // }
+            updateMyList(event.sublist(1,5), 11, 4);
+            print("electric balance:$event");
           }
           if(event.first == 0xA5){
             waterTarrif = convertToInt(event, 0, 1);
@@ -162,8 +158,7 @@ class _MasterStationState extends State<_MasterStation> {
     subscribeCharacteristic();
     widget.readCharacteristic(widget.characteristic);
     final myInstance = SqlDb();
-    myInstance.getList();
-    readEle();
+    myInstance.getList(1);
     super.initState();
   }
   @override
@@ -301,30 +296,26 @@ class _MasterStationState extends State<_MasterStation> {
                 ),
                 ElevatedButton(
                   onPressed: ()async {
-                    // await subscribeCharacteristic();
-                    // await widget.readCharacteristic(widget.characteristic);
                     final myInstance = SqlDb();
-                    await myInstance.updateData(myList, int.parse('$listClientId'));
-                    // double newTotalCredit = convertToInt(myList, 11, 4) / 100;
-                    // print("newTotalCredit $newTotalCredit");
-                    // await myInstance.updateTotalCredit(int.parse('$listClientId'), "$listName", '$newTotalCredit');
-                    // await myInstance.updateData('''
-                    // UPDATE list_table
-                    // SET list_data = '$myList',
-                    // WHERE clientId = $testclient
-                    // ''');
-                    // calculateElectric(myList);
+                    await myInstance.saveList(2, myList, int.parse('$listClientId'),'$listName', '$listType');
                   },
                   child: const Text("update", style: TextStyle(color: Colors.black),),
                 ),
                 ElevatedButton(
                   onPressed: ()async {
-                    // await readEle();
-                    final myInstance = SqlDb();
-                    await myInstance.getLastRow();
+                    // await widget.subscribeToCharacteristic(widget.characteristic);
+                    await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
                   },
                   child: const Text("update", style: TextStyle(color: Colors.black),),
                 ),
+                // ElevatedButton(
+                //   onPressed: ()async {
+                //     // await readEle();
+                //     // final myInstance = SqlDb();
+                //     // await myInstance.saveList(myList, int.parse('$listClientId'), '$listName', '$listType');
+                //   },
+                //   child: const Text("update", style: TextStyle(color: Colors.black),),
+                // ),
               ],
             ),
           ],

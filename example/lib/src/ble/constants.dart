@@ -6,6 +6,7 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 SqlDb sqlDb = SqlDb();
 bool isFunctionCalled = false;
+bool enter = false;
 List<int> previousEventData = [];
 // electric data
 num clientID = 0;
@@ -176,3 +177,5 @@ dynamic listName = "";
 dynamic listClientId = 0;
 dynamic listType = "";
 late int meterTable;
+List<int> subList =[];
+int lastValue = 0;

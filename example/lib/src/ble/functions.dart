@@ -1,3 +1,4 @@
+import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:intl/intl.dart';
 
 import 'constants.dart';
@@ -205,5 +206,42 @@ List<int> convertBack (int value){
   result = result.reversed.toList(); // Reverse the list to get [0, 0, 75, 100]
 
   print(result); // This will correctly print [0, 0, 75, 100]
+  return result;
+}
+List<int> convertToBytes(int value, int size) {
+  final bytes = List<int>.filled(size, 0);
+
+  for (var i = 0; i < size; i++) {
+    bytes[i] = (value >> (8 * (size - i - 1))) & 0xFF;
+  }
+
+  return bytes;
+}
+List<int> sumLists(List<int> list1, List<int> list2) {
+  final result = List<int>.filled(list1.length, 0);
+  int carry = 0;
+
+  for (int i = list1.length - 1; i >= 0; i--) {
+    final sum = list1[i] + list2[i] + carry;
+    result[i] = sum & 0xFF; // Keep only the lower 8 bits.
+    carry = sum >> 8;       // Get the carry for the next iteration.
+  }
+
+  return result;
+}
+List<int> addBytesAndHex(List<int> byteList, List<int> hexList) {
+  if (byteList.length != hexList.length) {
+    throw ArgumentError("Both lists must have the same length");
+  }
+
+  List<int> result = [];
+
+  for (int i = 0; i < byteList.length; i++) {
+    // Add corresponding elements from both lists
+    int sum = byteList[i] + hexList[i];
+    // Ensure the result stays within the valid byte range (0-255)
+    result.add(sum & 0xFF);
+  }
+
   return result;
 }
