@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -131,17 +132,13 @@ class _MasterStationState extends State<_MasterStation> {
           // testing = event;
           if(event.first == 0xA3){
             electricTarrif = convertToInt(event, 0, 1);
-            print("electric tarrif:$electricTarrif");
+            tarrif = event.sublist(1,12);
+            print(tarrif);
           }
           if(event.first == 0xA4){
             electricBalance = convertToInt(event, 0, 1);
-            // testing = addBytesAndHex(myList.sublist(11,15), event.sublist(1,5));
-            // if(!enter){
-            //   enter = true;
-              testing = addBytesAndHex(myList.sublist(11,15), event.sublist(1,5));
-            // }
-            updateMyList(event.sublist(1,5), 11, 4);
-            print("electric balance:$event");
+            balance = event.sublist(1,5);
+            print(balance);
           }
           if(event.first == 0xA5){
             waterTarrif = convertToInt(event, 0, 1);
@@ -149,6 +146,7 @@ class _MasterStationState extends State<_MasterStation> {
           }
           if(event.first == 0xA6){
             waterBalance = convertToInt(event, 0, 1);
+            balance = event.sublist(1,5);
             print("water balance:$waterBalance");
           }
         });
@@ -157,8 +155,6 @@ class _MasterStationState extends State<_MasterStation> {
     widget.viewModel.connect();
     subscribeCharacteristic();
     widget.readCharacteristic(widget.characteristic);
-    final myInstance = SqlDb();
-    myInstance.getList(1);
     super.initState();
   }
   @override
@@ -178,145 +174,185 @@ class _MasterStationState extends State<_MasterStation> {
             }
           });
         }),
-        child: ListView(
+        child: Column(
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 16.0),
-                  child: Text(
-                    "Connection: ${widget.viewModel.connectionStatus}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
+            SizedBox(height:width*.25),
+            Center(
+              child: DropdownButton<String>(
+                hint: Text(
+                  "Please choose a device",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500),
                 ),
-                Text("list name: $listName"),
-                Text("listClientId: $listClientId"),
-                ElevatedButton(
-                    onPressed: ()async {
-                      if(!widget.viewModel.deviceConnected){
-                        widget.viewModel.connect();
-                      }
-                      else{
-                        await writeCharacteristicWithoutResponse();
-                        print("byteData:$myList");
-                      }
-                    },
-                    child: const Text("get data", style: TextStyle(color: Colors.black),),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          SizedBox(width:width*.07),
-                          const Text(
-                            'ele Tarrif: ',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          Text(
-                            electricTarrif.toString(),
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 17,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width:width*.07),
-                          const Text(
-                            'ele Balance: ',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          Text(
-                            electricBalance.toString(),
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width:width*.07),
-                          const Text(
-                            'water Tarrif: ',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          Text(
-                            waterTarrif.toString(),
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 17,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width:width*.07),
-                          const Text(
-                            'water Balance: ',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
-                          ),
-                          Text(
-                            waterBalance.toString(),
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: ()async {
+                value: selectedName,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedName = newValue!;
                     final myInstance = SqlDb();
-                    await myInstance.saveList(2, myList, int.parse('$listClientId'),'$listName', '$listType');
-                  },
-                  child: const Text("update", style: TextStyle(color: Colors.black),),
+                    myInstance.getList(int.parse('$clientID'),selectedName,type,'none');
+                  });
+                },
+                items: nameList.map((name) {
+                  return DropdownMenuItem<String>(
+                    value: name,
+                    child: Text(name),
+                  );
+                }).toList(),
+              ),
+
+            ),
+            Visibility(
+              visible: selectedName != null,
+              child: Expanded(
+                  child: ListView(
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(start: 16.0),
+                          child: Text(
+                            "Connection: ${widget.viewModel.connectionStatus}",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Text("list name: $selectedName"),
+                        Text("listClientId: $listClientId"),
+                        ElevatedButton(
+                            onPressed: ()async {
+                              if(!widget.viewModel.deviceConnected){
+                                widget.viewModel.connect();
+                              }
+                              else{
+                                await writeCharacteristicWithoutResponse();
+                                print("byteData:$myList");
+                              }
+                            },
+                            child: const Text("get data", style: TextStyle(color: Colors.black),),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  SizedBox(width:width*.07),
+                                  const Text(
+                                    'ele Tarrif: ',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  Text(
+                                    electricTarrif.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  SizedBox(width:width*.07),
+                                  const Text(
+                                    'ele Balance: ',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  Text(
+                                    electricBalance.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  SizedBox(width:width*.07),
+                                  const Text(
+                                    'water Tarrif: ',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  Text(
+                                    waterTarrif.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  SizedBox(width:width*.07),
+                                  const Text(
+                                    'water Balance: ',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  Text(
+                                    waterBalance.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: ()async {
+                            final myInstance = SqlDb();
+                            await myInstance.saveList( balance, int.parse('$listClientId'),'$listName', '$listType' ,'balance');
+                            await myInstance.saveList( tarrif, int.parse('$listClientId'),'$listName', '$listType' ,'tarrif');
+                          },
+                          child: const Text("update", style: TextStyle(color: Colors.black),),
+                        ),
+                        /*ElevatedButton(
+                          onPressed: ()async {
+                            // await widget.subscribeToCharacteristic(widget.characteristic);
+                            // await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
+                            final myInstance = SqlDb();
+                            var finalz = myInstance.getList(int.parse('$clientID'),selectedName,type);
+                            print(finalz);
+                          },
+                          child: const Text("update2", style: TextStyle(color: Colors.black),),
+                        ),*/
+                        // ElevatedButton(
+                        //   onPressed: ()async {
+                        //     // await readEle();
+                        //     // final myInstance = SqlDb();
+                        //     // await myInstance.saveList(myList, int.parse('$listClientId'), '$listName', '$listType');
+                        //   },
+                        //   child: const Text("update", style: TextStyle(color: Colors.black),),
+                        // ),
+                      ],
+                    ),
+                  ],
                 ),
-                ElevatedButton(
-                  onPressed: ()async {
-                    // await widget.subscribeToCharacteristic(widget.characteristic);
-                    await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
-                  },
-                  child: const Text("update", style: TextStyle(color: Colors.black),),
-                ),
-                // ElevatedButton(
-                //   onPressed: ()async {
-                //     // await readEle();
-                //     // final myInstance = SqlDb();
-                //     // await myInstance.saveList(myList, int.parse('$listClientId'), '$listName', '$listType');
-                //   },
-                //   child: const Text("update", style: TextStyle(color: Colors.black),),
-                // ),
-              ],
+              ),
             ),
           ],
         ),

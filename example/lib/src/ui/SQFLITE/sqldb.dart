@@ -123,13 +123,15 @@ class SqlDb {
     )
     ''');
     //create master table
+    //code is balance or tarrif
     await db.execute('''
     CREATE TABLE "master_table" (
     'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     'list' TEXT NOT NULL,
     'name' TEXT NOT NULL,
     'clientId' INTEGER NOT NULL,
-    'type' TEXT NOT NULL
+    'type' TEXT NOT NULL,
+    'process' TEXT NOT NULL
     )
     ''');
   }
@@ -139,6 +141,7 @@ class SqlDb {
     Database? mydb = await db;
     //take returened data from database
     List<Map> response = await mydb!.rawQuery(sql);
+    print("response$response");
     return response;
   }
 
@@ -191,6 +194,7 @@ class SqlDb {
   }
 
   //UPDATE
+  /*
   Future<int> updateData(List<int> myList, int clientId) async {
     Database? mydb = await db;
     //take returened data from database
@@ -201,6 +205,7 @@ class SqlDb {
     print("done");
     return response;
   }
+  */
 
   //DELETE
   Future<int> deleteData(String sql) async {
@@ -217,12 +222,16 @@ class SqlDb {
   }
 
 // Retrieve the list from the database to send to master station
-  Future<List<int>> getList(int i) async {
+  Future<List<int>> getList(int clientId, String? name, String type, String process) async {
     Database? mydb = await db;
     final List<Map<String, dynamic>> result = await mydb!.rawQuery(
-        'SELECT * FROM master_table WHERE `id` = ?',
-      [i],
+        'SELECT * FROM master_table WHERE `clientId` = ? AND `name` = ? AND `type` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ,
+      [clientId,name,type,process],
     );
+    print(clientId);
+    print(name);
+    print(type);
+    print(process);
     print("rr$result");
     if (result.isNotEmpty) {
       final dynamic jsonListDynamic = result[0]['list'];
@@ -233,29 +242,81 @@ class SqlDb {
       if (jsonList != null) {
         final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
         myList = dynamicList.cast<int>();
-        myList[0] = 0xAA;
-        if(i==2){
-          subList = myList.sublist(11,15);
-          subList.insert(0, 0x09);
+        // all data
+        if(process == 'none') {myList[0] = 0xAA;}
+        // balance data
+        else if(process == 'balance'){
+          print("i = 2");
+          myList.insert(0, 0x09);
           final random = Random();
-          subList.insert(5, int.parse('${random.nextInt(255)}'));
-          int sum = subList.fold(0, (previousValue, element) => previousValue + element);
-          subList.add(sum);
+          myList.insert(5, int.parse('${random.nextInt(255)}'));
+          int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+          myList.add(sum);
+        }
+        // tarrif data
+        else if(process == 'tarrif'){
+          print("i = 3");
+          myList.insert(0, 0x10);
+          final random = Random();
+          myList.add(int.parse('${random.nextInt(255)}'));
+          int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+          myList.add(sum);
+          print(myList);
         }
         return myList;
       }
     }
     return [];
   }
+//wrong sotred data
+  /*
+  Future<void> saveList(List<int> myList, int clientId, String name, String type) async {
+    Database? mydb = await db;
+    final jsonList = jsonEncode(myList);
+    final existingRows = await mydb!.rawQuery(
+      'SELECT list FROM master_table WHERE `clientId` = ?',
+      [clientId],
+    );
 
-  Future<void> saveList(int id, List<int> myList, int clientId, String name, String type) async {
+    bool listMatched = false;
+
+    for (final row in existingRows) {
+      List<int> storedList = (jsonDecode(row['list'] as String) as List<dynamic>).cast<int>();
+
+      if (storedList.length == myList.length) {
+        bool listsMatch = true;
+        if (listsMatch) {
+          listMatched = true;
+          break;
+        }
+      }
+    }
+
+    if (listMatched) {
+      await mydb.rawUpdate(
+        'UPDATE master_table SET `list` = ? WHERE name = ? AND type = ? AND clientId = ?',
+        [jsonList, name, type, clientId],
+      );
+      print("Updated");
+    } else {
+      await mydb!.rawInsert(
+        'INSERT INTO master_table (list, clientId, name, type) VALUES (?, ?, ?, ?)',
+        [jsonList, clientId, name, type],
+      );
+      print("Inserted");
+    }
+  }
+*/
+
+  Future<void> saveList(List<int> myList, int clientId, String name, String type, String process) async {
     Database? mydb = await db;
     final jsonList = jsonEncode(myList);
     await mydb!.rawInsert(
-      'INSERT OR REPLACE INTO master_table (id, list, clientId, name, type) VALUES (?, ?, ?, ?, ?)',
-      [id, jsonList, clientId, name, type],
+      'INSERT INTO master_table (list, clientId, name, type, process) VALUES (?, ?, ?, ?, ?)',
+      [ jsonList, clientId, name, type, process],
     );
-  }
+    }
+
   // Future<void> updateList(int id, String newValue) async {
   //   Database? mydb = await db;
   //   await mydb!.rawUpdate('UPDATE master_table SET list = ? WHERE id = ?', [newValue, id]);

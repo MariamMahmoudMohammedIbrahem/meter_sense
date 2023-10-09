@@ -11,6 +11,7 @@ import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/dataPage.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
+import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_list.dart';
 import 'package:flutter_reactive_ble_example/src/ui/recharge.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
@@ -111,11 +112,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   void initState() {
     discoveredServices = [];
     subscribeOutput = [];
-    final myInstance = SqlDb();
-    myInstance.getList(2);
-    // Define a duration for the interval
-    // setState(() {
-      // Start a periodic timer that calls your function
       timer = Timer.periodic(interval, (Timer t) {
         if(!widget.viewModel.deviceConnected){
           widget.viewModel.connect();
@@ -127,8 +123,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         else if(subscribeOutput.length == 72 ){
           t.cancel();
         }
-
-      // });
       if(valveStatus == 1){
         valve = true;
       }
@@ -177,16 +171,21 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               if (kDebugMode) {
                 print("subscribeOutput$subscribeOutput");
               }
-              if(paddingType == "Electricity"){
+              if(paddingType == "Electricity" || (deviceNameController.text.isNotEmpty && type == "Electricity" && deviceNameController.text == meterName)){
                 if (kDebugMode) {
                   print("start");
                 }
-                calculateElectric(subscribeOutput);
-                sqlDb.saveList(1, subscribeOutput,clientID.toInt(),meterName, '$paddingType');
+                if(paddingType != "Electricity"){
+                  sqlDb.saveList( subscribeOutput,clientID.toInt(),meterName, '$paddingType', 'none');
+                }
+                else{
+                  sqlDb.saveList( subscribeOutput,clientID.toInt(),meterName, type, 'none');
+                }
+                // calculateElectric(subscribeOutput);
               }
-              else if(paddingType == "Water"){
+              else if(paddingType == "Water"|| (deviceNameController.text.isNotEmpty&& type == "Water")){
                 calculateWater(subscribeOutput);
-                // sqlDb.saveList(subscribeOutput,);
+                sqlDb.saveList( subscribeOutput,clientID.toInt(),meterName, '$paddingType', 'none');
               }
             }
           });
@@ -199,6 +198,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   Future<void> writeCharacteristicWithResponse() async {
     await widget.writeWithResponse(widget.characteristic, [89]);
   }
+
   Future<void> writeCharacteristicWithoutResponse(List<int> myList) async {
     int chunkSize = 20;
     for (int i = 0; i < myList.length; i += chunkSize) {
@@ -212,6 +212,42 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     }
   }
 
+  void startTimer() {
+    const interval = Duration(seconds:1);
+    final myInstance = SqlDb();
+    bool cond = true;
+    bool cond0 = true;
+    timer = Timer.periodic(interval, (Timer t) async {
+      if (cond) {
+        // Code for sublist 1
+        myInstance.getList(int.parse('$clientID'),meterName,type,'balance');
+        print('sublist1: $myList');
+        if(myList.first == 9){
+          widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+            print("event$event");
+            cond = false;
+          });
+          await widget.writeWithResponse(widget.characteristic, myList);
+        }
+      }
+      else if(cond0){
+        // Code for sublist 2
+        myInstance.getList(int.parse('$clientID'),meterName,type,'tarrif');
+        print('sublist2: $myList');
+        if(myList.first == 16){
+          widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+            print("event2$event");
+            cond0 = false;
+          });
+          await widget.writeWithResponse(widget.characteristic, myList);
+        }
+      }
+      else{
+        print("hiii");
+        t.cancel();
+      }
+    });
+  }
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -450,39 +486,37 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                         ],
                                                       ),
                                                       const SizedBox(width: 30),
-                                                      ElevatedButton(
-                                                        style: ElevatedButton.styleFrom(
-                                                          shape: const StadiumBorder(),
-                                                          backgroundColor: Colors.purple.shade50,
-                                                          foregroundColor: Colors.white,
-                                                          disabledBackgroundColor: Colors.purple.shade100,
-                                                        ),
-                                                        onPressed: () async {
-                                                              if(!widget.viewModel.deviceConnected){
-                                                                widget.viewModel.connect();
-                                                              }
-                                                              else if(widget.viewModel.deviceConnected){
-                                                                print('sublist$subList');
-                                                                // num result = convertToInt(subList, 1, 4);
-                                                                // print(result);
-                                                                widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-                                                                  print("event$event");
-                                                                }, onError: (dynamic error) {
-                                                                  print("error$error");
-                                                                });
-                                                                await widget.writeWithResponse(widget.characteristic,subList);
-                                                              }
-                                                          print("done ");
+                                                      Column(
+                                                        children: [
+                                                          ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(
+                                                              shape: const StadiumBorder(),
+                                                              backgroundColor: Colors.purple.shade50,
+                                                              foregroundColor: Colors.white,
+                                                              disabledBackgroundColor: Colors.purple.shade100,
+                                                            ),
+                                                            onPressed: () async {
+                                                                  if(!widget.viewModel.deviceConnected){
+                                                                    widget.viewModel.connect();
+                                                                  }
+                                                                  else if(widget.viewModel.deviceConnected){
+                                                                    startTimer();
+                                                                    // final myInstance = SqlDb();
+                                                                    // myInstance.getList(int.parse('$clientID'),meterName,type,'balance');
+                                                                  }
+                                                              print("done ");
 
-                                                        },
-                                                        child: const Text(
-                                                          'Recharge',
-                                                          style: TextStyle(
-                                                            color: Colors.black,
-                                                            fontWeight: FontWeight.bold,
-                                                            fontSize: 16,
+                                                            },
+                                                            child: const Text(
+                                                              'Recharge',
+                                                              style: TextStyle(
+                                                                color: Colors.black,
+                                                                fontWeight: FontWeight.bold,
+                                                                fontSize: 16,
+                                                              ),
+                                                            ),
                                                           ),
-                                                        ),
+                                                        ],
                                                       ),
                                                       const SizedBox(
                                                         width: 1,
@@ -710,8 +744,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               else if(widget.viewModel.deviceConnected){
                 subscribeCharacteristic();
                 writeCharacteristicWithResponse();
-                final myInstance = SqlDb();
-                myInstance.getList(2);
+                // final myInstance = SqlDb();
+                // myInstance.getList(2);
               }
             });
           }),

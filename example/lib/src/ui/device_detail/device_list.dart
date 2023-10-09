@@ -17,7 +17,7 @@ import 'device_interaction_tab.dart';
 part 'device_list.g.dart';
 //ignore_for_file: annotate_overrides
 
-
+late TextEditingController deviceNameController;
 class DeviceListScreen extends StatelessWidget {
   const DeviceListScreen({Key? key}) : super(key: key);
 
@@ -78,11 +78,10 @@ class DeviceList extends StatefulWidget {
 }
 
 class _DeviceListState extends State<DeviceList> {
-  late TextEditingController _deviceNameController;
 
   @override
   void initState() {
-    _deviceNameController = TextEditingController();
+    deviceNameController = TextEditingController();
     fetchData();
     if (!widget.scannerState.scanIsInProgress) {
       _startScanning();
@@ -95,12 +94,13 @@ class _DeviceListState extends State<DeviceList> {
   @override
   void dispose() {
     widget.stopScan();
-    _deviceNameController.dispose();
+    deviceNameController.dispose();
+    valU = -1;
     super.dispose();
   }
 
   void _startScanning() {
-    final text = _deviceNameController.text;
+    final text = deviceNameController.text;
     widget.startScan(text.isEmpty ? [] : [Uuid.parse(text)]);
   }
 
@@ -108,7 +108,7 @@ class _DeviceListState extends State<DeviceList> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
-    final deviceNameText = _deviceNameController.text;
+    final deviceNameText = deviceNameController.text;
     // final isMasterStation = deviceNameText == "MasterStation";
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -178,7 +178,7 @@ class _DeviceListState extends State<DeviceList> {
                     SizedBox(
                       width: width * 0.5,
                       child: TextField(
-                        controller: _deviceNameController,
+                        controller: deviceNameController,
                         decoration: InputDecoration(
                           border: UnderlineInputBorder(
                             borderSide: BorderSide(
@@ -217,10 +217,8 @@ class _DeviceListState extends State<DeviceList> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        var list3 = addBytesAndHex([0,2,15,200], [0,0,0,2]);
-                        num result2 = convertToInt(list3, 0, 4);
-                        print('res2 : $result2');
-
+                          sqlDb.readData("SELECT * FROM master_table ORDER BY id DESC");
+                          // print("object$response");
                       },
                       child: const Text(
                         "QR Scanning",
@@ -238,15 +236,16 @@ class _DeviceListState extends State<DeviceList> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     children: widget.scannerState.discoveredDevices.where((device)=>
-
-                      (device.name == deviceNameText || device.name == name || device.name == "MasterStation") &&
+                      (device.name == deviceNameText || nameList.contains(device.name) || device.name == "MasterStation") &&
                           (device.name != ""  ) ,
                     )
                         .map(
-                          (device) => ElevatedButton(
+                          (device) {
+                            return  ElevatedButton(
                             onPressed: () async {
                               widget.stopScan();
                               await widget.deviceConnector.connect(device.id);
+                              valU = -1;
                               if (device.name == "MasterStation") {
                                 DEVID = device.id;
                                 await Navigator.push<void>(
@@ -263,7 +262,7 @@ class _DeviceListState extends State<DeviceList> {
 
                                     ),
                                   ),
-                                ).then((value) => _deviceNameController.clear());
+                                ).then((value) => deviceNameController.clear());
                               }
                               else {
                                 dataStored = device;
@@ -287,7 +286,7 @@ class _DeviceListState extends State<DeviceList> {
                                       ),
                                     ),
                                   ),
-                                ).then((value) => _deviceNameController.clear());
+                                ).then((value) => deviceNameController.clear());
                               }
                             },
                             child: Text(
@@ -298,7 +297,7 @@ class _DeviceListState extends State<DeviceList> {
                                 fontSize: 16,
                               ),
                             ),
-                          ),
+                          );},
                     )
                         .toList(),
                   ),
