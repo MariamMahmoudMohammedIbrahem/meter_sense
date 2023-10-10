@@ -180,7 +180,7 @@ class SqlDb {
           }
         }).toList();
       } else {
-        eleReadings = [0.0];
+        eleReadings = [];
       }
       print("readings$eleReadings");
     }

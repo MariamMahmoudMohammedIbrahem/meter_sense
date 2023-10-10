@@ -132,20 +132,25 @@ class _MasterStationState extends State<_MasterStation> {
           if(event.first == 0xA3){
             electricTarrif = convertToInt(event, 0, 1);
             tarrif = event.sublist(1,12);
+            cond0 = true;
             print(tarrif);
           }
           if(event.first == 0xA4){
             electricBalance = convertToInt(event, 0, 1);
             balance = event.sublist(1,5);
+            cond = true;
             print(balance);
           }
           if(event.first == 0xA5){
             waterTarrif = convertToInt(event, 0, 1);
+            tarrif = event.sublist(1,12);
+            cond0 = true;
             print("water tarrif:$waterTarrif");
           }
           if(event.first == 0xA6){
             waterBalance = convertToInt(event, 0, 1);
             balance = event.sublist(1,5);
+            cond = true;
             print("water balance:$waterBalance");
           }
         });

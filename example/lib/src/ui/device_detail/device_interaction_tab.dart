@@ -223,9 +223,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   void startTimer() {
     const interval = Duration(seconds:1);
     final myInstance = SqlDb();
-    bool cond = true;
-    bool cond0 = true;
     timer = Timer.periodic(interval, (Timer t) async {
+      // cond => balance
       if (cond) {
         // Code for sublist 1
         myInstance.getList(meterName,'balance');
@@ -238,6 +237,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
           await widget.writeWithResponse(widget.characteristic, myList);
         }
       }
+      // cond0 => tarrif
       else if(cond0){
         // Code for sublist 2
         myInstance.getList(meterName,'tarrif');
@@ -329,6 +329,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                       shrinkWrap: true,
                                       itemBuilder: (context,i){
                                         if(snapshot.data![i]['type'] == "Electricity"){
+                                          eleName = snapshot.data![i]['name'].toString();
                                           return Padding(
                                             padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
                                             child: ElevatedButton(
@@ -528,6 +529,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                           );
                                         }
                                         else{
+                                          watName = snapshot.data![i]['name'].toString();
                                           return Padding(
                                             padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
                                             child: ElevatedButton(
@@ -540,7 +542,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                               ),
                                               onPressed: (){
                                                 Navigator.of(context).push<void>(
-                                                  MaterialPageRoute<void>(builder: (context) => const StoreData()),
+                                                  MaterialPageRoute<void>(builder: (context) => const WaterData()),
                                                 );
                                               },
                                               child: Column(
@@ -699,8 +701,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                               }
                                                               else if(widget.viewModel.deviceConnected){
                                                                 startTimer();
-                                                                // final myInstance = SqlDb();
-                                                                // myInstance.getList(int.parse('$clientID'),meterName,type,'balance');
                                                               }
                                                               print("done ");
 

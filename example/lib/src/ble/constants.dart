@@ -191,3 +191,7 @@ int selectedValue = -1; // Initialize with a default
 String? time;
 String? month;
 var monthList = <String>[];
+String eleName = '';
+String watName = '';
+bool cond = false;
+bool cond0 = false;

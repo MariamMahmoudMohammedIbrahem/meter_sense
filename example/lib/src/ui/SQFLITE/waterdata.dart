@@ -28,12 +28,6 @@ class _WaterDataState extends State<WaterData> {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          sqlDb.mydeleteDatabase();
-        },
-        child: const Icon(Icons.add),
-      ),
       bottomNavigationBar: CurvedNavigationBar(
         index: 2,
         items: const [
@@ -87,44 +81,86 @@ class _WaterDataState extends State<WaterData> {
               child: Column(
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(
-                      left: width * .05,
-                      right: width * .05,
-                      top: 10,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Column(
-                          children: [
-                            Text(
-                              'Usage',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                    padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18.0),
+                          border: Border.all(width: 1,color: Colors.deepPurple.shade100,)
+                      ),
+                      child: Column(
+                        children: [
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Text(watName, style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20)),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: width * .07,
+                              right: width * .07,
+                              top: 10,
+                            ),
+                            child: Divider(
+                              height: 1,
+                              thickness: 1,
+                              indent: 0,
+                              endIndent: 10,
+                              color: Colors.deepPurple.shade50,
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Row(
+                            children: [
+                              Row(
+                                children: [
+                                  SizedBox(width:width*.07),
+                                  const Text(
+                                    'Current Tarrif: ',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  Text(
+                                    currentTarrif.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            Text(
-                              'value',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 17,
+
+                              Row(
+                                children: [
+                                  SizedBox(width:width*.07),
+                                  const Text(
+                                    'Your Balance: ',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  Text(
+                                    totalCredit.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Date',
-                              style: TextStyle(color: Colors.black, fontSize: 17),
-                            ),
-                            Text(today),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Padding(

@@ -97,47 +97,67 @@ class _StoreDataState extends State<StoreData> {
                           const SizedBox(
                             height: 10,
                           ),
-                          Row(
-                            children: [
-                              SizedBox(width:width*.07),
-                              const Text(
-                                'Current Tarrif: ',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              Text(
-                                currentTarrif.toString(),
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 17,
-                                ),
-                              ),
-                            ],
+                          Text(eleName, style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20)),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: width * .07,
+                              right: width * .07,
+                              top: 10,
+                            ),
+                            child: Divider(
+                              height: 1,
+                              thickness: 1,
+                              indent: 0,
+                              endIndent: 10,
+                              color: Colors.deepPurple.shade50,
+                            ),
                           ),
                           const SizedBox(
                             height: 10,
                           ),
                           Row(
                             children: [
-                              SizedBox(width:width*.07),
-                              const Text(
-                                'Your Balance: ',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
+                              Row(
+                                children: [
+                                  SizedBox(width:width*.07),
+                                  const Text(
+                                    'Current Tarrif: ',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  Text(
+                                    currentTarrif.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                totalCredit.toString(),
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 17,
-                                ),
+
+                              Row(
+                                children: [
+                                  SizedBox(width:width*.07),
+                                  const Text(
+                                    'Your Balance: ',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  Text(
+                                    totalCredit.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -184,33 +204,13 @@ class _StoreDataState extends State<StoreData> {
                     ),
                   ),
                   const SizedBox(height: 5,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      const Text(
-                        'History',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 70,
-                        height: 34,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState((){
-                              showAvg = !showAvg;
-                            });
-                          },
-                          child:  Text(
-                            showAvg?'main':'avg',
-                            style: const TextStyle(color: Colors.black),
-                          ),
-                        ),
-                      ),
-                    ],
+                  const Text(
+                    'History',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                   const SizedBox(height: 5,),
                   Expanded(
