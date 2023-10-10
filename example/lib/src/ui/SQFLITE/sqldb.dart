@@ -145,44 +145,83 @@ class SqlDb {
     return response;
   }
 
-  Future<void> editingList() async {
+  Future<void> editingList(int i) async {
     Database? mydb = await db;
-    const query = '''
+    if(i == 1){
+      const query = '''
     SELECT `month1`,`month2`,`month3`,`month4`,`month5`,`month6` 
     FROM Electricity
-    ORDER BY `month1` DESC  
+    ORDER BY `id` DESC  
     LIMIT 1
   ''';
-
-    final response = await mydb!.rawQuery(query);
-    print("res:$response");
-    if (response.isNotEmpty) {
-      final map = response.first;
-      readings = [
-        map['month1'],
-        map['month2'],
-        map['month3'],
-        map['month4'],
-        map['month5'],
-        map['month6'],
-      ].map((value) {
-        if (value is double) {
-          return value;
-        } else if (value is String) {
-          final parsedValue = double.tryParse(value);
-          if (parsedValue != null) {
-            return parsedValue;
+      final response = await mydb!.rawQuery(query);
+      print("res:$response");
+      if (response.isNotEmpty) {
+        final map = response.first;
+        eleReadings = [
+          map['month1'],
+          map['month2'],
+          map['month3'],
+          map['month4'],
+          map['month5'],
+          map['month6'],
+        ].map((value) {
+          if (value is double) {
+            return value;
+          } else if (value is String) {
+            final parsedValue = double.tryParse(value);
+            if (parsedValue != null) {
+              return parsedValue;
+            } else {
+              return 0.0;
+            }
           } else {
             return 0.0;
           }
-        } else {
-          return 0.0;
-        }
-      }).toList();
-    } else {
-      readings = [0.0];
+        }).toList();
+      } else {
+        eleReadings = [0.0];
+      }
+      print("readings$eleReadings");
     }
-    print("readings$readings");
+    else{
+      const query = '''
+    SELECT `month1`,`month2`,`month3`,`month4`,`month5`,`month6` 
+    FROM Water
+    ORDER BY `id` DESC  
+    LIMIT 1
+  ''';
+
+      final response = await mydb!.rawQuery(query);
+      print("res:$response");
+      if (response.isNotEmpty) {
+        final map = response.first;
+        watReadings = [
+          map['month1'],
+          map['month2'],
+          map['month3'],
+          map['month4'],
+          map['month5'],
+          map['month6'],
+        ].map((value) {
+          if (value is double) {
+            return value;
+          } else if (value is String) {
+            final parsedValue = double.tryParse(value);
+            if (parsedValue != null) {
+              return parsedValue;
+            } else {
+              return 0.0;
+            }
+          } else {
+            return 0.0;
+          }
+        }).toList();
+      } else {
+        watReadings = [0.0];
+      }
+      print("readings$watReadings");
+    }
   }
 
   //INSERT
@@ -222,28 +261,25 @@ class SqlDb {
   }
 
 // Retrieve the list from the database to send to master station
-  Future<List<int>> getList(int clientId, String? name, String type, String process) async {
+  Future<List<int>> getList(String? name,  String process) async {
     Database? mydb = await db;
     final List<Map<String, dynamic>> result = await mydb!.rawQuery(
-        'SELECT * FROM master_table WHERE `clientId` = ? AND `name` = ? AND `type` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ,
-      [clientId,name,type,process],
+        'SELECT * FROM master_table WHERE `name` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ,
+      [name,process],
     );
-    print(clientId);
-    print(name);
-    print(type);
-    print(process);
     print("rr$result");
     if (result.isNotEmpty) {
       final dynamic jsonListDynamic = result[0]['list'];
       listName = result[0]['name'];
       listClientId = result[0]['clientId'];
       listType = result[0]['type'];
+      print("listType$listType");
       final String? jsonList = jsonListDynamic as String?;
       if (jsonList != null) {
         final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
         myList = dynamicList.cast<int>();
         // all data
-        if(process == 'none') {myList[0] = 0xAA;}
+        if(process == 'none') {myList[0] = 0xA0;}
         // balance data
         else if(process == 'balance'){
           print("i = 2");

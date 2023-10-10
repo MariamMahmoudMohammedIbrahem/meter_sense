@@ -12,7 +12,6 @@ import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/dataPage.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_list.dart';
-import 'package:flutter_reactive_ble_example/src/ui/recharge.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
 
@@ -74,9 +73,9 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
     deviceConnector.connect(deviceId);
   }
 
-// void disconnect() {
-//   deviceConnector.disconnect(deviceId);
-// }
+void disconnect() {
+  deviceConnector.disconnect(deviceId);
+}
 }
 
 class _DeviceInteractionTab extends StatefulWidget {
@@ -117,6 +116,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
           widget.viewModel.connect();
         }
         else if(subscribeOutput.length != 72 ){
+          print('in init');
           subscribeCharacteristic();
           writeCharacteristicWithResponse();
         }
@@ -144,6 +144,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   @override
   void dispose() {
     subscribeStream?.cancel();
+    widget.viewModel.disconnect();
     super.dispose();
     timer.cancel();
   }
@@ -159,6 +160,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
           setState(() {
             if (subscribeOutput.length < 72) {
               final equal = newEventData.length == previousEventData.length && newEventData.every(previousEventData.contains);
+              print("equal$equal");
               if (!equal) {
                 subscribeOutput += newEventData ;
                 previousEventData = newEventData;
@@ -175,17 +177,23 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                 if (kDebugMode) {
                   print("start");
                 }
-                if(paddingType != "Electricity"){
+                calculateElectric(subscribeOutput);
+                if(paddingType == "Electricity"){
                   sqlDb.saveList( subscribeOutput,clientID.toInt(),meterName, '$paddingType', 'none');
                 }
                 else{
                   sqlDb.saveList( subscribeOutput,clientID.toInt(),meterName, type, 'none');
                 }
-                // calculateElectric(subscribeOutput);
               }
-              else if(paddingType == "Water"|| (deviceNameController.text.isNotEmpty&& type == "Water")){
+              else if(paddingType == "Water"|| (deviceNameController.text.isNotEmpty&& type == "Water" && deviceNameController.text == meterName)){
+
                 calculateWater(subscribeOutput);
-                sqlDb.saveList( subscribeOutput,clientID.toInt(),meterName, '$paddingType', 'none');
+                if(paddingType == "Water"){
+                  sqlDb.saveList( subscribeOutput,clientIDWater.toInt(),meterName, '$paddingType', 'none');
+                }
+                else{
+                  sqlDb.saveList( subscribeOutput,clientIDWater.toInt(),meterName, type, 'none');
+                }
               }
             }
           });
@@ -220,7 +228,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     timer = Timer.periodic(interval, (Timer t) async {
       if (cond) {
         // Code for sublist 1
-        myInstance.getList(int.parse('$clientID'),meterName,type,'balance');
+        myInstance.getList(meterName,'balance');
         print('sublist1: $myList');
         if(myList.first == 9){
           widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
@@ -232,7 +240,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       }
       else if(cond0){
         // Code for sublist 2
-        myInstance.getList(int.parse('$clientID'),meterName,type,'tarrif');
+        myInstance.getList(meterName,'tarrif');
         print('sublist2: $myList');
         if(myList.first == 16){
           widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
@@ -304,6 +312,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                     Flexible(
                       child: ListView(
                         children: [
+                          ElevatedButton(
+                              onPressed: (){
+                                widget.viewModel.disconnect();
+                                Navigator.pop(context);
+                              },
+                              child: Text("Log Out"),
+                          ),
                           FutureBuilder(
                               future: readData(),
                               builder: (BuildContext context, AsyncSnapshot<List<Map>> snapshot){
@@ -346,22 +361,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                       fontSize: 18,
                                                     ),
                                                   ),
-                                                  Row(
-                                                    children: [
-                                                      SizedBox(width:width*.07),
-                                                      const Text(
-                                                        'valve status ',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 18,
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                          child: valve?const Icon(Icons.lock_outlined,color: Colors.red,):const Icon(Icons.lock_open_outlined,color: Colors.green,),
-                                                      ),
-                                                    ],
-                                                  ),
                                                   const SizedBox(
                                                     height: 10,
                                                   ),
@@ -377,7 +376,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                         ),
                                                       ),
                                                       Text(
-                                                        currentTarrif.toString(),
+                                                        currentTarrifWater.toString(),
                                                         style: const TextStyle(
                                                           color: Colors.black,
                                                           fontSize: 17,
@@ -530,7 +529,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                         }
                                         else{
                                           return Padding(
-                                            padding: EdgeInsets.symmetric(horizontal:width*.07),
+                                            padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
                                             child: ElevatedButton(
                                               style: ElevatedButton.styleFrom(
                                                 shape: RoundedRectangleBorder(
@@ -541,30 +540,25 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                               ),
                                               onPressed: (){
                                                 Navigator.of(context).push<void>(
-                                                  MaterialPageRoute<void>(builder: (context) => const WaterData()),
+                                                  MaterialPageRoute<void>(builder: (context) => const StoreData()),
                                                 );
                                               },
                                               child: Column(
                                                 children: [
-                                                  Row(
-                                                    children: [
-                                                      SizedBox(width:width*.08),
-                                                      const Text(
-                                                        'Meter Name: ',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 18,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        'waterSN',
-                                                        style: const TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 17,
-                                                        ),
-                                                      ),
-                                                    ],
+                                                  Padding(
+                                                    padding: const EdgeInsetsDirectional.only(start: 16.0),
+                                                    child: Text(
+                                                      "Connection: ${widget.viewModel.connectionStatus}",
+                                                      style: const TextStyle(fontWeight: FontWeight.bold ,color: Colors.black),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    'Meter Name: ${snapshot.data![i]['name'].toString()}',
+                                                    style: const TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 18,
+                                                    ),
                                                   ),
                                                   const SizedBox(
                                                     height: 10,
@@ -616,7 +610,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                                     'icons/waterToday.png'),
                                                               ),
                                                               Text(
-                                                                currentConsumptionWater.toString(),
+                                                                currentConsumption.toString(),
                                                                 style: const TextStyle(
                                                                   color: Colors.black,
                                                                   fontSize: 17,
@@ -645,7 +639,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                                     'icons/waterMonth.png'),
                                                               ),
                                                               Text(
-                                                                totalCreditWater.toString(),
+                                                                totalReadingWater.toString(),
                                                                 style: const TextStyle(
                                                                   color: Colors.black,
                                                                   fontSize: 17,
@@ -690,26 +684,37 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                         ],
                                                       ),
                                                       const SizedBox(width: 30),
-                                                      ElevatedButton(
-                                                        style: ElevatedButton.styleFrom(
-                                                          shape: const StadiumBorder(),
-                                                          backgroundColor: Colors.purple.shade50,
-                                                          foregroundColor: Colors.white,
-                                                          disabledBackgroundColor: Colors.purple.shade100,
-                                                        ),
-                                                        onPressed: () {
-                                                          Navigator.of(context).push<void>(
-                                                            MaterialPageRoute<void>(builder: (context) => const Recharge()),
-                                                          );
-                                                        },
-                                                        child: const Text(
-                                                          'Recharge',
-                                                          style: TextStyle(
-                                                            color: Colors.black,
-                                                            fontWeight: FontWeight.bold,
-                                                            fontSize: 16,
+                                                      Column(
+                                                        children: [
+                                                          ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(
+                                                              shape: const StadiumBorder(),
+                                                              backgroundColor: Colors.purple.shade50,
+                                                              foregroundColor: Colors.white,
+                                                              disabledBackgroundColor: Colors.purple.shade100,
+                                                            ),
+                                                            onPressed: () async {
+                                                              if(!widget.viewModel.deviceConnected){
+                                                                widget.viewModel.connect();
+                                                              }
+                                                              else if(widget.viewModel.deviceConnected){
+                                                                startTimer();
+                                                                // final myInstance = SqlDb();
+                                                                // myInstance.getList(int.parse('$clientID'),meterName,type,'balance');
+                                                              }
+                                                              print("done ");
+
+                                                            },
+                                                            child: const Text(
+                                                              'Recharge',
+                                                              style: TextStyle(
+                                                                color: Colors.black,
+                                                                fontWeight: FontWeight.bold,
+                                                                fontSize: 16,
+                                                              ),
+                                                            ),
                                                           ),
-                                                        ),
+                                                        ],
                                                       ),
                                                       const SizedBox(
                                                         width: 1,

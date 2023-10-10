@@ -19,6 +19,11 @@ class _WaterDataState extends State<WaterData> {
     return response;
   }
   @override
+  void initState() {
+    sqlDb.editingList(2);
+    super.initState();
+  }
+  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
@@ -87,10 +92,10 @@ class _WaterDataState extends State<WaterData> {
                       right: width * .05,
                       top: 10,
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
+                        const Column(
                           children: [
                             Text(
                               'Usage',
@@ -109,9 +114,15 @@ class _WaterDataState extends State<WaterData> {
                             ),
                           ],
                         ),
-                        Text(
-                          'Date',
-                          style: TextStyle(color: Colors.black, fontSize: 17),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'Date',
+                              style: TextStyle(color: Colors.black, fontSize: 17),
+                            ),
+                            Text(today),
+                          ],
                         ),
                       ],
                     ),
@@ -132,7 +143,7 @@ class _WaterDataState extends State<WaterData> {
                       child: Padding(
                         padding: const EdgeInsets.only(left:8.0,right:8.0,top: 8.0,),
                         child: LineChart(
-                          mainData(),
+                          mainDataWater(),
                         ),
                       ),
                     ),
@@ -184,8 +195,8 @@ class _WaterDataState extends State<WaterData> {
                                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                               children: [
                                                 Text("${snapshot.data![i]['time']}"),
-                                                const Text("ClientID:",),
-                                                Text("${snapshot.data![i]['data']}"),
+                                                const Text("Balance:",),
+                                                Text("${snapshot.data![i]['totalCredit']}"),
                                               ],
                                             ),
                                           ),
@@ -205,3 +216,77 @@ class _WaterDataState extends State<WaterData> {
       ),
     );}
 }
+LineChartData mainDataWater() => LineChartData(
+  backgroundColor: Colors.transparent,
+  gridData: FlGridData(
+    show: true,
+    drawVerticalLine: true,
+    horizontalInterval: 10,
+    verticalInterval: 1,
+    getDrawingHorizontalLine: (value) => const FlLine(
+      color: Colors.grey,
+      strokeWidth: 1,
+    ),
+    getDrawingVerticalLine: (value) => const FlLine(
+      color: Colors.grey,
+      strokeWidth: 1,
+    ),
+  ),
+  titlesData: const FlTitlesData(
+    show: true,
+    rightTitles: AxisTitles(
+      sideTitles: SideTitles(showTitles: false),
+    ),
+    topTitles: AxisTitles(
+      sideTitles: SideTitles(showTitles: false),
+    ),
+    bottomTitles: AxisTitles(
+      sideTitles: SideTitles(
+        showTitles: true,
+        reservedSize: 30,
+        interval: 1,
+        getTitlesWidget: bottomTitleWidgets,
+      ),
+    ),
+    leftTitles: AxisTitles(
+      sideTitles: SideTitles(
+        showTitles: true,
+        interval: 1,
+        getTitlesWidget: leftTitleWidgets,
+        reservedSize: 42,
+      ),
+    ),
+  ),
+  //outline border
+  borderData: FlBorderData(
+    show: true,
+    border: Border.all(color: Colors.grey),
+  ),
+  minX: 0,
+  maxX: 5,
+  minY: 0,
+  maxY: 100,
+  lineBarsData: [
+    LineChartBarData(
+      spots: watReadings.map((e)=>FlSpot(watReadings.indexOf(e).toDouble(), e)).toList(),
+      isCurved: true,
+      gradient: LinearGradient(
+        colors: gradientColors,
+      ),
+      // width of curve
+      barWidth: 5,
+      isStrokeCapRound: false,
+      dotData: const FlDotData(
+        show: true,
+      ),
+      belowBarData: BarAreaData(
+        show: true,
+        gradient: LinearGradient(
+          colors: gradientColors
+              .map((color) => color.withOpacity(0.3))
+              .toList(),
+        ),
+      ),
+    ),
+  ],
+);

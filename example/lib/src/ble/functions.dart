@@ -1,4 +1,3 @@
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:intl/intl.dart';
 
 import 'constants.dart';
@@ -97,6 +96,7 @@ void calculateElectric(List<int> subscribeOutput) {
 }
 
 void calculateWater(List<int> subscribeOutput) {
+  print("object in water");
   clientIDWater = convertToInt(subscribeOutput, 1, 4);
   pulsesWater = convertToInt(subscribeOutput, 9, 2);
   totalCreditWater = convertToInt(subscribeOutput, 11, 4)/100;
@@ -122,12 +122,12 @@ void calculateWater(List<int> subscribeOutput) {
   lastChargeValueNumberWater = convertToInt(subscribeOutput, 41, 5);
   month1Water = convertToInt(subscribeOutput, 46, 4);
   month2Water = convertToInt(subscribeOutput, 50, 4);
-  month3Water = convertToInt(subscribeOutput, 54, 4);
-  month4Water = convertToInt(subscribeOutput, 58, 4);
-  month5Water = convertToInt(subscribeOutput, 62, 4);
-  month6Water = convertToInt(subscribeOutput, 66, 4);
-  warningLimitWater = convertToInt(subscribeOutput, 70, 1);
-  checkSumWater = convertToInt(subscribeOutput, 71, 1);
+  // month3Water = convertToInt(subscribeOutput, 54, 4);
+  // month4Water = convertToInt(subscribeOutput, 58, 4);
+  // month5Water = convertToInt(subscribeOutput, 62, 4);
+  // month6Water = convertToInt(subscribeOutput, 66, 4);
+  // warningLimitWater = convertToInt(subscribeOutput, 70, 1);
+  // checkSumWater = convertToInt(subscribeOutput, 71, 1);
   callFunctionOnce();
 }
 void callFunctionOnce() {
@@ -145,23 +145,34 @@ double merge (num value1, num value2){
 void addData() async {
   now = DateTime.now();
   currentTime =DateFormat.yMMMEd().format(now);
+  today = DateFormat('dd-MM-yyyy').format(now);
+  monthList.clear();
+  for (int i = 0; i < 6; i++) {
+    final previousMonth = now.subtract(Duration(days: 30 * i)); // Subtract days for each previous month.
+    final formattedMonth = DateFormat.MMM().format(previousMonth);
+    monthList.add(formattedMonth);
+  }
+  print('Month from database: $monthList');
+
+
   final totalPulses = merge(totalReading,pulses);
-  if(paddingType == "Electricity" || valU == 1){
+  final totalPulsesWater = merge(totalReadingWater,pulsesWater);
+  if(paddingType == "Electricity" || type == "Electricity"){
     await sqlDb.insertData(
         '''
                               INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,`lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
                               VALUES ("$clientID","$meterName","${totalPulses.toString()}","${pulses.toString()}","${totalCredit.toString()}","${currentTarrif.toString()}","${tarrifVersion.toString()}","${valveStatus.toString()}","${leackageFlag.toString()}","${fraudFlag.toString()}","${fraudHours.toString()}","${fraudMinutes.toString()}","${fraudDayOfWeek.toString()}","${fraudDayOfMonth.toString()}","${fraudMonth.toString()}","${fraudYear.toString()}","${totalDebit.toString()}","${currentConsumption.toString()}","${lcHour.toString()}","${lcMinutes.toString()}","${lcDayWeek.toString()}","${lcDayMonth.toString()}","${lcMonth.toString()}","${lcYear.toString()}","${lastChargeValueNumber.toString()}","${month1.toString()}","${month2.toString()}","${month3.toString()}","${month4.toString()}","${month5.toString()}","${month6.toString()}","${warningLimit.toString()}","$currentTime")
-                              '''
+        '''
     );
   }
-  /*if(valU == 2){
-    response = await sqlDb.insertData(
+  if(paddingType == "Water" ||type == "Water"){
+    await sqlDb.insertData(
         '''
-                              INSERT INTO Water (`data`,`time`)
-                              VALUES ("${clientID.toString()}","$currentTime")
-                              '''
+                              INSERT INTO Water (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,`lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
+                              VALUES ("$clientIDWater","$meterName","${totalPulsesWater.toString()}","${pulsesWater.toString()}","${totalCreditWater.toString()}","${currentTarrifWater.toString()}","${tarrifVersionWater.toString()}","${valveStatusWater.toString()}","${leackageFlagWater.toString()}","${fraudFlagWater.toString()}","${fraudHoursWater.toString()}","${fraudMinutesWater.toString()}","${fraudDayOfWeekWater.toString()}","${fraudDayOfMonthWater.toString()}","${fraudMonthWater.toString()}","${fraudYearWater.toString()}","${totalDebitWater.toString()}","${currentConsumptionWater.toString()}","${lcHourWater.toString()}","${lcMinutesWater.toString()}","${lcDayWeekWater.toString()}","${lcDayMonthWater.toString()}","${lcMonthWater.toString()}","${lcYearWater.toString()}","${lastChargeValueNumberWater.toString()}","${month1Water.toString()}","${month2Water.toString()}","${month3Water.toString()}","${month4Water.toString()}","${month5Water.toString()}","${month6Water.toString()}","${warningLimitWater.toString()}","$currentTime")
+        '''
     );
-  }*/
+  }
 }
 
 // read all data from meter
@@ -173,9 +184,9 @@ Future<List<Map>> readData() async {
 Future<void> fetchData() async {
   final testing = await readData();
   for (Map<dynamic, dynamic> map in testing) {
-    name = map['name'];
-    nameList.add(name.toString());
-    meterType = map['type'];
+    nameList.add(map['name'].toString());
+    name.add(map['name'].toString());
+    typeList.add(map['type'].toString());
   }
 }
 

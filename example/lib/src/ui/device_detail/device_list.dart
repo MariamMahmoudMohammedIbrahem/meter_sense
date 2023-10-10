@@ -240,8 +240,7 @@ class _DeviceListState extends State<DeviceList> {
                           (device.name != ""  ) ,
                     )
                         .map(
-                          (device) {
-                            return  ElevatedButton(
+                          (device) => ElevatedButton(
                             onPressed: () async {
                               widget.stopScan();
                               await widget.deviceConnector.connect(device.id);
@@ -273,7 +272,12 @@ class _DeviceListState extends State<DeviceList> {
                                         VALUES ("${device.name}","$type")
                                         '''
                                 );
-                                paddingType = meterType.toString();
+                                await widget.deviceConnector.connect(device.id);
+                                for(int i = 0 ; i <nameList.length ; i++){
+                                  if(nameList[i] == device.name){
+                                    paddingType = typeList[i];
+                                  }
+                                }
                                 await Navigator.push<void>(
                                   context,
                                   MaterialPageRoute(
@@ -297,7 +301,7 @@ class _DeviceListState extends State<DeviceList> {
                                 fontSize: 16,
                               ),
                             ),
-                          );},
+                          ),
                     )
                         .toList(),
                   ),

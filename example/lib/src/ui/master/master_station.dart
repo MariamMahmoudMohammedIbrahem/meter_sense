@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -191,10 +190,10 @@ class _MasterStationState extends State<_MasterStation> {
                   setState(() {
                     selectedName = newValue!;
                     final myInstance = SqlDb();
-                    myInstance.getList(int.parse('$clientID'),selectedName,type,'none');
+                    myInstance.getList(selectedName,'none');
                   });
                 },
-                items: nameList.map((name) {
+                items: name.map((name) {
                   return DropdownMenuItem<String>(
                     value: name,
                     child: Text(name),
@@ -249,7 +248,7 @@ class _MasterStationState extends State<_MasterStation> {
                                     ),
                                   ),
                                   Text(
-                                    electricTarrif.toString(),
+                                    tarrif.toString(),
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontSize: 17,
@@ -269,7 +268,7 @@ class _MasterStationState extends State<_MasterStation> {
                                     ),
                                   ),
                                   Text(
-                                    electricBalance.toString(),
+                                    balance.toString(),
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
@@ -330,27 +329,13 @@ class _MasterStationState extends State<_MasterStation> {
                           },
                           child: const Text("update", style: TextStyle(color: Colors.black),),
                         ),
-                        /*ElevatedButton(
-                          onPressed: ()async {
-                            // await widget.subscribeToCharacteristic(widget.characteristic);
-                            // await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
-                            final myInstance = SqlDb();
-                            var finalz = myInstance.getList(int.parse('$clientID'),selectedName,type);
-                            print(finalz);
-                          },
-                          child: const Text("update2", style: TextStyle(color: Colors.black),),
-                        ),*/
-                        // ElevatedButton(
-                        //   onPressed: ()async {
-                        //     // await readEle();
-                        //     // final myInstance = SqlDb();
-                        //     // await myInstance.saveList(myList, int.parse('$listClientId'), '$listName', '$listType');
-                        //   },
-                        //   child: const Text("update", style: TextStyle(color: Colors.black),),
-                        // ),
+                        ElevatedButton(onPressed: (){
+                          widget.writeWithoutResponse(widget.characteristic,[0xAA]);
+                        }, child: Text("dfgh"))
                       ],
                     ),
                   ],
+
                 ),
               ),
             ),

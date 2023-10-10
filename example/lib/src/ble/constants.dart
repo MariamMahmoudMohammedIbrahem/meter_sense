@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
@@ -46,6 +45,7 @@ num test = 89;
 //water data
 
 num clientIDWater = 0;
+num totalReadingWater = 0;
 num pulsesWater = 0;
 num totalCreditWater = 0;
 num currentTarrifWater = 0;
@@ -89,15 +89,19 @@ late DiscoveredDevice dataStored;
 // late String id;
 // TextEditingController deviceNameController = TextEditingController();
 const interval = Duration(seconds: 1);
-dynamic name;
-Set<String> nameList = Set<String>();
+// dynamic name;
+List<String> nameList = [];
+Set<String> name = <String>{};
+List<String> typeList = [];
 String? selectedName ;
-dynamic meterType;
+// dynamic meterType;
 late Timer timer;
 // int count = 0;
 dynamic paddingType;
 List<double> data = [10.0,20.0,50.0,30.0,40.0,25.0];
-List<double> readings =[];
+List<double> eleReadings =[];
+List<double> watReadings =[];
+late String today;
 List<Color> gradientColors = [
   Colors.grey,
   Colors.grey.shade500,
@@ -184,3 +188,6 @@ int lastValue = 0;
 late Future <List<int>> currentBalance ;
 late Future <List<int>> qwerTarrif ;
 int selectedValue = -1; // Initialize with a default
+String? time;
+String? month;
+var monthList = <String>[];
