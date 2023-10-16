@@ -5,6 +5,7 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_interaction_tab.dart';
 
+import '../../../t_key.dart';
 import 'dataPage.dart';
 
 class WaterData extends StatefulWidget {
@@ -115,16 +116,16 @@ class _WaterDataState extends State<WaterData> {
                               Row(
                                 children: [
                                   SizedBox(width:width*.07),
-                                  const Text(
-                                    'Current Tarrif: ',
-                                    style: TextStyle(
+                                  Text(
+                                    '${TKeys.currentTarrif.translate(context)}: ',
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
                                     ),
                                   ),
                                   Text(
-                                    currentTarrif.toString(),
+                                    currentTarrifWater.toString(),
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontSize: 17,
@@ -136,16 +137,16 @@ class _WaterDataState extends State<WaterData> {
                               Row(
                                 children: [
                                   SizedBox(width:width*.07),
-                                  const Text(
-                                    'Your Balance: ',
-                                    style: TextStyle(
+                                  Text(
+                                    '${TKeys.balance.translate(context)}: ',
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
                                     ),
                                   ),
                                   Text(
-                                    totalCredit.toString(),
+                                    totalCreditWater.toString(),
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
@@ -199,9 +200,9 @@ class _WaterDataState extends State<WaterData> {
                     ),
                   ),
                   const SizedBox(height: 5,),
-                  const Text(
-                    'History',
-                    style: TextStyle(
+                  Text(
+                    TKeys.history.translate(context),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -231,7 +232,7 @@ class _WaterDataState extends State<WaterData> {
                                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                               children: [
                                                 Text("${snapshot.data![i]['time']}"),
-                                                const Text("Balance:",),
+                                                Text('${TKeys.balance.translate(context)}: ',),
                                                 Text("${snapshot.data![i]['totalCredit']}"),
                                               ],
                                             ),

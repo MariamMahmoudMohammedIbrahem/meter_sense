@@ -1,30 +1,36 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart' as qrScan;
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter_reactive_ble_example/localization_service.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ui/master/master_station.dart';
+import 'package:flutter_reactive_ble_example/t_key.dart';
 import 'package:functional_data/functional_data.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../../ble/ble_logger.dart';
 import '../../ble/functions.dart';
-// import 'device_detail_screen.dart';
 import 'device_interaction_tab.dart';
 
 part 'device_list.g.dart';
 //ignore_for_file: annotate_overrides
 
 late TextEditingController deviceNameController;
+
 class DeviceListScreen extends StatelessWidget {
   const DeviceListScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) =>
-      Consumer4<BleScanner, BleScannerState?, BleLogger,BleDeviceConnector>(
-        builder: (_, bleScanner, bleScannerState, bleLogger, deviceConnector, __) => DeviceList(
+      Consumer4<BleScanner, BleScannerState?, BleLogger, BleDeviceConnector>(
+        builder:
+            (_, bleScanner, bleScannerState, bleLogger, deviceConnector, __) =>
+                DeviceList(
           scannerState: bleScannerState ??
               const BleScannerState(
                 discoveredDevices: [],
@@ -32,11 +38,11 @@ class DeviceListScreen extends StatelessWidget {
               ),
           startScan: bleScanner.startScan,
           stopScan: bleScanner.stopScan,
-          deviceConnector: deviceConnector ,
+          deviceConnector: deviceConnector,
         ),
       );
-
 }
+
 @immutable
 @FunctionalData()
 class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
@@ -51,7 +57,6 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
   @CustomEquality(Ignore())
   final Future<List<DiscoveredService>> Function() discoverServices;
 
-
   void connect() {
     deviceConnector.connect(deviceId);
   }
@@ -60,12 +65,9 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
     deviceConnector.disconnect(deviceId);
   }
 }
+
 class DeviceList extends StatefulWidget {
-  DeviceList({
-    required this.scannerState,
-    required this.startScan,
-    required this.stopScan,
-    required this.deviceConnector,
+  const DeviceList({required this.scannerState, required this.startScan, required this.stopScan, required this.deviceConnector, super.key,
   });
 
   final BleScannerState scannerState;
@@ -78,6 +80,104 @@ class DeviceList extends StatefulWidget {
 }
 
 class _DeviceListState extends State<DeviceList> {
+  void _showDialog(BuildContext context) {
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+          title: Text(TKeys.device.translate(context)),
+          content: SizedBox(
+            height: 200,
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const SizedBox(width: 1),
+                    Radio<int>(
+                      value: 1,
+                      groupValue: valU,
+                      onChanged: (value) {
+                        setState(() {
+                          valU = value!;
+                          type = 'Electricity';
+                        });
+                      },
+                    ),
+                    Text(
+                      TKeys.electricity.translate(context),
+                      style: TextStyle(
+                        fontSize: 17.0,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                    const SizedBox(width: 30),
+                    Radio<int>(
+                      value: 2,
+                      groupValue: valU,
+                      onChanged: (value) {
+                        setState(() {
+                          valU = value!;
+                          type = 'Water';
+                        });
+                      },
+                    ),
+                    Text(
+                      TKeys.water.translate(context),
+                      style: TextStyle(
+                        fontSize: 17.0,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                    const SizedBox(width: 1),
+                  ],
+                ),
+                TextField(
+                  controller: deviceNameController,
+                  decoration: InputDecoration(
+                    border: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.grey.shade200,
+                      ),
+                    ),
+                    labelText: TKeys.name.translate(context),
+                    floatingLabelStyle: MaterialStateTextStyle.resolveWith(
+                          (Set<MaterialState> states) {
+                        final color = states.contains(MaterialState.error)
+                            ? Theme.of(context).colorScheme.error
+                            : Colors.brown.shade900;
+                        return TextStyle(
+                          color: color,
+                          letterSpacing: 1.3,
+                        );
+                      },
+                    ),
+                    labelStyle: MaterialStateTextStyle.resolveWith(
+                          (Set<MaterialState> states) {
+                        final color = states.contains(MaterialState.error)
+                            ? Theme.of(context).colorScheme.error
+                            : Colors.brown.shade800;
+                        return TextStyle(
+                          color: color,
+                          letterSpacing: 1.3,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(TKeys.close.translate(context)),
+            ),
+          ],
+        ),
+    );
+  }
 
   @override
   void initState() {
@@ -103,7 +203,27 @@ class _DeviceListState extends State<DeviceList> {
     final text = deviceNameController.text;
     widget.startScan(text.isEmpty ? [] : [Uuid.parse(text)]);
   }
+  Future<void> scanQR() async {
+    String barcodeScanRes;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      barcodeScanRes = await qrScan.FlutterBarcodeScanner.scanBarcode(
+          '#ff6666', 'Cancel', true, qrScan.ScanMode.QR);
+      print(barcodeScanRes);
+    } on PlatformException {
+      barcodeScanRes = TKeys.failed.translate(context);
+    }
 
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {
+      scanBarcode = barcodeScanRes;
+    });
+  }
+  final localizationController = Get.find<LocalizationController>();
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -114,13 +234,41 @@ class _DeviceListState extends State<DeviceList> {
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
-          ClipPath(
-            clipper: WaveClipper(),
-            child: Container(
-              height: 150,
-              color: Colors.grey.shade200,
-            ),
+          Stack(
+            children: [
+              ClipPath(
+                clipper: WaveClipper(),
+                child: Container(
+                  height: 150,
+                  color: Colors.grey.shade200,
+                ),
+              ),
+              Column(
+                children: [
+                  const SizedBox(height:25),
+                  Row(
+                    children: [
+                      const SizedBox(width:10,),
+                      ElevatedButton(
+                        onPressed: () {
+                          localizationController.toggleLanguage('eng');
+                        },
+                        child: Text(TKeys.english.translate(context),style: const TextStyle(color: Colors.black),),
+                      ),
+                      const SizedBox(width:10,),
+                      ElevatedButton(
+                        onPressed: () {localizationController.toggleLanguage('ara');// Add your button 2 functionality here
+                        },
+                        child: Text(TKeys.arabic.translate(context),style: const TextStyle(color: Colors.black),),
+                      ),
+                      const SizedBox(width:10,),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
+
           Expanded(
             child: Column(
               children: [
@@ -128,101 +276,27 @@ class _DeviceListState extends State<DeviceList> {
                   height: height * 0.25,
                   child: Image.asset('images/logo.jpg'),
                 ),
-                SizedBox(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const SizedBox(width: 1),
-                      Radio<int>(
-                        value: 1,
-                        groupValue: valU,
-                        onChanged: (value) {
-                          setState(() {
-                            valU = value!;
-                            type = 'Electricity';
-                          });
-                        },
-                      ),
-                      Text(
-                        'Electricity',
-                        style: TextStyle(
-                          fontSize: 17.0,
-                          color: Colors.grey.shade800,
-                        ),
-                      ),
-                      const SizedBox(width: 30),
-                      Radio<int>(
-                        value: 2,
-                        groupValue: valU,
-                        onChanged: (value) {
-                          setState(() {
-                            valU = value!;
-                            type = 'Water';
-                          });
-                        },
-                      ),
-                      Text(
-                        'Water',
-                        style: TextStyle(
-                          fontSize: 17.0,
-                          color: Colors.grey.shade800,
-                        ),
-                      ),
-                      const SizedBox(width: 1),
-                    ],
-                  ),
-                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    SizedBox(
-                      width: width * 0.5,
-                      child: TextField(
-                        controller: deviceNameController,
-                        decoration: InputDecoration(
-                          border: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.grey.shade200,
-                            ),
-                          ),
-                          labelText: 'Device Name',
-                          floatingLabelStyle:
-                          MaterialStateTextStyle.resolveWith(
-                                (Set<MaterialState> states) {
-                              final color =
-                              states.contains(MaterialState.error)
-                                  ? Theme.of(context).colorScheme.error
-                                  : Colors.brown.shade900;
-                              return TextStyle(
-                                color: color,
-                                letterSpacing: 1.3,
-                              );
-                            },
-                          ),
-                          labelStyle:
-                          MaterialStateTextStyle.resolveWith(
-                                (Set<MaterialState> states) {
-                              final color =
-                              states.contains(MaterialState.error)
-                                  ? Theme.of(context).colorScheme.error
-                                  : Colors.brown.shade800;
-                              return TextStyle(
-                                color: color,
-                                letterSpacing: 1.3,
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
                     ElevatedButton(
-                      onPressed: () {
-                          sqlDb.readData("SELECT * FROM master_table ORDER BY id DESC");
-                          // print("object$response");
-                      },
-                      child: const Text(
-                        "QR Scanning",
-                        style: TextStyle(
+                        onPressed: () {
+                          _showDialog(context);
+                        },
+                        child: Text(
+                          TKeys.device.translate(context),
+                          // 'Add New Device',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        )),
+                    ElevatedButton(
+                      onPressed: scanQR,
+                      child: Text(
+                        TKeys.qr.translate(context),
+                        style: const TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -235,74 +309,86 @@ class _DeviceListState extends State<DeviceList> {
                   child: ListView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    children: widget.scannerState.discoveredDevices.where((device)=>
-                      (device.name == deviceNameText || nameList.contains(device.name) || device.name == "MasterStation") &&
-                          (device.name != ""  ) ,
-                    )
+                    children: widget.scannerState.discoveredDevices
+                        .where(
+                          (device) =>
+                              (device.name == deviceNameText || device.name == scanBarcode ||
+                                  nameList.contains(device.name) ||
+                                  device.name == "MasterStation") &&
+                              (device.name != ""),
+                        )
                         .map(
-                          (device) => ElevatedButton(
-                            onPressed: () async {
-                              widget.stopScan();
-                              await widget.deviceConnector.connect(device.id);
-                              valU = -1;
-                              if (device.name == "MasterStation") {
-                                DEVID = device.id;
-                                await Navigator.push<void>(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => MasterInteractionTab(
-                                      device: device,
-                                      characteristic: QualifiedCharacteristic(
-                                        //untill know the caharcteristic and service id
-                                        characteristicId: Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb"),
-                                        serviceId: Uuid.parse("0000ffe0-0000-1000-8000-00805f9b34fb"),
-                                    deviceId: device.id,
-                                  ),
-
-                                    ),
-                                  ),
-                                ).then((value) => deviceNameController.clear());
-                              }
-                              else {
-                                dataStored = device;
-                                meterName = device.name;
-                                meterTable = await sqlDb.insertData(
-                                    '''
-                                        INSERT OR IGNORE INTO Meters (`name`, `type`)
-                                        VALUES ("${device.name}","$type")
-                                        '''
-                                );
+                          (device) => Padding(
+                            padding:
+                                EdgeInsets.symmetric(horizontal: width * .3),
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                widget.stopScan();
                                 await widget.deviceConnector.connect(device.id);
-                                for(int i = 0 ; i <nameList.length ; i++){
-                                  if(nameList[i] == device.name){
-                                    paddingType = typeList[i];
-                                  }
-                                }
-                                await Navigator.push<void>(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => DeviceInteractionTab(
-                                      device: device,
-                                      characteristic: QualifiedCharacteristic(
-                                        characteristicId: Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb"),
-                                        serviceId: Uuid.parse("0000ffe0-0000-1000-8000-00805f9b34fb"),
-                                        deviceId: device.id,
+                                valU = -1;
+                                if (device.name == "MasterStation") {
+                                  DEVID = device.id;
+                                  await Navigator.push<void>(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => MasterInteractionTab(
+                                        device: device,
+                                        characteristic: QualifiedCharacteristic(
+                                          //untill know the caharcteristic and service id
+                                          characteristicId: Uuid.parse(
+                                              "0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                          serviceId: Uuid.parse(
+                                              "0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                          deviceId: device.id,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ).then((value) => deviceNameController.clear());
-                              }
-                            },
-                            child: Text(
-                              device.name,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                  ).then(
+                                      (value) => deviceNameController.clear());
+                                } else {
+                                  print('device id: ${device.id}');
+                                  dataStored = device;
+                                  meterName = device.name;
+                                  meterTable = await sqlDb.insertData('''
+                                          INSERT OR IGNORE INTO Meters (`name`, `type`)
+                                          VALUES ("${device.name}","$type")
+                                          ''');
+                                  await widget.deviceConnector
+                                      .connect(device.id);
+                                  for (int i = 0; i < nameList.length; i++) {
+                                    if (nameList[i] == device.name) {
+                                      paddingType = typeList[i];
+                                    }
+                                  }
+                                  await Navigator.push<void>(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => DeviceInteractionTab(
+                                        device: device,
+                                        characteristic: QualifiedCharacteristic(
+                                          characteristicId: Uuid.parse(
+                                              "0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                          serviceId: Uuid.parse(
+                                              "0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                          deviceId: device.id,
+                                        ),
+                                      ),
+                                    ),
+                                  ).then(
+                                      (value) => deviceNameController.clear());
+                                }
+                              },
+                              child: Text(
+                                device.name,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
-                    )
+                        )
                         .toList(),
                   ),
                 ),
@@ -334,7 +420,7 @@ class WaveClipper extends CustomClipper<Path> {
     path.quadraticBezierTo(
         firstStart.dx, firstStart.dy, firstEnd.dx, firstEnd.dy);
     var secondStart =
-    Offset(size.width - (size.width / 3.24), size.height - 105);
+        Offset(size.width - (size.width / 3.24), size.height - 105);
     //third point of quadratic bezier curve
     var secondEnd = Offset(size.width, size.height - 10);
     //fourth point of quadratic bezier curve

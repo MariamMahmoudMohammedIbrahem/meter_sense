@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
@@ -14,6 +13,8 @@ import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_list.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
+
+import '../../../t_key.dart';
 
 part 'device_interaction_tab.g.dart';
 //ignore_for_file: annotate_overrides
@@ -111,34 +112,32 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   void initState() {
     discoveredServices = [];
     subscribeOutput = [];
+    setState(() {
       timer = Timer.periodic(interval, (Timer t) {
         if(!widget.viewModel.deviceConnected){
           widget.viewModel.connect();
         }
         else if(subscribeOutput.length != 72 ){
-          print('in init');
           subscribeCharacteristic();
           writeCharacteristicWithResponse();
         }
         else if(subscribeOutput.length == 72 ){
           t.cancel();
         }
-      if(valveStatus == 1){
-        valve = true;
-      }
-      else {
-        valve = false;
-      }
+        if(valveStatus == 1){
+          valve = true;
+        }
+        else {
+          valve = false;
+        }
+      });
     });
-
     super.initState();
   }
 
   Future<void> discoverServices() async {
     final result = await widget.viewModel.discoverServices();
-    // setState(() {
     discoveredServices = result;
-    // });
   }
 
   @override
@@ -151,16 +150,12 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
   Future<void> subscribeCharacteristic() async {
     var newEventData =<int>[];
-    if (kDebugMode) {
-      print("subscribe in");
-    }
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
           newEventData = event;
           setState(() {
             if (subscribeOutput.length < 72) {
               final equal = newEventData.length == previousEventData.length && newEventData.every(previousEventData.contains);
-              print("equal$equal");
               if (!equal) {
                 subscribeOutput += newEventData ;
                 previousEventData = newEventData;
@@ -170,13 +165,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               }
             }
             else{
-              if (kDebugMode) {
-                print("subscribeOutput$subscribeOutput");
-              }
               if(paddingType == "Electricity" || (deviceNameController.text.isNotEmpty && type == "Electricity" && deviceNameController.text == meterName)){
-                if (kDebugMode) {
-                  print("start");
-                }
                 calculateElectric(subscribeOutput);
                 if(paddingType == "Electricity"){
                   sqlDb.saveList( subscribeOutput,clientID.toInt(),meterName, '$paddingType', 'none');
@@ -198,9 +187,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             }
           });
         });
-    // setState(() {
       subscribeOutput = [];
-    // });
   }
 
   Future<void> writeCharacteristicWithResponse() async {
@@ -215,7 +202,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         end = myList.length;
       }
       List<int> chunk = myList.sublist(i, end);
-      print("Sending chunk: $chunk");
       await widget.writeWithoutResponse(widget.characteristic, chunk);
     }
   }
@@ -228,10 +214,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       if (cond) {
         // Code for sublist 1
         myInstance.getList(meterName,'balance');
-        print('sublist1: $myList');
         if(myList.first == 9){
           widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-            print("event$event");
             cond = false;
           });
           await widget.writeWithResponse(widget.characteristic, myList);
@@ -241,17 +225,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       else if(cond0){
         // Code for sublist 2
         myInstance.getList(meterName,'tarrif');
-        print('sublist2: $myList');
         if(myList.first == 16){
           widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-            print("event2$event");
             cond0 = false;
           });
           await widget.writeWithResponse(widget.characteristic, myList);
         }
       }
       else{
-        print("hiii");
         t.cancel();
       }
     });
@@ -312,12 +293,15 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                     Flexible(
                       child: ListView(
                         children: [
-                          ElevatedButton(
-                              onPressed: (){
-                                widget.viewModel.disconnect();
-                                Navigator.pop(context);
-                              },
-                              child: Text("Log Out"),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: ElevatedButton(
+                                onPressed: (){
+                                  widget.viewModel.disconnect();
+                                  Navigator.pop(context);
+                                },
+                                child: Text(TKeys.logout.translate(context),style: const TextStyle(color:Colors.black),),
+                            ),
                           ),
                           FutureBuilder(
                               future: readData(),
@@ -330,13 +314,19 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                       itemBuilder: (context,i){
                                         if(snapshot.data![i]['type'] == "Electricity"){
                                           eleName = snapshot.data![i]['name'].toString();
+                                          if(eleName == meterName && widget.viewModel.deviceConnected){
+                                              color1 = Colors.green.shade300;
+                                          }
+                                          else{
+                                              color1 = Colors.deepPurple.shade100;
+                                          }
                                           return Padding(
                                             padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
                                             child: ElevatedButton(
                                               style: ElevatedButton.styleFrom(
                                                 shape: RoundedRectangleBorder(
                                                     borderRadius: BorderRadius.circular(18.0),
-                                                    side: BorderSide(color: Colors.deepPurple.shade100)),
+                                                    side: BorderSide(color: color1)),
                                                 backgroundColor: Colors.white,
                                                 foregroundColor: Colors.white,
                                               ),
@@ -347,15 +337,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                               },
                                               child: Column(
                                                 children: [
-                                                  Padding(
-                                                    padding: const EdgeInsetsDirectional.only(start: 16.0),
-                                                    child: Text(
-                                                      "Connection: ${widget.viewModel.connectionStatus}",
-                                                      style: const TextStyle(fontWeight: FontWeight.bold ,color: Colors.black),
-                                                    ),
-                                                  ),
                                                   Text(
-                                                    'Meter Name: ${snapshot.data![i]['name'].toString()}',
+                                                    '${TKeys.name.translate(context)}: ${snapshot.data![i]['name'].toString()}',
                                                     style: const TextStyle(
                                                       color: Colors.black,
                                                       fontWeight: FontWeight.bold,
@@ -368,9 +351,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                   Row(
                                                     children: [
                                                       SizedBox(width:width*.07),
-                                                      const Text(
-                                                        'Current Tarrif: ',
-                                                        style: TextStyle(
+                                                      Text(
+                                                        '${TKeys.currentTarrif.translate(context)}: ',
+                                                        style: const TextStyle(
                                                           color: Colors.black,
                                                           fontWeight: FontWeight.bold,
                                                           fontSize: 18,
@@ -396,9 +379,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                       ),
                                                       Column(
                                                         children: [
-                                                          const Text(
-                                                            'Today',
-                                                            style: TextStyle(
+                                                          Text(
+                                                            TKeys.today.translate(context),
+                                                            style: const TextStyle(
                                                               color: Colors.black,
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 18,
@@ -425,9 +408,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                       const SizedBox(width: 30),
                                                       Column(
                                                         children: [
-                                                          const Text(
-                                                            'This Month',
-                                                            style: TextStyle(
+                                                          Text(
+                                                            TKeys.month.translate(context),
+                                                            style: const TextStyle(
                                                               color: Colors.black,
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 18,
@@ -467,9 +450,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                       ),
                                                       Row(
                                                         children: [
-                                                          const Text(
-                                                            'Your Balance: ',
-                                                            style: TextStyle(
+                                                          Text(
+                                                            '${TKeys.balance.translate(context)}: ',
+                                                            style: const TextStyle(
                                                               color: Colors.black,
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 18,
@@ -501,15 +484,12 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                                   }
                                                                   else if(widget.viewModel.deviceConnected){
                                                                     startTimer();
-                                                                    // final myInstance = SqlDb();
-                                                                    // myInstance.getList(int.parse('$clientID'),meterName,type,'balance');
                                                                   }
-                                                              print("done ");
 
                                                             },
-                                                            child: const Text(
-                                                              'Recharge',
-                                                              style: TextStyle(
+                                                            child: Text(
+                                                              TKeys.recharge.translate(context),
+                                                              style: const TextStyle(
                                                                 color: Colors.black,
                                                                 fontWeight: FontWeight.bold,
                                                                 fontSize: 16,
@@ -530,13 +510,19 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                         }
                                         else{
                                           watName = snapshot.data![i]['name'].toString();
+                                          if(watName == meterName){
+                                            color1 = Colors.green.shade300;
+                                          }
+                                          else{
+                                            color1 = Colors.deepPurple.shade100;
+                                          }
                                           return Padding(
                                             padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
                                             child: ElevatedButton(
                                               style: ElevatedButton.styleFrom(
                                                 shape: RoundedRectangleBorder(
                                                     borderRadius: BorderRadius.circular(18.0),
-                                                    side: BorderSide(color: Colors.deepPurple.shade100)),
+                                                    side: BorderSide(color: color1)),
                                                 backgroundColor: Colors.white,
                                                 foregroundColor: Colors.white,
                                               ),
@@ -547,15 +533,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                               },
                                               child: Column(
                                                 children: [
-                                                  Padding(
-                                                    padding: const EdgeInsetsDirectional.only(start: 16.0),
-                                                    child: Text(
-                                                      "Connection: ${widget.viewModel.connectionStatus}",
-                                                      style: const TextStyle(fontWeight: FontWeight.bold ,color: Colors.black),
-                                                    ),
-                                                  ),
                                                   Text(
-                                                    'Meter Name: ${snapshot.data![i]['name'].toString()}',
+                                                    '${TKeys.name.translate(context)}: ${snapshot.data![i]['name'].toString()}',
                                                     style: const TextStyle(
                                                       color: Colors.black,
                                                       fontWeight: FontWeight.bold,
@@ -568,9 +547,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                   Row(
                                                     children: [
                                                       SizedBox(width:width*.07),
-                                                      const Text(
-                                                        'Current Tarrif: ',
-                                                        style: TextStyle(
+                                                      Text(
+                                                        '${TKeys.currentTarrif.translate(context)}: ',
+                                                        style: const TextStyle(
                                                           color: Colors.black,
                                                           fontWeight: FontWeight.bold,
                                                           fontSize: 18,
@@ -596,9 +575,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                       ),
                                                       Column(
                                                         children: [
-                                                          const Text(
-                                                            'Today',
-                                                            style: TextStyle(
+                                                          Text(
+                                                            TKeys.today.translate(context),
+                                                            style: const TextStyle(
                                                               color: Colors.black,
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 18,
@@ -625,9 +604,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                       const SizedBox(width: 30),
                                                       Column(
                                                         children: [
-                                                          const Text(
-                                                            'This Month',
-                                                            style: TextStyle(
+                                                          Text(
+                                                            TKeys.month.translate(context),
+                                                            style: const TextStyle(
                                                               color: Colors.black,
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 18,
@@ -667,9 +646,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                       ),
                                                       Row(
                                                         children: [
-                                                          const Text(
-                                                            'Your Balance: ',
-                                                            style: TextStyle(
+                                                          Text(
+                                                            '${TKeys.balance.translate(context)}: ',
+                                                            style: const TextStyle(
                                                               color: Colors.black,
                                                               fontWeight: FontWeight.bold,
                                                               fontSize: 18,
@@ -702,12 +681,11 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                               else if(widget.viewModel.deviceConnected){
                                                                 startTimer();
                                                               }
-                                                              print("done ");
 
                                                             },
-                                                            child: const Text(
-                                                              'Recharge',
-                                                              style: TextStyle(
+                                                            child: Text(
+                                                              TKeys.recharge.translate(context),
+                                                              style: const TextStyle(
                                                                 color: Colors.black,
                                                                 fontWeight: FontWeight.bold,
                                                                 fontSize: 16,
@@ -749,8 +727,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               else if(widget.viewModel.deviceConnected){
                 subscribeCharacteristic();
                 writeCharacteristicWithResponse();
-                // final myInstance = SqlDb();
-                // myInstance.getList(2);
               }
             });
           }),

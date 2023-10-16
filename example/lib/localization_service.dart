@@ -1,4 +1,4 @@
-/*import 'dart:convert';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -23,9 +23,9 @@ class LocalizationService {
   Future<void> load() async {
     final jsonString = await rootBundle.loadString('lang/${locale.languageCode}.json');
 
-    Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+    Map<String, dynamic> jsonMap = jsonDecode(jsonString) as Map<String, dynamic>;
 
-    _localizedString = jsonMap.map((key, value) => MapEntry(key, value.toString()));
+    _localizedString = jsonMap.map((String key,dynamic value) => MapEntry(key, value.toString()));
   }
 
   String? translate(String key){
@@ -82,8 +82,13 @@ class _LocalizationServiceDelegate extends LocalizationsDelegate<LocalizationSer
 class LocalizationController extends GetxController{
   String currentLanguage = ''.obs.toString();
 
-  void toggleLanguage() {
-    currentLanguage = LocalizationService.currentLocale.languageCode == 'ar' ? 'en' : 'ar';
+  void toggleLanguage(String lang) {
+    if(lang == 'ara'){
+      currentLanguage ='ar';
+    }else{
+      currentLanguage = 'en';
+    }
+    // currentLanguage = LocalizationService.currentLocale.languageCode == 'ar' ? 'en' : 'ar';
     update();
   }
-}*/
+}

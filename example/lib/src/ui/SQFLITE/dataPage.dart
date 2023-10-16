@@ -6,6 +6,8 @@ import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_interaction_tab.dart';
 
+import '../../../t_key.dart';
+
 
 class StoreData extends StatefulWidget {
   const StoreData({
@@ -120,9 +122,9 @@ class _StoreDataState extends State<StoreData> {
                               Row(
                                 children: [
                                   SizedBox(width:width*.07),
-                                  const Text(
-                                    'Current Tarrif: ',
-                                    style: TextStyle(
+                                  Text(
+                                    '${TKeys.currentTarrif.translate(context)}: ',
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
@@ -141,9 +143,9 @@ class _StoreDataState extends State<StoreData> {
                               Row(
                                 children: [
                                   SizedBox(width:width*.07),
-                                  const Text(
-                                    'Your Balance: ',
-                                    style: TextStyle(
+                                  Text(
+                                    '${TKeys.balance.translate(context)}: ',
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
@@ -204,9 +206,9 @@ class _StoreDataState extends State<StoreData> {
                     ),
                   ),
                   const SizedBox(height: 5,),
-                  const Text(
-                    'History',
-                    style: TextStyle(
+                  Text(
+                    TKeys.history.translate(context),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -236,7 +238,7 @@ class _StoreDataState extends State<StoreData> {
                                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                       children: [
                                         Text("${snapshot.data![i]['time']}"),
-                                        const Text("Balance:",),
+                                        Text('${TKeys.balance.translate(context)}: ',),
                                         Text("${snapshot.data![i]['totalCredit']}"),
                                       ],
                                     ),

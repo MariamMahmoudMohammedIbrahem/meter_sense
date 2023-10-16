@@ -278,8 +278,10 @@ class SqlDb {
       if (jsonList != null) {
         final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
         myList = dynamicList.cast<int>();
-        // all data
-        if(process == 'none') {myList[0] = 0xA0;}
+        // all data of electricity
+        if(process == 'none' && listType == "Electricity") {myList[0] = 0xA1;}
+        // all data of water
+        else if(process == 'none' && listType == "Water") {myList[0] = 0xA0;}
         // balance data
         else if(process == 'balance'){
           print("i = 2");

@@ -175,6 +175,7 @@ final conversionSizes = [
   1,   // checkSum
 ];
 bool valve = true;
+List<int> testing =[];
 List<int> myList = [];
 List<int> balance = [];
 List<int> tarrif = [];
@@ -195,3 +196,5 @@ String eleName = '';
 String watName = '';
 bool cond = false;
 bool cond0 = false;
+String scanBarcode = 'Unknown';
+Color color1 = Colors.deepPurple.shade100;

@@ -8,6 +8,7 @@ import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
 
+import '../../../t_key.dart';
 import '../../ble/ble_device_connector.dart';
 import '../../ble/ble_device_interactor.dart';
 import '../../ble/constants.dart';
@@ -128,37 +129,29 @@ class _MasterStationState extends State<_MasterStation> {
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
           //electric tarrif
-          // testing = event;
-          if(event.first == 0xA3){
-            electricTarrif = convertToInt(event, 0, 1);
-            tarrif = event.sublist(1,12);
-            cond0 = true;
-            print(tarrif);
+          testing = event;
+          if(event.first == 0xA3 || event.first == 0xA5){
+            setState(() {
+              tarrif = event.sublist(1,12);
+              cond0 = true;
+              print(tarrif);
+            });
           }
-          if(event.first == 0xA4){
-            electricBalance = convertToInt(event, 0, 1);
-            balance = event.sublist(1,5);
-            cond = true;
-            print(balance);
-          }
-          if(event.first == 0xA5){
-            waterTarrif = convertToInt(event, 0, 1);
-            tarrif = event.sublist(1,12);
-            cond0 = true;
-            print("water tarrif:$waterTarrif");
-          }
-          if(event.first == 0xA6){
-            waterBalance = convertToInt(event, 0, 1);
-            balance = event.sublist(1,5);
-            cond = true;
-            print("water balance:$waterBalance");
+          if(event.first == 0xA4 || event.first == 0xA6){
+            setState(() {
+              balance = event.sublist(1,5);
+              cond = true;
+              print(balance);
+            });
           }
         });
   }
+
   void initState() {
     widget.viewModel.connect();
-    subscribeCharacteristic();
-    widget.readCharacteristic(widget.characteristic);
+    // testing = [];
+    // subscribeCharacteristic();
+    // widget.readCharacteristic(widget.characteristic);
     super.initState();
   }
   @override
@@ -184,8 +177,8 @@ class _MasterStationState extends State<_MasterStation> {
             Center(
               child: DropdownButton<String>(
                 hint: Text(
-                  "Please choose a device",
-                  style: TextStyle(
+                  TKeys.choose.translate(context),
+                  style: const TextStyle(
                       color: Colors.black,
                       fontSize: 14,
                       fontWeight: FontWeight.w500),
@@ -198,12 +191,10 @@ class _MasterStationState extends State<_MasterStation> {
                     myInstance.getList(selectedName,'none');
                   });
                 },
-                items: name.map((name) {
-                  return DropdownMenuItem<String>(
+                items: name.map((name) => DropdownMenuItem<String>(
                     value: name,
                     child: Text(name),
-                  );
-                }).toList(),
+                  )).toList(),
               ),
 
             ),
@@ -223,8 +214,8 @@ class _MasterStationState extends State<_MasterStation> {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                        Text("list name: $selectedName"),
-                        Text("listClientId: $listClientId"),
+                        Text("${TKeys.name.translate(context)}: $selectedName"),
+                        Text("${TKeys.id.translate(context)}: $listClientId"),
                         ElevatedButton(
                             onPressed: ()async {
                               if(!widget.viewModel.deviceConnected){
@@ -232,10 +223,16 @@ class _MasterStationState extends State<_MasterStation> {
                               }
                               else{
                                 await writeCharacteristicWithoutResponse();
-                                print("byteData:$myList");
+                                if(testing.isEmpty){
+                                  Timer(const Duration(seconds: 2), () async{
+                                    await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
+                                    await subscribeCharacteristic();
+                                    await widget.readCharacteristic(widget.characteristic);
+                                  });
+                                }
                               }
                             },
-                            child: const Text("get data", style: TextStyle(color: Colors.black),),
+                            child: Text(TKeys.get.translate(context), style: const TextStyle(color: Colors.black),),
                         ),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
@@ -244,9 +241,9 @@ class _MasterStationState extends State<_MasterStation> {
                               Row(
                                 children: [
                                   SizedBox(width:width*.07),
-                                  const Text(
-                                    'ele Tarrif: ',
-                                    style: TextStyle(
+                                  Text(
+                                    '${TKeys.tarrif.translate(context)}: ',
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
@@ -264,9 +261,9 @@ class _MasterStationState extends State<_MasterStation> {
                               Row(
                                 children: [
                                   SizedBox(width:width*.07),
-                                  const Text(
-                                    'ele Balance: ',
-                                    style: TextStyle(
+                                  Text(
+                                    '${TKeys.balanceStation.translate(context)}: ',
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
@@ -282,61 +279,25 @@ class _MasterStationState extends State<_MasterStation> {
                                   ),
                                 ],
                               ),
-                              Row(
-                                children: [
-                                  SizedBox(width:width*.07),
-                                  const Text(
-                                    'water Tarrif: ',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  Text(
-                                    waterTarrif.toString(),
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 17,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  SizedBox(width:width*.07),
-                                  const Text(
-                                    'water Balance: ',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  Text(
-                                    waterBalance.toString(),
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 17,
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ],
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: ()async {
-                            final myInstance = SqlDb();
-                            await myInstance.saveList( balance, int.parse('$listClientId'),'$listName', '$listType' ,'balance');
-                            await myInstance.saveList( tarrif, int.parse('$listClientId'),'$listName', '$listType' ,'tarrif');
+                          onPressed: () async {
+                                final myInstance = SqlDb();
+                                if (balance.isNotEmpty && tarrif.isEmpty){
+                                  await myInstance.saveList( balance, int.parse('$listClientId'),'$listName', '$listType' ,'balance');
+                                }
+                                else if(tarrif.isNotEmpty && balance.isEmpty){
+                                  await myInstance.saveList( tarrif, int.parse('$listClientId'),'$listName', '$listType' ,'tarrif');
+                                }
+                                else {
+                                  await myInstance.saveList( balance, int.parse('$listClientId'),'$listName', '$listType' ,'balance');
+                                  await myInstance.saveList( tarrif, int.parse('$listClientId'),'$listName', '$listType' ,'tarrif');
+                                }
                           },
-                          child: const Text("update", style: TextStyle(color: Colors.black),),
+                          child: Text(TKeys.update.translate(context), style: const TextStyle(color: Colors.black),),
                         ),
-                        ElevatedButton(onPressed: (){
-                          widget.writeWithoutResponse(widget.characteristic,[0xAA]);
-                        }, child: Text("dfgh"))
                       ],
                     ),
                   ],
