@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+// import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
@@ -74,9 +74,9 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
     deviceConnector.connect(deviceId);
   }
 
-void disconnect() {
-  deviceConnector.disconnect(deviceId);
-}
+  void disconnect() {
+    deviceConnector.disconnect(deviceId);
+  }
 }
 
 class _DeviceInteractionTab extends StatefulWidget {
@@ -114,31 +114,29 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     subscribeOutput = [];
     setState(() {
       timer = Timer.periodic(interval, (Timer t) {
+        print("timer $interval");
         if(!widget.viewModel.deviceConnected){
+          print("timer connect");
           widget.viewModel.connect();
         }
         else if(subscribeOutput.length != 72 ){
+          print("timer not 72");
           subscribeCharacteristic();
           writeCharacteristicWithResponse();
         }
         else if(subscribeOutput.length == 72 ){
+          print("timer 72");
           t.cancel();
-        }
-        if(valveStatus == 1){
-          valve = true;
-        }
-        else {
-          valve = false;
         }
       });
     });
     super.initState();
   }
 
-  Future<void> discoverServices() async {
-    final result = await widget.viewModel.discoverServices();
-    discoveredServices = result;
-  }
+  // Future<void> discoverServices() async {
+  //   final result = await widget.viewModel.discoverServices();
+  //   discoveredServices = result;
+  // }
 
   @override
   void dispose() {
@@ -153,7 +151,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
           newEventData = event;
-          setState(() {
+          setState(() async {
             if (subscribeOutput.length < 72) {
               final equal = newEventData.length == previousEventData.length && newEventData.every(previousEventData.contains);
               if (!equal) {
@@ -165,24 +163,21 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               }
             }
             else{
-              if(paddingType == "Electricity" || (deviceNameController.text.isNotEmpty && type == "Electricity" && deviceNameController.text == meterName)){
-                calculateElectric(subscribeOutput);
-                if(paddingType == "Electricity"){
-                  sqlDb.saveList( subscribeOutput,clientID.toInt(),meterName, '$paddingType', 'none');
-                }
-                else{
-                  sqlDb.saveList( subscribeOutput,clientID.toInt(),meterName, type, 'none');
-                }
+              print("subscribe output: $subscribeOutput");
+              final id = await sqlDb.readData('''
+                SELECT `process` FROM master_table ORDER BY `id` DESC LIMIT 1 
+                ''');
+              for (Map<dynamic, dynamic> map in id) {
+                ids = map['process'].toString();
+                print("ids:$ids");
               }
-              else if(paddingType == "Water"|| (deviceNameController.text.isNotEmpty&& type == "Water" && deviceNameController.text == meterName)){
-
+              if(paddingType == "Electricity" ){
+                calculateElectric(subscribeOutput);
+                sqlDb.saveList( subscribeOutput,clientID.toInt(),meterName, '$paddingType', 'none');
+              }
+              else if(paddingType == "Water"){
                 calculateWater(subscribeOutput);
-                if(paddingType == "Water"){
-                  sqlDb.saveList( subscribeOutput,clientIDWater.toInt(),meterName, '$paddingType', 'none');
-                }
-                else{
-                  sqlDb.saveList( subscribeOutput,clientIDWater.toInt(),meterName, type, 'none');
-                }
+                sqlDb.saveList( subscribeOutput,clientIDWater.toInt(),meterName, '$paddingType', 'none');
               }
             }
           });
@@ -194,20 +189,20 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     await widget.writeWithResponse(widget.characteristic, [89]);
   }
 
-  Future<void> writeCharacteristicWithoutResponse(List<int> myList) async {
-    int chunkSize = 20;
-    for (int i = 0; i < myList.length; i += chunkSize) {
-      int end = i + chunkSize;
-      if (end > myList.length) {
-        end = myList.length;
-      }
-      List<int> chunk = myList.sublist(i, end);
-      await widget.writeWithoutResponse(widget.characteristic, chunk);
-    }
-  }
+  // Future<void> writeCharacteristicWithoutResponse(List<int> myList) async {
+  //   int chunkSize = 20;
+  //   for (int i = 0; i < myList.length; i += chunkSize) {
+  //     int end = i + chunkSize;
+  //     if (end > myList.length) {
+  //       end = myList.length;
+  //     }
+  //     List<int> chunk = myList.sublist(i, end);
+  //     await widget.writeWithoutResponse(widget.characteristic, chunk);
+  //   }
+  // }
 
   void startTimer() {
-    const interval = Duration(seconds:1);
+    // const interval = Duration(seconds:1);
     final myInstance = SqlDb();
     timer = Timer.periodic(interval, (Timer t) async {
       // cond => balance
@@ -233,6 +228,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         }
       }
       else{
+        color2 = Colors.grey;
         t.cancel();
       }
     });
@@ -243,43 +239,12 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: CurvedNavigationBar(
-        index: 1,
-        items: const [
-          Icon(
-            Icons.electric_bolt_outlined,
-            size: 30,
-          ),
-          Icon(Icons.add_circle_outline, size: 30),
-          Icon(Icons.water_drop_outlined, size: 30),
-        ],
-        color: Colors.deepPurple.shade50,
-        buttonBackgroundColor: Colors.white,
-        backgroundColor: Colors.transparent,
-        animationCurve: Curves.easeInOut,
-        animationDuration: const Duration(milliseconds: 600),
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.of(context).push<void>(
-              MaterialPageRoute<void>(
-                  builder: (context) => const StoreData()),
-            );
-          }
-          else if(index == 1){}
-          else if (index == 2) {
-            Navigator.of(context).push<void>(
-              MaterialPageRoute<void>(
-                  builder: (context) => const WaterData()),
-            );
-          }
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          sqlDb.mydeleteDatabase();
-        },
-        child: const Icon(Icons.add),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: (){
+      //     sqlDb.mydeleteDatabase();
+      //   },
+      //   child: const Icon(Icons.add),
+      // ),
       body: RefreshIndicator(
         child: ListView(
           shrinkWrap: true,
@@ -314,11 +279,21 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                       itemBuilder: (context,i){
                                         if(snapshot.data![i]['type'] == "Electricity"){
                                           eleName = snapshot.data![i]['name'].toString();
-                                          if(eleName == meterName && widget.viewModel.deviceConnected){
+                                          if(eleName == meterName && widget.viewModel.deviceConnected && paddingType == "Electricity"){
                                               color1 = Colors.green.shade300;
+                                              if (ids != 'none') {
+                                                isEleEnabled = true;
+                                                color2 = Colors.deepPurple.shade100;
+                                              }
+                                              else{
+                                                isEleEnabled = false;
+                                                color2 = Colors.grey;
+                                              }
                                           }
                                           else{
                                               color1 = Colors.deepPurple.shade100;
+                                              isEleEnabled = false;
+                                              color2 = Colors.grey;
                                           }
                                           return Padding(
                                             padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
@@ -474,19 +449,22 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                           ElevatedButton(
                                                             style: ElevatedButton.styleFrom(
                                                               shape: const StadiumBorder(),
-                                                              backgroundColor: Colors.purple.shade50,
+                                                              backgroundColor: color2,
                                                               foregroundColor: Colors.white,
-                                                              disabledBackgroundColor: Colors.purple.shade100,
+                                                              disabledBackgroundColor: color2,
                                                             ),
-                                                            onPressed: () async {
+                                                            onPressed: isEleEnabled?() async {
                                                                   if(!widget.viewModel.deviceConnected){
                                                                     widget.viewModel.connect();
                                                                   }
                                                                   else if(widget.viewModel.deviceConnected){
-                                                                    startTimer();
+                                                                    if(eleName == meterName){
+                                                                      // color2 = Colors.green.shade300;
+                                                                      startTimer();
+                                                                    }
                                                                   }
 
-                                                            },
+                                                            }: null,
                                                             child: Text(
                                                               TKeys.recharge.translate(context),
                                                               style: const TextStyle(
@@ -510,11 +488,21 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                         }
                                         else{
                                           watName = snapshot.data![i]['name'].toString();
-                                          if(watName == meterName){
+                                          if(watName == meterName && widget.viewModel.deviceConnected && paddingType == "Water"){
                                             color1 = Colors.green.shade300;
+                                            if (ids != 'none') {
+                                              isWatEnabled = true;
+                                              color3 = Colors.deepPurple.shade100;
+                                            }
+                                            else{
+                                              isWatEnabled = false;
+                                              color3 = Colors.grey;
+                                            }
                                           }
                                           else{
                                             color1 = Colors.deepPurple.shade100;
+                                            isWatEnabled = false;
+                                            color3 = Colors.grey;
                                           }
                                           return Padding(
                                             padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
@@ -670,19 +658,20 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                           ElevatedButton(
                                                             style: ElevatedButton.styleFrom(
                                                               shape: const StadiumBorder(),
-                                                              backgroundColor: Colors.purple.shade50,
+                                                              backgroundColor: color3,
                                                               foregroundColor: Colors.white,
-                                                              disabledBackgroundColor: Colors.purple.shade100,
+                                                              disabledBackgroundColor: color3,
                                                             ),
-                                                            onPressed: () async {
+                                                            onPressed: isEleEnabled?() async {
                                                               if(!widget.viewModel.deviceConnected){
                                                                 widget.viewModel.connect();
                                                               }
                                                               else if(widget.viewModel.deviceConnected){
-                                                                startTimer();
+                                                                if(watName == meterName){
+                                                                  startTimer();
+                                                                }
                                                               }
-
-                                                            },
+                                                            }:null,
                                                             child: Text(
                                                               TKeys.recharge.translate(context),
                                                               style: const TextStyle(

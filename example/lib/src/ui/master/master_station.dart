@@ -77,7 +77,9 @@ class MasterInteractionViewModel extends $DeviceInteractionViewModel {
   void connect() {
     deviceConnector.connect(deviceId);
   }
-
+  void disconnect() {
+    deviceConnector.disconnect(deviceId);
+  }
 }
 
 
@@ -133,6 +135,7 @@ class _MasterStationState extends State<_MasterStation> {
           if(event.first == 0xA3 || event.first == 0xA5){
             setState(() {
               tarrif = event.sublist(1,12);
+              tarrifMaster = convertToInt(event, 1, 11);
               cond0 = true;
               print(tarrif);
             });
@@ -140,19 +143,28 @@ class _MasterStationState extends State<_MasterStation> {
           if(event.first == 0xA4 || event.first == 0xA6){
             setState(() {
               balance = event.sublist(1,5);
+              balanceMaster = convertToInt(event, 1, 4)/100;
               cond = true;
               print(balance);
             });
           }
         });
   }
-
+  @override
   void initState() {
     widget.viewModel.connect();
-    // testing = [];
+    testing = [];
     // subscribeCharacteristic();
     // widget.readCharacteristic(widget.characteristic);
     super.initState();
+  }
+  @override
+  void dispose() {
+    subscribeStream?.cancel();
+    widget.viewModel.disconnect();
+    selectedName = null;
+    super.dispose();
+    timer.cancel();
   }
   @override
   Widget build(BuildContext context) {
@@ -250,7 +262,7 @@ class _MasterStationState extends State<_MasterStation> {
                                     ),
                                   ),
                                   Text(
-                                    tarrif.toString(),
+                                    tarrifMaster.toString(),
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontSize: 17,
@@ -270,7 +282,7 @@ class _MasterStationState extends State<_MasterStation> {
                                     ),
                                   ),
                                   Text(
-                                    balance.toString(),
+                                    balanceMaster.toString(),
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,

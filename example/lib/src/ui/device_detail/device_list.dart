@@ -80,104 +80,104 @@ class DeviceList extends StatefulWidget {
 }
 
 class _DeviceListState extends State<DeviceList> {
-  void _showDialog(BuildContext context) {
-    showDialog<String>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-          title: Text(TKeys.device.translate(context)),
-          content: SizedBox(
-            height: 200,
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const SizedBox(width: 1),
-                    Radio<int>(
-                      value: 1,
-                      groupValue: valU,
-                      onChanged: (value) {
-                        setState(() {
-                          valU = value!;
-                          type = 'Electricity';
-                        });
-                      },
-                    ),
-                    Text(
-                      TKeys.electricity.translate(context),
-                      style: TextStyle(
-                        fontSize: 17.0,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    const SizedBox(width: 30),
-                    Radio<int>(
-                      value: 2,
-                      groupValue: valU,
-                      onChanged: (value) {
-                        setState(() {
-                          valU = value!;
-                          type = 'Water';
-                        });
-                      },
-                    ),
-                    Text(
-                      TKeys.water.translate(context),
-                      style: TextStyle(
-                        fontSize: 17.0,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                    const SizedBox(width: 1),
-                  ],
-                ),
-                TextField(
-                  controller: deviceNameController,
-                  decoration: InputDecoration(
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Colors.grey.shade200,
-                      ),
-                    ),
-                    labelText: TKeys.name.translate(context),
-                    floatingLabelStyle: MaterialStateTextStyle.resolveWith(
-                          (Set<MaterialState> states) {
-                        final color = states.contains(MaterialState.error)
-                            ? Theme.of(context).colorScheme.error
-                            : Colors.brown.shade900;
-                        return TextStyle(
-                          color: color,
-                          letterSpacing: 1.3,
-                        );
-                      },
-                    ),
-                    labelStyle: MaterialStateTextStyle.resolveWith(
-                          (Set<MaterialState> states) {
-                        final color = states.contains(MaterialState.error)
-                            ? Theme.of(context).colorScheme.error
-                            : Colors.brown.shade800;
-                        return TextStyle(
-                          color: color,
-                          letterSpacing: 1.3,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text(TKeys.close.translate(context)),
-            ),
-          ],
-        ),
-    );
-  }
+  // void _showDialog(BuildContext context) {
+  //   showDialog<String>(
+  //     context: context,
+  //     builder: (BuildContext context) => AlertDialog(
+  //         title: Text(TKeys.device.translate(context)),
+  //         content: SizedBox(
+  //           height: 200,
+  //           child: Column(
+  //             children: [
+  //               Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                 children: [
+  //                   const SizedBox(width: 1),
+  //                   Radio<int>(
+  //                     value: 1,
+  //                     groupValue: valU,
+  //                     onChanged: (value) {
+  //                       setState(() {
+  //                         valU = value!;
+  //                         type = 'Electricity';
+  //                       });
+  //                     },
+  //                   ),
+  //                   Text(
+  //                     TKeys.electricity.translate(context),
+  //                     style: TextStyle(
+  //                       fontSize: 17.0,
+  //                       color: Colors.grey.shade800,
+  //                     ),
+  //                   ),
+  //                   const SizedBox(width: 30),
+  //                   Radio<int>(
+  //                     value: 2,
+  //                     groupValue: valU,
+  //                     onChanged: (value) {
+  //                       setState(() {
+  //                         valU = value!;
+  //                         type = 'Water';
+  //                       });
+  //                     },
+  //                   ),
+  //                   Text(
+  //                     TKeys.water.translate(context),
+  //                     style: TextStyle(
+  //                       fontSize: 17.0,
+  //                       color: Colors.grey.shade800,
+  //                     ),
+  //                   ),
+  //                   const SizedBox(width: 1),
+  //                 ],
+  //               ),
+  //               TextField(
+  //                 controller: deviceNameController,
+  //                 decoration: InputDecoration(
+  //                   border: UnderlineInputBorder(
+  //                     borderSide: BorderSide(
+  //                       color: Colors.grey.shade200,
+  //                     ),
+  //                   ),
+  //                   labelText: TKeys.name.translate(context),
+  //                   floatingLabelStyle: MaterialStateTextStyle.resolveWith(
+  //                         (Set<MaterialState> states) {
+  //                       final color = states.contains(MaterialState.error)
+  //                           ? Theme.of(context).colorScheme.error
+  //                           : Colors.brown.shade900;
+  //                       return TextStyle(
+  //                         color: color,
+  //                         letterSpacing: 1.3,
+  //                       );
+  //                     },
+  //                   ),
+  //                   labelStyle: MaterialStateTextStyle.resolveWith(
+  //                         (Set<MaterialState> states) {
+  //                       final color = states.contains(MaterialState.error)
+  //                           ? Theme.of(context).colorScheme.error
+  //                           : Colors.brown.shade800;
+  //                       return TextStyle(
+  //                         color: color,
+  //                         letterSpacing: 1.3,
+  //                       );
+  //                     },
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop(); // Close the dialog
+  //             },
+  //             child: Text(TKeys.close.translate(context)),
+  //           ),
+  //         ],
+  //       ),
+  //   );
+  // }
 
   @override
   void initState() {
@@ -186,8 +186,6 @@ class _DeviceListState extends State<DeviceList> {
     if (!widget.scannerState.scanIsInProgress) {
       _startScanning();
     }
-    // final myInstance = SqlDb(); // Creating an instanc// e of MyClass
-    // myInstance.getList();
     super.initState();
   }
 
@@ -195,7 +193,7 @@ class _DeviceListState extends State<DeviceList> {
   void dispose() {
     widget.stopScan();
     deviceNameController.dispose();
-    valU = -1;
+    // valU = -1;
     super.dispose();
   }
 
@@ -228,7 +226,7 @@ class _DeviceListState extends State<DeviceList> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
-    final deviceNameText = deviceNameController.text;
+    // final deviceNameText = deviceNameController.text;
     // final isMasterStation = deviceNameText == "MasterStation";
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -237,7 +235,7 @@ class _DeviceListState extends State<DeviceList> {
           Stack(
             children: [
               ClipPath(
-                clipper: WaveClipper(),
+                clipper: WaveClipperTwo(reverse: false),
                 child: Container(
                   height: 150,
                   color: Colors.grey.shade200,
@@ -268,7 +266,6 @@ class _DeviceListState extends State<DeviceList> {
               ),
             ],
           ),
-
           Expanded(
             child: Column(
               children: [
@@ -276,22 +273,140 @@ class _DeviceListState extends State<DeviceList> {
                   height: height * 0.25,
                   child: Image.asset('images/logo.jpg'),
                 ),
+                const SizedBox(height:20),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //   children: [
+                //     // ElevatedButton(
+                //     //     onPressed: () {
+                //     //       _showDialog(context);
+                //     //     },
+                //     //     child: Text(
+                //     //       TKeys.device.translate(context),
+                //     //       // 'Add New Device',
+                //     //       style: const TextStyle(
+                //     //         color: Colors.black,
+                //     //         fontWeight: FontWeight.bold,
+                //     //         fontSize: 16,
+                //     //       ),
+                //     //     )),
+                //     ElevatedButton(
+                //       onPressed: scanQR,
+                //       child: Text(
+                //         TKeys.qr.translate(context),
+                //         style: const TextStyle(
+                //           color: Colors.black,
+                //           fontWeight: FontWeight.bold,
+                //           fontSize: 16,
+                //         ),
+                //       ),
+                //     ),
+                //   ],
+                // ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ElevatedButton(
-                        onPressed: () {
-                          _showDialog(context);
-                        },
-                        child: Text(
-                          TKeys.device.translate(context),
-                          // 'Add New Device',
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                    const SizedBox(width: 10,),
+                    Flexible(
+                      child: Column(
+                        children: [
+                          const SizedBox(height:10,),
+                          const Text("Available Devices to connect", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18,),),
+                          ListView(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: widget.scannerState.discoveredDevices
+                                .where(
+                                  (device) =>
+                                      (device.name == scanBarcode || nameList.contains(device.name) || device.name == "MasterStation")
+                                          && (device.name.isNotEmpty),
+                                )
+                                .map(
+                                  (device) => Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: width * .1),
+                                    child: ElevatedButton(
+                                      onPressed: () async {
+                                        widget.stopScan();
+                                        await widget.deviceConnector.connect(device.id);
+                                        // valU = -1;
+                                        if (device.name == "MasterStation") {
+                                          // DEVID = device.id;
+                                          await Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => MasterInteractionTab(
+                                                device: device,
+                                                characteristic: QualifiedCharacteristic(
+                                                  characteristicId: Uuid.parse(
+                                                      "0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                                  serviceId: Uuid.parse(
+                                                      "0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                                  deviceId: device.id,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                              // .then(
+                                              // (value) => deviceNameController.clear());
+                                        }
+                                        else {
+                                          if(device.name.startsWith('W')){
+                                            paddingType = "Water";
+                                            // type = "Water";
+                                          }
+                                          else{
+                                            paddingType = "Electricity";
+                                            // type = "Electricity";
+                                          }
+                                          // dataStored = device;
+                                          meterName = device.name;
+                                          await sqlDb.insertData('''
+                                                  INSERT OR IGNORE INTO Meters (`name`, `type`)
+                                                  VALUES ("${device.name}","$paddingType")
+                                                  ''');
+                                          // for (int i = 0; i < nameList.length; i++) {
+                                          //   if (nameList[i] == device.name) {
+                                          //     paddingType = typeList[i];
+                                          //   }
+                                          // }
+                                          await Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => DeviceInteractionTab(
+                                                device: device,
+                                                characteristic: QualifiedCharacteristic(
+                                                  characteristicId: Uuid.parse(
+                                                      "0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                                  serviceId: Uuid.parse(
+                                                      "0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                                  deviceId: device.id,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                          //     .then(
+                                          //     (value) => deviceNameController.clear());
+                                        }
+                                      },
+                                      child: Text(
+                                        device.name,
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
                           ),
-                        )),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10,),
                     ElevatedButton(
                       onPressed: scanQR,
                       child: Text(
@@ -303,94 +418,8 @@ class _DeviceListState extends State<DeviceList> {
                         ),
                       ),
                     ),
+                    const SizedBox(width: 10,),
                   ],
-                ),
-                Flexible(
-                  child: ListView(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: widget.scannerState.discoveredDevices
-                        .where(
-                          (device) =>
-                              (device.name == deviceNameText || device.name == scanBarcode ||
-                                  nameList.contains(device.name) ||
-                                  device.name == "MasterStation") &&
-                              (device.name != ""),
-                        )
-                        .map(
-                          (device) => Padding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: width * .3),
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                widget.stopScan();
-                                await widget.deviceConnector.connect(device.id);
-                                valU = -1;
-                                if (device.name == "MasterStation") {
-                                  DEVID = device.id;
-                                  await Navigator.push<void>(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => MasterInteractionTab(
-                                        device: device,
-                                        characteristic: QualifiedCharacteristic(
-                                          //untill know the caharcteristic and service id
-                                          characteristicId: Uuid.parse(
-                                              "0000ffe1-0000-1000-8000-00805f9b34fb"),
-                                          serviceId: Uuid.parse(
-                                              "0000ffe0-0000-1000-8000-00805f9b34fb"),
-                                          deviceId: device.id,
-                                        ),
-                                      ),
-                                    ),
-                                  ).then(
-                                      (value) => deviceNameController.clear());
-                                } else {
-                                  print('device id: ${device.id}');
-                                  dataStored = device;
-                                  meterName = device.name;
-                                  meterTable = await sqlDb.insertData('''
-                                          INSERT OR IGNORE INTO Meters (`name`, `type`)
-                                          VALUES ("${device.name}","$type")
-                                          ''');
-                                  await widget.deviceConnector
-                                      .connect(device.id);
-                                  for (int i = 0; i < nameList.length; i++) {
-                                    if (nameList[i] == device.name) {
-                                      paddingType = typeList[i];
-                                    }
-                                  }
-                                  await Navigator.push<void>(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => DeviceInteractionTab(
-                                        device: device,
-                                        characteristic: QualifiedCharacteristic(
-                                          characteristicId: Uuid.parse(
-                                              "0000ffe1-0000-1000-8000-00805f9b34fb"),
-                                          serviceId: Uuid.parse(
-                                              "0000ffe0-0000-1000-8000-00805f9b34fb"),
-                                          deviceId: device.id,
-                                        ),
-                                      ),
-                                    ),
-                                  ).then(
-                                      (value) => deviceNameController.clear());
-                                }
-                              },
-                              child: Text(
-                                device.name,
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
                 ),
               ],
             ),
@@ -407,8 +436,8 @@ class _DeviceListState extends State<DeviceList> {
     );
   }
 }
-
-class WaveClipper extends CustomClipper<Path> {
+// wave clipper shape
+/* class WaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     var path = new Path();
@@ -438,3 +467,4 @@ class WaveClipper extends CustomClipper<Path> {
 // @override
 // dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+*/

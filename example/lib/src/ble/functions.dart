@@ -85,18 +85,17 @@ void calculateElectric(List<int> subscribeOutput) {
       case 23: month1 = value; break;
       case 24: month2 = value; break;
       case 25: month3 = value; break;
-      // case 26: month4 = value; break;
-      // case 27: month5 = value; break;
-      // case 28: month6 = value; break;
-      // case 29: warningLimit = value; break;
-      // case 30: checkSum = value; break;
+      case 26: month4 = value; break;
+      case 27: month5 = value; break;
+      case 28: month6 = value; break;
+      case 29: warningLimit = value; break;
+      case 30: checkSum = value; break;
     }
   }
   callFunctionOnce();
 }
 
 void calculateWater(List<int> subscribeOutput) {
-  print("object in water");
   clientIDWater = convertToInt(subscribeOutput, 1, 4);
   pulsesWater = convertToInt(subscribeOutput, 9, 2);
   totalCreditWater = convertToInt(subscribeOutput, 11, 4)/100;
@@ -122,12 +121,12 @@ void calculateWater(List<int> subscribeOutput) {
   lastChargeValueNumberWater = convertToInt(subscribeOutput, 41, 5);
   month1Water = convertToInt(subscribeOutput, 46, 4);
   month2Water = convertToInt(subscribeOutput, 50, 4);
-  // month3Water = convertToInt(subscribeOutput, 54, 4);
-  // month4Water = convertToInt(subscribeOutput, 58, 4);
-  // month5Water = convertToInt(subscribeOutput, 62, 4);
-  // month6Water = convertToInt(subscribeOutput, 66, 4);
-  // warningLimitWater = convertToInt(subscribeOutput, 70, 1);
-  // checkSumWater = convertToInt(subscribeOutput, 71, 1);
+  month3Water = convertToInt(subscribeOutput, 54, 4);
+  month4Water = convertToInt(subscribeOutput, 58, 4);
+  month5Water = convertToInt(subscribeOutput, 62, 4);
+  month6Water = convertToInt(subscribeOutput, 66, 4);
+  warningLimitWater = convertToInt(subscribeOutput, 70, 1);
+  checkSumWater = convertToInt(subscribeOutput, 71, 1);
   callFunctionOnce();
 }
 void callFunctionOnce() {
@@ -157,21 +156,23 @@ void addData() async {
 
   final totalPulses = merge(totalReading,pulses);
   final totalPulsesWater = merge(totalReadingWater,pulsesWater);
-  if(paddingType == "Electricity" || type == "Electricity"){
+  if(paddingType == "Electricity" ){
     await sqlDb.insertData(
         '''
                               INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,`lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
                               VALUES ("$clientID","$meterName","${totalPulses.toString()}","${pulses.toString()}","${totalCredit.toString()}","${currentTarrif.toString()}","${tarrifVersion.toString()}","${valveStatus.toString()}","${leackageFlag.toString()}","${fraudFlag.toString()}","${fraudHours.toString()}","${fraudMinutes.toString()}","${fraudDayOfWeek.toString()}","${fraudDayOfMonth.toString()}","${fraudMonth.toString()}","${fraudYear.toString()}","${totalDebit.toString()}","${currentConsumption.toString()}","${lcHour.toString()}","${lcMinutes.toString()}","${lcDayWeek.toString()}","${lcDayMonth.toString()}","${lcMonth.toString()}","${lcYear.toString()}","${lastChargeValueNumber.toString()}","${month1.toString()}","${month2.toString()}","${month3.toString()}","${month4.toString()}","${month5.toString()}","${month6.toString()}","${warningLimit.toString()}","$currentTime")
         '''
     );
+    isFunctionCalled = false;
   }
-  if(paddingType == "Water" ||type == "Water"){
+  if(paddingType == "Water" ){
     await sqlDb.insertData(
         '''
                               INSERT INTO Water (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,`lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
                               VALUES ("$clientIDWater","$meterName","${totalPulsesWater.toString()}","${pulsesWater.toString()}","${totalCreditWater.toString()}","${currentTarrifWater.toString()}","${tarrifVersionWater.toString()}","${valveStatusWater.toString()}","${leackageFlagWater.toString()}","${fraudFlagWater.toString()}","${fraudHoursWater.toString()}","${fraudMinutesWater.toString()}","${fraudDayOfWeekWater.toString()}","${fraudDayOfMonthWater.toString()}","${fraudMonthWater.toString()}","${fraudYearWater.toString()}","${totalDebitWater.toString()}","${currentConsumptionWater.toString()}","${lcHourWater.toString()}","${lcMinutesWater.toString()}","${lcDayWeekWater.toString()}","${lcDayMonthWater.toString()}","${lcMonthWater.toString()}","${lcYearWater.toString()}","${lastChargeValueNumberWater.toString()}","${month1Water.toString()}","${month2Water.toString()}","${month3Water.toString()}","${month4Water.toString()}","${month5Water.toString()}","${month6Water.toString()}","${warningLimitWater.toString()}","$currentTime")
         '''
     );
+    isFunctionCalled = false;
   }
 }
 

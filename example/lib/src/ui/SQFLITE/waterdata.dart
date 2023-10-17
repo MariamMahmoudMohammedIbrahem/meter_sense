@@ -29,42 +29,6 @@ class _WaterDataState extends State<WaterData> {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
-      bottomNavigationBar: CurvedNavigationBar(
-        index: 2,
-        items: const [
-          Icon(
-            Icons.electric_bolt_outlined,
-            size: 30,
-          ),
-          Icon(Icons.add_circle_outline, size: 30),
-          Icon(Icons.water_drop_outlined, size: 30),
-        ],
-        color: Colors.deepPurple.shade50,
-        buttonBackgroundColor: Colors.white,
-        backgroundColor: Colors.transparent,
-        animationCurve: Curves.easeInOut,
-        animationDuration: const Duration(milliseconds: 600),
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.of(context).push<void>(
-              MaterialPageRoute<void>(
-                  builder: (context) => const StoreData()),
-            );
-          }
-          else if (index == 1) {
-            Navigator.of(context).push<void>(
-              MaterialPageRoute<void>(builder: (context) => DeviceInteractionTab(
-                device: dataStored, characteristic: QualifiedCharacteristic(
-                  characteristicId: Uuid.parse("0000ffe1-0000-1000-8000-00805f9b34fb"),
-                  serviceId: Uuid.parse("0000ffe0-0000-1000-8000-00805f9b34fb"),
-                  //device id get from register page when connected
-                  deviceId: dataStored.id),
-              )),
-            );
-          }
-          else if (index == 2) {}
-        },
-      ),
       body: RefreshIndicator(
         onRefresh: ()=> Future.delayed(
             const Duration(seconds: 1),(){
