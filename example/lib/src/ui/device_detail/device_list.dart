@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart' as qrScan;
@@ -8,6 +10,7 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ui/master/master_station.dart';
+import 'package:flutter_reactive_ble_example/src/ble/navigatorTest.dart';
 import 'package:flutter_reactive_ble_example/t_key.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:get/get.dart';
@@ -80,111 +83,16 @@ class DeviceList extends StatefulWidget {
 }
 
 class _DeviceListState extends State<DeviceList> {
-  // void _showDialog(BuildContext context) {
-  //   showDialog<String>(
-  //     context: context,
-  //     builder: (BuildContext context) => AlertDialog(
-  //         title: Text(TKeys.device.translate(context)),
-  //         content: SizedBox(
-  //           height: 200,
-  //           child: Column(
-  //             children: [
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                 children: [
-  //                   const SizedBox(width: 1),
-  //                   Radio<int>(
-  //                     value: 1,
-  //                     groupValue: valU,
-  //                     onChanged: (value) {
-  //                       setState(() {
-  //                         valU = value!;
-  //                         type = 'Electricity';
-  //                       });
-  //                     },
-  //                   ),
-  //                   Text(
-  //                     TKeys.electricity.translate(context),
-  //                     style: TextStyle(
-  //                       fontSize: 17.0,
-  //                       color: Colors.grey.shade800,
-  //                     ),
-  //                   ),
-  //                   const SizedBox(width: 30),
-  //                   Radio<int>(
-  //                     value: 2,
-  //                     groupValue: valU,
-  //                     onChanged: (value) {
-  //                       setState(() {
-  //                         valU = value!;
-  //                         type = 'Water';
-  //                       });
-  //                     },
-  //                   ),
-  //                   Text(
-  //                     TKeys.water.translate(context),
-  //                     style: TextStyle(
-  //                       fontSize: 17.0,
-  //                       color: Colors.grey.shade800,
-  //                     ),
-  //                   ),
-  //                   const SizedBox(width: 1),
-  //                 ],
-  //               ),
-  //               TextField(
-  //                 controller: deviceNameController,
-  //                 decoration: InputDecoration(
-  //                   border: UnderlineInputBorder(
-  //                     borderSide: BorderSide(
-  //                       color: Colors.grey.shade200,
-  //                     ),
-  //                   ),
-  //                   labelText: TKeys.name.translate(context),
-  //                   floatingLabelStyle: MaterialStateTextStyle.resolveWith(
-  //                         (Set<MaterialState> states) {
-  //                       final color = states.contains(MaterialState.error)
-  //                           ? Theme.of(context).colorScheme.error
-  //                           : Colors.brown.shade900;
-  //                       return TextStyle(
-  //                         color: color,
-  //                         letterSpacing: 1.3,
-  //                       );
-  //                     },
-  //                   ),
-  //                   labelStyle: MaterialStateTextStyle.resolveWith(
-  //                         (Set<MaterialState> states) {
-  //                       final color = states.contains(MaterialState.error)
-  //                           ? Theme.of(context).colorScheme.error
-  //                           : Colors.brown.shade800;
-  //                       return TextStyle(
-  //                         color: color,
-  //                         letterSpacing: 1.3,
-  //                       );
-  //                     },
-  //                   ),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog
-  //             },
-  //             child: Text(TKeys.close.translate(context)),
-  //           ),
-  //         ],
-  //       ),
-  //   );
-  // }
-
   @override
   void initState() {
     deviceNameController = TextEditingController();
     fetchData();
     if (!widget.scannerState.scanIsInProgress) {
       _startScanning();
+      Timer(
+          const Duration(seconds: 5), () {
+        widget.stopScan();
+      });
     }
     super.initState();
   }
@@ -193,7 +101,6 @@ class _DeviceListState extends State<DeviceList> {
   void dispose() {
     widget.stopScan();
     deviceNameController.dispose();
-    // valU = -1;
     super.dispose();
   }
 
@@ -203,7 +110,6 @@ class _DeviceListState extends State<DeviceList> {
   }
   Future<void> scanQR() async {
     String barcodeScanRes;
-    // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       barcodeScanRes = await qrScan.FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, qrScan.ScanMode.QR);
@@ -211,10 +117,6 @@ class _DeviceListState extends State<DeviceList> {
     } on PlatformException {
       barcodeScanRes = TKeys.failed.translate(context);
     }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
     if (!mounted) return;
 
     setState(() {
@@ -226,83 +128,52 @@ class _DeviceListState extends State<DeviceList> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
-    // final deviceNameText = deviceNameController.text;
-    // final isMasterStation = deviceNameText == "MasterStation";
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
-          Stack(
-            children: [
-              ClipPath(
-                clipper: WaveClipperTwo(reverse: false),
-                child: Container(
-                  height: 150,
-                  color: Colors.grey.shade200,
-                ),
-              ),
-              Column(
-                children: [
-                  const SizedBox(height:25),
-                  Row(
-                    children: [
-                      const SizedBox(width:10,),
-                      ElevatedButton(
-                        onPressed: () {
-                          localizationController.toggleLanguage('eng');
-                        },
-                        child: Text(TKeys.english.translate(context),style: const TextStyle(color: Colors.black),),
-                      ),
-                      const SizedBox(width:10,),
-                      ElevatedButton(
-                        onPressed: () {localizationController.toggleLanguage('ara');// Add your button 2 functionality here
-                        },
-                        child: Text(TKeys.arabic.translate(context),style: const TextStyle(color: Colors.black),),
-                      ),
-                      const SizedBox(width:10,),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
+          // Stack(
+          //   children: [
+          //     ClipPath(
+          //       clipper: WaveClipperTwo(reverse: false),
+          //       child: Container(
+          //         height: 150,
+          //         color: Colors.grey.shade200,
+          //       ),
+          //     ),
+          //     Column(
+          //       children: [
+          //         const SizedBox(height:25),
+          //         Row(
+          //           children: [
+          //             const SizedBox(width:10,),
+          //             ElevatedButton(
+          //               onPressed: () {
+          //                 localizationController.toggleLanguage('eng');
+          //               },
+          //               child: Text(TKeys.english.translate(context),style: const TextStyle(color: Colors.black),),
+          //             ),
+          //             const SizedBox(width:10,),
+          //             ElevatedButton(
+          //               onPressed: () {localizationController.toggleLanguage('ara');
+          //               },
+          //               child: Text(TKeys.arabic.translate(context),style: const TextStyle(color: Colors.black),),
+          //             ),
+          //             const SizedBox(width:10,),
+          //           ],
+          //         ),
+          //       ],
+          //     ),
+          //   ],
+          // ),
           Expanded(
             child: Column(
               children: [
-                SizedBox(
-                  height: height * 0.25,
-                  child: Image.asset('images/logo.jpg'),
-                ),
-                const SizedBox(height:20),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //   children: [
-                //     // ElevatedButton(
-                //     //     onPressed: () {
-                //     //       _showDialog(context);
-                //     //     },
-                //     //     child: Text(
-                //     //       TKeys.device.translate(context),
-                //     //       // 'Add New Device',
-                //     //       style: const TextStyle(
-                //     //         color: Colors.black,
-                //     //         fontWeight: FontWeight.bold,
-                //     //         fontSize: 16,
-                //     //       ),
-                //     //     )),
-                //     ElevatedButton(
-                //       onPressed: scanQR,
-                //       child: Text(
-                //         TKeys.qr.translate(context),
-                //         style: const TextStyle(
-                //           color: Colors.black,
-                //           fontWeight: FontWeight.bold,
-                //           fontSize: 16,
-                //         ),
-                //       ),
-                //     ),
-                //   ],
+                // SizedBox(
+                //   height: height * 0.25,
+                //   child: Image.asset('images/logo.jpg'),
                 // ),
+                const SizedBox(height:20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,83 +194,72 @@ class _DeviceListState extends State<DeviceList> {
                                           && (device.name.isNotEmpty),
                                 )
                                 .map(
-                                  (device) => Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: width * .1),
-                                    child: ElevatedButton(
-                                      onPressed: () async {
-                                        widget.stopScan();
-                                        await widget.deviceConnector.connect(device.id);
-                                        // valU = -1;
-                                        if (device.name == "MasterStation") {
-                                          // DEVID = device.id;
-                                          await Navigator.push<void>(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => MasterInteractionTab(
-                                                device: device,
-                                                characteristic: QualifiedCharacteristic(
-                                                  characteristicId: Uuid.parse(
-                                                      "0000ffe1-0000-1000-8000-00805f9b34fb"),
-                                                  serviceId: Uuid.parse(
-                                                      "0000ffe0-0000-1000-8000-00805f9b34fb"),
-                                                  deviceId: device.id,
+                                  (device) {
+                                    meterName = device.name;
+                                    if(device.name.startsWith('W')){
+                                      paddingType = "Water";
+                                    }
+                                    else{
+                                      paddingType = "Electricity";
+                                    }
+                                    return Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: width * .1),
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          widget.stopScan();
+                                          await widget.deviceConnector.connect(device.id);
+                                          if (device.name == "MasterStation") {
+                                            await Navigator.push<void>(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) => MasterInteractionTab(
+                                                  device: device,
+                                                  characteristic: QualifiedCharacteristic(
+                                                    characteristicId: Uuid.parse(
+                                                        "0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                                    serviceId: Uuid.parse(
+                                                        "0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                                    deviceId: device.id,
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          );
-                                              // .then(
-                                              // (value) => deviceNameController.clear());
-                                        }
-                                        else {
-                                          if(device.name.startsWith('W')){
-                                            paddingType = "Water";
-                                            // type = "Water";
+                                            );
                                           }
-                                          else{
-                                            paddingType = "Electricity";
-                                            // type = "Electricity";
-                                          }
-                                          // dataStored = device;
-                                          meterName = device.name;
-                                          await sqlDb.insertData('''
+                                          else {
+                                            if(nameList.contains(device.name) == false){
+                                              await sqlDb.insertData('''
                                                   INSERT OR IGNORE INTO Meters (`name`, `type`)
                                                   VALUES ("${device.name}","$paddingType")
                                                   ''');
-                                          // for (int i = 0; i < nameList.length; i++) {
-                                          //   if (nameList[i] == device.name) {
-                                          //     paddingType = typeList[i];
-                                          //   }
-                                          // }
-                                          await Navigator.push<void>(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => DeviceInteractionTab(
-                                                device: device,
-                                                characteristic: QualifiedCharacteristic(
-                                                  characteristicId: Uuid.parse(
-                                                      "0000ffe1-0000-1000-8000-00805f9b34fb"),
-                                                  serviceId: Uuid.parse(
-                                                      "0000ffe0-0000-1000-8000-00805f9b34fb"),
-                                                  deviceId: device.id,
+                                            }
+                                            await Navigator.push<void>(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) => DeviceInteractionTab(
+                                                  device: device,
+                                                  characteristic: QualifiedCharacteristic(
+                                                    characteristicId: Uuid.parse(
+                                                        "0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                                    serviceId: Uuid.parse(
+                                                        "0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                                    deviceId: device.id,
+                                                  ),
                                                 ),
                                               ),
-                                            ),
-                                          );
-                                          //     .then(
-                                          //     (value) => deviceNameController.clear());
-                                        }
-                                      },
-                                      child: Text(
-                                        device.name,
-                                        style: const TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                            );
+                                          }
+                                        },
+                                        child: Text(
+                                          device.name,
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  }
                                 )
                                 .toList(),
                           ),
@@ -407,16 +267,40 @@ class _DeviceListState extends State<DeviceList> {
                       ),
                     ),
                     const SizedBox(width: 10,),
-                    ElevatedButton(
-                      onPressed: scanQR,
-                      child: Text(
-                        TKeys.qr.translate(context),
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                    Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: scanQR,
+                          child: Text(
+                            TKeys.qr.translate(context),
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
-                      ),
+                        Row(
+                          children: [
+                            ElevatedButton(
+                              onPressed: _startScanning,
+                              child: const Text('Start',style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),),
+                            ),
+                            ElevatedButton(
+                              onPressed: widget.stopScan,
+                              child: const Text('Stop',style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 10,),
                   ],
@@ -424,47 +308,73 @@ class _DeviceListState extends State<DeviceList> {
               ],
             ),
           ),
-          ClipPath(
-            clipper: WaveClipperTwo(reverse: true),
-            child: Container(
-              height: 150,
-              color: Colors.grey.shade200,
-            ),
-          ),
+          // ClipPath(
+          //   clipper: WaveClipperTwo(reverse: true),
+          //   child: Container(
+          //     height: 150,
+          //     color: Colors.grey.shade200,
+          //   ),
+          // ),
         ],
       ),
     );
   }
 }
-// wave clipper shape
-/* class WaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    var path = new Path();
-    path.lineTo(0, size.height);
-    var firstStart = Offset(size.width / 5, size.height);
-    //first point of quadratic bezier curve
-    var firstEnd = Offset(size.width / 2.25, size.height - 50.0);
-    //second point of quadratic bezier curve
-    path.quadraticBezierTo(
-        firstStart.dx, firstStart.dy, firstEnd.dx, firstEnd.dy);
-    var secondStart =
-        Offset(size.width - (size.width / 3.24), size.height - 105);
-    //third point of quadratic bezier curve
-    var secondEnd = Offset(size.width, size.height - 10);
-    //fourth point of quadratic bezier curve
-    path.quadraticBezierTo(
-        secondStart.dx, secondStart.dy, secondEnd.dx, secondEnd.dy);
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
+class Clip extends StatelessWidget {
+  final bool direction;
+  const Clip({required this.direction, Key? key}) : super(key: key);
 
   @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) {
-    return false;
-  }
-// @override
-// dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  Widget build(BuildContext context) => ClipPath(
+      clipper: WaveClipperTwo(reverse: direction),
+      child: Container(
+        height: 150,
+        color: Colors.grey.shade200,
+      ),
+    );
 }
-*/
+
+class DeviceLayout extends StatelessWidget {
+  DeviceLayout({Key? key}) : super(key: key);
+  final localizationController = Get.find<LocalizationController>();
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+    return SizedBox(
+      height: height * 0.25,
+      child: Image.asset('images/logo.jpg'),
+    );
+  }
+}
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final height = MediaQuery.of(context).size.height;
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: SizedBox(
+        height:height,
+        width: width,
+        child: Column(
+          children: [
+            const Clip(direction: false,),
+            SizedBox(
+              height: height-300,
+              width: width,
+              child: Column(
+                children: [
+                  DeviceLayout(),
+                  SizedBox(height:height*.4,child: const DeviceListScreen()),
+                ],
+              ),
+            ),
+            const Clip(direction: true,),
+          ],
+        ),
+      ),
+    );
+  }
+}

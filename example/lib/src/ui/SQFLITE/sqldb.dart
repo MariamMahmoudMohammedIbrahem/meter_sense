@@ -145,6 +145,74 @@ class SqlDb {
     return response;
   }
 
+  Future<List<Map>> readMeterData(String title, String type) async {
+    Database? mydb = await db;
+    //take returened data from database
+    if(type == 'Electricity'){
+      response = await mydb!.rawQuery(
+          '''
+        SELECT `currentTarrif`,`totalReading`, `totalCredit`, `currentConsumption` 
+        FROM Electricity 
+        WHERE `title` = ?
+        ORDER BY `id` DESC 
+        LIMIT 1
+        ''',
+          [title]
+      );
+      for (Map<dynamic, dynamic> map in response) {
+        currentTarrif = num.parse(map['currentTarrif'].toString());
+        totalReading = num.parse(map['totalReading'].toString());
+        totalCredit = num.parse(map['totalCredit'].toString());
+        currentConsumption = num.parse(map['currentConsumption'].toString());
+      }
+    }
+    else{
+      response = await mydb!.rawQuery(
+          '''
+        SELECT `currentTarrif`,`totalReading`, `totalCredit`, `currentConsumption` 
+        FROM Water 
+        WHERE `title` = ?
+        ORDER BY `id` DESC 
+        LIMIT 1
+        ''',
+      [title]
+      );
+      for (Map<dynamic, dynamic> map in response) {
+        currentTarrifWater = num.parse(map['currentTarrif'].toString());
+        totalReadingWater = num.parse(map['totalReading'].toString());
+        totalCreditWater = num.parse(map['totalCredit'].toString());
+        currentConsumptionWater = num.parse(map['currentConsumption'].toString());
+      }
+    }
+    print("response$response");
+    return response;
+  }
+  // Future<List<Map>> readWatData() async {
+  //   final response  = await sqlDb.readData("SELECT `name`,`type` FROM Meters WHERE type = ?",["Electricity"]);
+  //   return response;
+  // }
+  Future<List<Map>> read(String name, String type) async {
+    Database? mydb = await db;
+    String query = '';
+    if(type == 'Electricity'){
+      query = '''
+        SELECT * FROM Electricity
+        WHERE `title` =?
+      ''';
+    }
+    else{
+      query = '''
+        SELECT * FROM Water
+        WHERE `title` =?
+      ''';
+    }
+    final response  = await mydb!.rawQuery(
+      query,
+      [name],
+    );
+    print("object$response");
+    return response;
+  }
   Future<void> editingList(int i) async {
     Database? mydb = await db;
     if(i == 1){

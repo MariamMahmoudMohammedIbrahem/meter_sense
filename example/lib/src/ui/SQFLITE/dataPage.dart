@@ -10,9 +10,11 @@ import '../../../t_key.dart';
 
 
 class StoreData extends StatefulWidget {
-  const StoreData({
+    const StoreData({
+    required this.name,
     Key? key,
   }) : super(key: key);
+    final String name;
   // final DiscoveredDevice device;
   @override
   State<StoreData> createState() => _StoreDataState();
@@ -20,7 +22,7 @@ class StoreData extends StatefulWidget {
 
 class _StoreDataState extends State<StoreData> {
   Future<List<Map>> readEle() async {
-    final response  = await sqlDb.readData("SELECT * FROM Electricity");
+    final response  = await sqlDb.read(widget.name,'Electricity');
     print("object$response");
     return response;
   }
@@ -40,7 +42,7 @@ class _StoreDataState extends State<StoreData> {
           setState(() {
             Navigator.of(context).push<void>(
               MaterialPageRoute<void>(
-                  builder: (context) => const StoreData()),
+                  builder: (context) => StoreData(name: widget.name,)),
             );
           });
         }),
@@ -62,7 +64,7 @@ class _StoreDataState extends State<StoreData> {
                           const SizedBox(
                             height: 10,
                           ),
-                          Text(eleName, style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20)),
+                          Text(widget.name, style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20)),
                           Padding(
                             padding: EdgeInsets.only(
                               left: width * .07,

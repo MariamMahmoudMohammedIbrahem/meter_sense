@@ -67,6 +67,7 @@ void main() {
       child: GetBuilder<LocalizationController>(
         init: localizationController,
         builder: (LocalizationController controller )=> MaterialApp(
+          debugShowCheckedModeBanner: false,
             title: 'EOIP',
             color: _themeColor,
             theme: ThemeData(primaryColor: _themeColor, primarySwatch: Colors.grey,scaffoldBackgroundColor: Colors.white,
@@ -118,7 +119,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) => Consumer<BleStatus?>(
     builder: (_, status, __) {
       if (status == BleStatus.ready) {
-        return const DeviceListScreen();
+        return const MyApp();
       } else {
         return BleStatusScreen(status: status ?? BleStatus.unknown);
       }

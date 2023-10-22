@@ -9,14 +9,15 @@ import '../../../t_key.dart';
 import 'dataPage.dart';
 
 class WaterData extends StatefulWidget {
-  const WaterData({Key? key,}) : super(key: key);
+  const WaterData({required this.name,Key? key,}) : super(key: key);
+  final String name;
   @override
   State<WaterData> createState() => _WaterDataState();
 }
 
 class _WaterDataState extends State<WaterData> {
   Future<List<Map>> readWat() async {
-    final response = await sqlDb.readData("SELECT * FROM Water");
+    final response = await sqlDb.read(widget.name,'Water');
     return response;
   }
   @override
@@ -35,7 +36,7 @@ class _WaterDataState extends State<WaterData> {
           setState(() {
             Navigator.of(context).push<void>(
               MaterialPageRoute<void>(
-                  builder: (context) => const WaterData()),
+                  builder: (context) => WaterData(name: widget.name,)),
             );
           });
         }),
@@ -57,7 +58,7 @@ class _WaterDataState extends State<WaterData> {
                           const SizedBox(
                             height: 10,
                           ),
-                          Text(watName, style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20)),
+                          Text(widget.name, style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20)),
                           Padding(
                             padding: EdgeInsets.only(
                               left: width * .07,
