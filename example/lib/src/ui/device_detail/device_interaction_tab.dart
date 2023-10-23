@@ -155,6 +155,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         else {
           print("subscribe output: $subscribeOutput");
           // ids for the enabling of the recharge button
+          /*
           final id = await sqlDb.readData('''
                 SELECT `process` FROM master_table ORDER BY `id` DESC LIMIT 1 
                 ''');
@@ -169,6 +170,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             isEleEnabled = false;
             color2 = Colors.grey;
           }
+          */
           // end of ids
           setState(() {
             if (paddingType == "Electricity") {
