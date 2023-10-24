@@ -51,35 +51,20 @@ class SqlDb {
       'title' TEXT NOT NULL,
       'clientId' INTEGER NOT NULL,
       'totalReading' TEXT NOT NULL,
-      'pulses' TEXT NOT NULL,
       'totalCredit' TEXT NOT NULL,
       'currentTarrif' TEXT NOT NULL,
-      'tarrifVersion' TEXT NOT NULL,
       'valveStatus' TEXT NOT NULL,
       'leackageFlag' TEXT NOT NULL,
       'fraudFlag' TEXT NOT NULL,
-      'fraudHours' TEXT NOT NULL,
-      'fraudMinutes' TEXT NOT NULL,
-      'fraudDayOfWeek' TEXT NOT NULL,
-      'fraudDayOfMonth' TEXT NOT NULL,
-      'fraudMonth' TEXT NOT NULL,
-      'fraudYear' TEXT NOT NULL,
-      'totalDebit' TEXT NOT NULL,
       'currentConsumption' TEXT NOT NULL,
-      'lcHour' TEXT NOT NULL,
-      'lcMinutes' TEXT NOT NULL,
-      'lcDayWeek' TEXT NOT NULL,
-      'lcDayMonth' TEXT NOT NULL,
-      'lcMonth' TEXT NOT NULL,
-      'lcYear' TEXT NOT NULL,
-      'lastChargeValueNumber' TEXT NOT NULL,
       'month1' TEXT NOT NULL,
       'month2' TEXT NOT NULL,
       'month3' TEXT NOT NULL,
       'month4' TEXT NOT NULL,
       'month5' TEXT NOT NULL,
       'month6' TEXT NOT NULL,
-      'warningLimit' TEXT NOT NULL,
+      'list' TEXT NOT NULL,
+      'process' TEXT NOT NULL,
       'time' DATETIME NOT NULL
     )
     ''');
@@ -123,7 +108,7 @@ class SqlDb {
     )
     ''');
     //create master table
-    //code is balance or tarrif
+    //process is balance or tarrif or none
     await db.execute('''
     CREATE TABLE "master_table" (
     'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -331,48 +316,75 @@ class SqlDb {
 // Retrieve the list from the database to send to master station
   Future<List<int>> getList(String? name,  String process) async {
     Database? mydb = await db;
-    final List<Map<String, dynamic>> result = await mydb!.rawQuery(
-        'SELECT * FROM master_table WHERE `name` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ,
-      [name,process],
-    );
-    print("rr$result");
-    if (result.isNotEmpty) {
-      final dynamic jsonListDynamic = result[0]['list'];
-      listName = result[0]['name'];
-      listClientId = result[0]['clientId'];
-      listType = result[0]['type'];
-      print("listType$listType");
-      final String? jsonList = jsonListDynamic as String?;
-      if (jsonList != null) {
-        final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
-        myList = dynamicList.cast<int>();
-        // all data of electricity
-        if(process == 'none' && listType == "Electricity") {myList[0] = 0xA1;}
-        // all data of water
-        else if(process == 'none' && listType == "Water") {myList[0] = 0xA0;}
-        // balance data
-        else if(process == 'balance'){
-          print("i = 2");
-          myList.insert(0, 0x09);
-          final random = Random();
-          myList.insert(5, int.parse('${random.nextInt(255)}'));
-          int sum = myList.fold(0, (previousValue, element) => previousValue + element);
-          myList.add(sum);
+    String query = '';
+    if(process == 'none'){
+      if(name!.startsWith('W')){
+        listType = 'Water';
+      }
+      else{
+        query = 'SELECT `list`,`title`,`clientId` FROM Electricity WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
+        listType = 'Electricity';
+      }
+      final List<Map<String, dynamic>> result = await mydb!.rawQuery(
+        query,
+        [name,process],
+      );
+      print('result => $result');
+      if (result.isNotEmpty) {
+        final dynamic jsonListDynamic = result[0]['list'];
+        listName = result[0]['title'];
+        listClientId = result[0]['clientId'];
+        final String? jsonList = jsonListDynamic as String?;
+        if (jsonList != null) {
+          final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
+          myList = dynamicList.cast<int>();
+          if(listType == "Electricity") {myList[0] = 0xA1;}
+          else {myList[0] = 0xA0;}
+          print("myList => $myList");
+          return myList;
         }
-        // tarrif data
-        else if(process == 'tarrif'){
-          print("i = 3");
-          myList.insert(0, 0x10);
-          final random = Random();
-          myList.add(int.parse('${random.nextInt(255)}'));
-          int sum = myList.fold(0, (previousValue, element) => previousValue + element);
-          myList.add(sum);
-          print(myList);
-        }
-        return myList;
       }
     }
-    return [];
+    else{
+      myList = [];
+      query = 'SELECT * FROM master_table WHERE `name` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
+      final List<Map<String, dynamic>> result = await mydb!.rawQuery(
+        query,
+        [name,process],
+      );
+      if (result.isNotEmpty) {
+        final dynamic jsonListDynamic = result[0]['list'];
+        listName = result[0]['name'];
+        listClientId = result[0]['clientId'];
+        listType = result[0]['type'];
+        final String? jsonList = jsonListDynamic as String?;
+        if (jsonList != null) {
+          final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
+          myList = dynamicList.cast<int>();
+          // balance data
+          if(process == 'balance'){
+            myList.insert(0, 0x09);
+            final random = Random();
+            myList.insert(5, int.parse('${random.nextInt(255)}'));
+            int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+            myList.add(sum);
+            print(myList);
+          }
+          // tarrif data
+          else{
+            print("i = 3");
+            myList.insert(0, 0x10);
+            final random = Random();
+            myList.add(int.parse('${random.nextInt(255)}'));
+            int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+            myList.add(sum);
+            print(myList);
+          }
+          return myList;
+        }
+      }
+    }
+    return myList;
   }
 //wrong sotred data
   /*
@@ -417,6 +429,11 @@ class SqlDb {
   Future<void> saveList(List<int> myList, int clientId, String name, String type, String process) async {
     Database? mydb = await db;
     final jsonList = jsonEncode(myList);
+    print('myList => $myList');
+    print('client => $clientId');
+    print('name => $name');
+    print('type => $type');
+    print('process => $process');
     await mydb!.rawInsert(
       'INSERT INTO master_table (list, clientId, name, type, process) VALUES (?, ?, ?, ?, ?)',
       [ jsonList, clientId, name, type, process],

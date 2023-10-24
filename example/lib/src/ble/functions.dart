@@ -16,42 +16,7 @@ num convertToInt(List<int> data, int start, int size) {
 
   return converted;
 }
-/*
-void calculateElectric(List<int> subscribeOutput) {
-  clientID = convertToInt(subscribeOutput, 1, 4);
-  pulses = convertToInt(subscribeOutput, 9, 2);
-  totalCredit = convertToInt(subscribeOutput, 11, 4) / 100;
-  currentTarrif = convertToInt(subscribeOutput, 15, 1);
-  tarrifVersion = convertToInt(subscribeOutput, 16, 2);
-  valveStatus = convertToInt(subscribeOutput, 18, 1);
-  leackageFlag = convertToInt(subscribeOutput, 19, 1);
-  fraudFlag = convertToInt(subscribeOutput, 20, 1);
-  fraudHours = convertToInt(subscribeOutput, 21, 1);
-  fraudMinutes = convertToInt(subscribeOutput, 22, 1);
-  fraudDayOfWeek = convertToInt(subscribeOutput, 23, 1);
-  fraudDayOfMonth = convertToInt(subscribeOutput, 24, 1);
-  fraudMonth = convertToInt(subscribeOutput, 25, 1);
-  fraudYear = convertToInt(subscribeOutput, 26, 1);
-  totalDebit = convertToInt(subscribeOutput, 27, 4);
-  currentConsumption = convertToInt(subscribeOutput, 31, 4);
-  lcHour = convertToInt(subscribeOutput, 35, 1);
-  lcMinutes = convertToInt(subscribeOutput, 36, 1);
-  lcDayWeek = convertToInt(subscribeOutput, 37, 1);
-  lcDayMonth = convertToInt(subscribeOutput, 38, 1);
-  lcMonth = convertToInt(subscribeOutput, 39, 1);
-  lcYear = convertToInt(subscribeOutput, 40, 1);
-  lastChargeValueNumber = convertToInt(subscribeOutput, 41, 5);
-  month1 = convertToInt(subscribeOutput, 46, 4);
-  month2 = convertToInt(subscribeOutput, 50, 4);
-  month3 = convertToInt(subscribeOutput, 54, 4);
-  // month4 = convertToInt(subscribeOutput, 58, 4);
-  // month5 = convertToInt(subscribeOutput, 62, 4);
-  // month6 = convertToInt(subscribeOutput, 66, 4);
-  // warningLimit = convertToInt(subscribeOutput, 70, 1);
-  // checkSum = convertToInt(subscribeOutput, 71, 1);
-  callFunctionOnce();
-}
-*/
+
 void calculateElectric(List<int> subscribeOutput) {
   for (var i = 0; i < conversionIndices.length; i++) {
     final startIndex = conversionIndices[i];
@@ -64,33 +29,16 @@ void calculateElectric(List<int> subscribeOutput) {
       case 2: pulses = value; break;
       case 3: totalCredit = value / 100; break;
       case 4: currentTarrif = value; break;
-      // case 5: tarrifVersion = value; break;
       case 5: valveStatus = value; break;
       case 6: leackageFlag = value; break;
       case 7: fraudFlag = value; break;
-      // case 8: fraudHours = value; break;
-      // case 9: fraudMinutes = value; break;
-      // case 10: fraudDayOfWeek = value; break;
-      // case 11: fraudDayOfMonth = value; break;
-      // case 12: fraudMonth = value; break;
-      // case 13: fraudYear = value; break;
-      // case 14: totalDebit = value; break;
       case 8: currentConsumption = value; break;
-      // case 16: lcHour = value; break;
-      // case 17: lcMinutes = value; break;
-      // case 18: lcDayWeek = value; break;
-      // case 19: lcDayMonth = value; break;
-      // case 20: lcMonth = value; break;
-      // case 21: lcYear = value; break;
-      // case 22: lastChargeValueNumber = value; break;
       case 9: month1 = value; break;
       case 10: month2 = value; break;
       case 11: month3 = value; break;
       case 12: month4 = value; break;
       case 13: month5 = value; break;
       case 14: month6 = value; break;
-      // case 29: warningLimit = value; break;
-      // case 15: checkSum = value; break;
     }
   }
   callFunctionOnce();
@@ -130,51 +78,49 @@ void calculateWater(List<int> subscribeOutput) {
   checkSumWater = convertToInt(subscribeOutput, 71, 1);
   callFunctionOnce();
 }
+
 void callFunctionOnce() {
   if (!isFunctionCalled) {
     isFunctionCalled = true;
     addData();
   }
 }
+
 double merge (num value1, num value2){
   final  addition = '$value1.$value2';
   final trial = double.parse(addition);
   return trial;
 }
+
 //insert into electricity and water tables
 void addData() async {
   now = DateTime.now();
   currentTime =DateFormat.yMMMEd().format(now);
-  today = DateFormat('dd-MM-yyyy').format(now);
   monthList.clear();
   for (int i = 0; i < 6; i++) {
-    final previousMonth = now.subtract(Duration(days: 30 * i)); // Subtract days for each previous month.
-    final formattedMonth = DateFormat.MMM().format(previousMonth);
+    final formattedMonth = DateFormat.MMM().format(now.subtract(Duration(days: 30 * i)));
     monthList.add(formattedMonth);
   }
   print('Month from database: $monthList');
-
-
-  final totalPulses = merge(totalReading,pulses);
-  final totalPulsesWater = merge(totalReadingWater,pulsesWater);
   if(paddingType == "Electricity" ){
+    final totalPulses = merge(totalReading,pulses);
     await sqlDb.insertData(
         '''
-                              INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,`lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
-                              VALUES ("$clientID","$meterName","${totalPulses.toString()}","${pulses.toString()}","${totalCredit.toString()}","${currentTarrif.toString()}","${tarrifVersion.toString()}","${valveStatus.toString()}","${leackageFlag.toString()}","${fraudFlag.toString()}","${fraudHours.toString()}","${fraudMinutes.toString()}","${fraudDayOfWeek.toString()}","${fraudDayOfMonth.toString()}","${fraudMonth.toString()}","${fraudYear.toString()}","${totalDebit.toString()}","${currentConsumption.toString()}","${lcHour.toString()}","${lcMinutes.toString()}","${lcDayWeek.toString()}","${lcDayMonth.toString()}","${lcMonth.toString()}","${lcYear.toString()}","${lastChargeValueNumber.toString()}","${month1.toString()}","${month2.toString()}","${month3.toString()}","${month4.toString()}","${month5.toString()}","${month6.toString()}","${warningLimit.toString()}","$currentTime")
+                              INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTarrif`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
+                              VALUES ("$clientID","$meterName","${totalPulses.toString()}","${totalCredit.toString()}","${currentTarrif.toString()}","${valveStatus.toString()}","${leackageFlag.toString()}","${fraudFlag.toString()}","${currentConsumption.toString()}","${month1.toString()}","${month2.toString()}","${month3.toString()}","${month4.toString()}","${month5.toString()}","${month6.toString()}","$subscribeOutput","none","$currentTime")
         '''
     );
-    isFunctionCalled = false;
   }
-  if(paddingType == "Water" ){
+  else{
+    final totalPulsesWater = merge(totalReadingWater,pulsesWater);
     await sqlDb.insertData(
         '''
                               INSERT INTO Water (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,`lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
                               VALUES ("$clientIDWater","$meterName","${totalPulsesWater.toString()}","${pulsesWater.toString()}","${totalCreditWater.toString()}","${currentTarrifWater.toString()}","${tarrifVersionWater.toString()}","${valveStatusWater.toString()}","${leackageFlagWater.toString()}","${fraudFlagWater.toString()}","${fraudHoursWater.toString()}","${fraudMinutesWater.toString()}","${fraudDayOfWeekWater.toString()}","${fraudDayOfMonthWater.toString()}","${fraudMonthWater.toString()}","${fraudYearWater.toString()}","${totalDebitWater.toString()}","${currentConsumptionWater.toString()}","${lcHourWater.toString()}","${lcMinutesWater.toString()}","${lcDayWeekWater.toString()}","${lcDayMonthWater.toString()}","${lcMonthWater.toString()}","${lcYearWater.toString()}","${lastChargeValueNumberWater.toString()}","${month1Water.toString()}","${month2Water.toString()}","${month3Water.toString()}","${month4Water.toString()}","${month5Water.toString()}","${month6Water.toString()}","${warningLimitWater.toString()}","$currentTime")
         '''
     );
-    isFunctionCalled = false;
   }
+  isFunctionCalled = false;
 }
 
 // read all data from meter
@@ -182,6 +128,7 @@ Future<List<Map>> readData() async {
   final response  = await sqlDb.readData("SELECT `name`,`type` FROM Meters");
   return response;
 }
+
 //fetch meter data
 Future<void> fetchData() async {
   final testing = await readData();
@@ -192,69 +139,3 @@ Future<void> fetchData() async {
   }
 }
 
-// Future<String> prepareDataForTransfer() async {
-//   final data = await sqlDb.queryElectricityData();
-//   final jsonData = jsonEncode(data);
-//   return jsonData;
-// }
-String updateMyList(List<int> data, int start, int size) {// start =11 size = 4
-  //i= 14 i>11
-  for (var i = start+size -1; i>=start;i--) {
-    // for(var j = size - 1; j>=0;j--){
-    size--;
-      myList[i] = data[size];
-    // }
-    print("myUpdatedList:$myList");
-  }
-  return myList.toString();
-}
-List<int> convertBack (int value){
-  List<int> result = [];
-
-  for (int i = 0; i < 4; i++) {
-    result.add(value & 0xFF);
-    value >>= 8;
-  }
-
-  result = result.reversed.toList(); // Reverse the list to get [0, 0, 75, 100]
-
-  print(result); // This will correctly print [0, 0, 75, 100]
-  return result;
-}
-List<int> convertToBytes(int value, int size) {
-  final bytes = List<int>.filled(size, 0);
-
-  for (var i = 0; i < size; i++) {
-    bytes[i] = (value >> (8 * (size - i - 1))) & 0xFF;
-  }
-
-  return bytes;
-}
-List<int> sumLists(List<int> list1, List<int> list2) {
-  final result = List<int>.filled(list1.length, 0);
-  int carry = 0;
-
-  for (int i = list1.length - 1; i >= 0; i--) {
-    final sum = list1[i] + list2[i] + carry;
-    result[i] = sum & 0xFF; // Keep only the lower 8 bits.
-    carry = sum >> 8;       // Get the carry for the next iteration.
-  }
-
-  return result;
-}
-List<int> addBytesAndHex(List<int> byteList, List<int> hexList) {
-  if (byteList.length != hexList.length) {
-    throw ArgumentError("Both lists must have the same length");
-  }
-
-  List<int> result = [];
-
-  for (int i = 0; i < byteList.length; i++) {
-    // Add corresponding elements from both lists
-    int sum = byteList[i] + hexList[i];
-    // Ensure the result stays within the valid byte range (0-255)
-    result.add(sum & 0xFF);
-  }
-
-  return result;
-}

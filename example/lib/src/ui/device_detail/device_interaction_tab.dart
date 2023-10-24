@@ -142,51 +142,34 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) async{
       newEventData = event;
-        if (subscribeOutput.length < 72) {
-          final equal = newEventData.length == previousEventData.length &&
-              newEventData.every(previousEventData.contains);
-          if (!equal) {
-            subscribeOutput += newEventData;
-            previousEventData = newEventData;
-          } else {
-            newEventData = [];
-          }
+      if(event.first == 89 && subscribeOutput.isEmpty){
+        subscribeOutput += newEventData;
+        previousEventData = newEventData;
+      }
+      else if (subscribeOutput.length < 72 && subscribeOutput.isNotEmpty) {
+        final equal = newEventData.length == previousEventData.length &&
+            newEventData.every(previousEventData.contains);
+        if (!equal) {
+          subscribeOutput += newEventData;
+          previousEventData = newEventData;
+        } else {
+          newEventData = [];
         }
-        else {
-          print("subscribe output: $subscribeOutput");
-          // ids for the enabling of the recharge button
-          /*
-          final id = await sqlDb.readData('''
-                SELECT `process` FROM master_table ORDER BY `id` DESC LIMIT 1 
-                ''');
-          for (Map<dynamic, dynamic> map in id) {
-            ids = map['process'].toString();
-          }
-          if(ids != 'none'){
-            isEleEnabled = true;
-            color2 = Colors.deepPurple.shade100;
+      }
+      else {
+        print("subscribe output: $subscribeOutput");
+        setState(() {
+          if (paddingType == "Electricity") {
+            calculateElectric(subscribeOutput);
           }
           else{
-            isEleEnabled = false;
-            color2 = Colors.grey;
+            calculateWater(subscribeOutput);
           }
-          */
-          // end of ids
-          setState(() {
-            if (paddingType == "Electricity") {
-              calculateElectric(subscribeOutput);
-              sqlDb.saveList(subscribeOutput, clientID.toInt(), meterName,
-                  '$paddingType', 'none');
-            }
-            else if (paddingType == "Water") {
-              calculateWater(subscribeOutput);
-              sqlDb.saveList(subscribeOutput, clientIDWater.toInt(), meterName,
-                  '$paddingType', 'none');
-            }
-          });
-        }
+        });
+      }
     });
     subscribeOutput = [];
+    print('subscribe end');
   }
 
   Future<void> writeCharacteristicWithResponse() async {
@@ -198,7 +181,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       // cond => balance
       if (cond) {
         // Code for sublist 1
-        myInstance.getList(meterName, 'balance');
+        print('cond=> $cond');
+        final result = await myInstance.getList(meterName, 'balance');
+        print('result => $result');
         if (myList.first == 9) {
           widget
               .subscribeToCharacteristic(widget.characteristic)
@@ -442,14 +427,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                       foregroundColor: Colors.white,
                                       disabledBackgroundColor: color2,
                                     ),
-                                    onPressed: isEleEnabled?() async {
+                                    onPressed: () async {
                                         if (!widget.viewModel.deviceConnected) {
                                           widget.viewModel.connect();
                                         }
                                         else if (widget.viewModel.deviceConnected) {
                                           startTimer();
                                         }
-                                    }: null,
+                                    },
                                     child: Text(
                                       TKeys.recharge.translate(context),
                                       style: const TextStyle(

@@ -89,7 +89,6 @@ dynamic paddingType;
 List<double> data = [10.0,20.0,50.0,30.0,40.0,25.0];
 List<double> eleReadings =[];
 List<double> watReadings =[];
-late String today;
 List<Color> gradientColors = [
   Colors.grey,
   Colors.grey.shade500,
@@ -101,33 +100,16 @@ final conversionIndices = [
   9,   // pulses
   11,  // totalCredit
   15,  // currentTarrif
-  // 16,  // tarrifVersion
   18,  // valveStatus
   19,  // leackageFlag
   20,  // fraudFlag
-  // 21,  // fraudHours
-  // 22,  // fraudMinutes
-  // 23,  // fraudDayOfWeek
-  // 24,  // fraudDayOfMonth
-  // 25,  // fraudMonth
-  // 26,  // fraudYear
-  // 27,  // totalDebit
   31,  // currentConsumption
-  // 35,  // lcHour
-  // 36,  // lcMinutes
-  // 37,  // lcDayWeek
-  // 38,  // lcDayMonth
-  // 39,  // lcMonth
-  // 40,  // lcYear
-  // 41,  // lastChargeValueNumber
   46,  // month1
   50,  // month2
   54,  // month3
   58,  // month4
   62,  // month5
   66,  // month6
-  // 70,  // warningLimit
-  // 71,  // checkSum
 ];
 
 final conversionSizes = [
@@ -136,33 +118,16 @@ final conversionSizes = [
   2,   // pulses
   4,   // totalCredit
   1,   // currentTarrif
-  // 2,   // tarrifVersion
   1,   // valveStatus
   1,   // leackageFlag
   1,   // fraudFlag
-  // 1,   // fraudHours
-  // 1,   // fraudMinutes
-  // 1,   // fraudDayOfWeek
-  // 1,   // fraudDayOfMonth
-  // 1,   // fraudMonth
-  // 1,   // fraudYear
-  // 4,   // totalDebit
   4,   // currentConsumption
-  // 1,   // lcHour
-  // 1,   // lcMinutes
-  // 1,   // lcDayWeek
-  // 1,   // lcDayMonth
-  // 1,   // lcMonth
-  // 1,   // lcYear
-  // 5,   // lastChargeValueNumber
   4,   // month1
   4,   // month2
   4,   // month3
   4,   // month4
   4,   // month5
   4,   // month6
-  // 1,   // warningLimit
-  // 1,   // checkSum
 ];
 List<int> testing =[];
 List<int> myList = [];
@@ -184,7 +149,7 @@ String watName = '';
 bool cond = false;
 bool cond0 = false;
 String scanBarcode = 'Unknown';
-Color color1 = Colors.deepPurple.shade100;
+Color color1 = Colors.red.shade900;
 Color color2 = Colors.grey;
 Color color3 = Colors.grey;
 String ids = '';
