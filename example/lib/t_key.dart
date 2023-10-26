@@ -5,6 +5,8 @@ import 'localization_service.dart';
 enum TKeys{
   arabic,
   english,
+  scan,
+  scanning,
   device,
   electricity,
   water,
@@ -12,6 +14,7 @@ enum TKeys{
   failed,
   qr,
   change,
+  welcome,
   name,
   currentTarrif,
   today,
@@ -37,6 +40,9 @@ enum TKeys{
   tarrif,
   balanceStation,
   get,
+  connect,
+  disconnect,
+  welcomeMaster,
   id
 }
 

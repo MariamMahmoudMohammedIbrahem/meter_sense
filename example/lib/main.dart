@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/localization_service.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
@@ -9,7 +8,6 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_status_monitor.dart';
 import 'package:flutter_reactive_ble_example/src/ui/ble_status_screen.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_list.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:provider/provider.dart';
 
 import 'src/ble/ble_logger.dart';
@@ -73,10 +71,7 @@ void main() {
             theme: ThemeData(primaryColor: _themeColor, primarySwatch: Colors.grey,scaffoldBackgroundColor: Colors.white,
               elevatedButtonTheme: ElevatedButtonThemeData(
                 style: ElevatedButton.styleFrom(
-                  shape: const StadiumBorder(),
-                  backgroundColor: Colors.grey.shade200,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.grey.shade100,
+                  foregroundColor: Colors.white, backgroundColor: Colors.grey[600], shape: const StadiumBorder(), disabledForegroundColor: Colors.grey.withOpacity(0.38), disabledBackgroundColor: Colors.grey.withOpacity(0.12),
                 ),
               ),
               textTheme: const TextTheme(
@@ -102,7 +97,7 @@ void main() {
             //   Locale('ar', ''), // Arabic
             //   // Add more locales as needed
             // ],
-            home: HomeScreen(),
+            home: const HomeScreen(),
           )
       ),
     ),
@@ -110,7 +105,7 @@ void main() {
 }
 
 class HomeScreen extends StatelessWidget {
-  HomeScreen({
+  const HomeScreen({
     Key? key,
   }) : super(key: key);
 

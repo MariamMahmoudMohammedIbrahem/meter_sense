@@ -1,13 +1,16 @@
 {
   "arabic": "Arabic",
   "english": "English",
-  "device": "Add New Device",
+  "scan": "Start Scanning",
+  "scanning": "Scanning",
+  "device": "Devices",
   "electricity": "Electricity",
   "water": "Water",
   "close": "Close",
   "failed": "Failed to get platform version.",
   "qr": "QR Scanning",
   "change": "Change Language",
+  "welcome": "Welcome",
   "name": "Meter Name",
   "currentTarrif": "Current Tarrif",
   "today": "Today",
@@ -33,5 +36,8 @@
   "tarrif": "Tarrif",
   "balanceStation": "Balance",
   "get": "Send Data",
+  "connect": "Connect",
+  "disconnect": "Disconnect",
+  "welcomeMaster": "Welcome to Master Station",
   "id": "Client ID"
 }

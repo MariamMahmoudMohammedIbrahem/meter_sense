@@ -27,6 +27,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_barcode_scanner: ^2.0.0
+  collection: ^1.15.0
 
 dev_dependencies:
   build_runner: ^2.3.3

@@ -313,6 +313,54 @@ class SqlDb {
     await deleteDatabase(path);
   }
 
+  Future<List<int>> getSpecifiedList(String? name, String process) async {
+    Database? mydb = await db;
+    String query = '';
+
+    if (process == 'none') {
+      if (name!.startsWith('W')) {
+        listType = 'Water';
+      } else {
+        query = 'SELECT `list`,`title`,`clientId` FROM Electricity WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1';
+        listType = 'Electricity';
+      }
+    } else {
+      myList = [];
+      query = 'SELECT * FROM master_table WHERE `name` = ? AND `process` = ? ORDER BY id DESC LIMIT 1';
+      final List<Map<String, dynamic>> result = await mydb!.rawQuery(query, [name, process]);
+
+      if (result.isNotEmpty) {
+        final dynamic jsonListDynamic = result[0]['list'];
+        listType = result[0]['type'];
+
+        if (jsonListDynamic != null) {
+          final String jsonList = jsonListDynamic as String;
+          if (jsonList != null) {
+            final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
+            myList = dynamicList.cast<int>();
+
+            if (process == 'balance') {
+              myList.insert(0, 0x09);
+            } else {
+              myList.insert(0, 0x10);
+            }
+
+            final random = Random();
+            myList.add(random.nextInt(255));
+
+            int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+            myList.add(sum);
+
+            return myList;
+          }
+        }
+      }
+    }
+
+    return myList;
+  }
+
+
 // Retrieve the list from the database to send to master station
   Future<List<int>> getList(String? name,  String process) async {
     Database? mydb = await db;
@@ -329,11 +377,10 @@ class SqlDb {
         query,
         [name,process],
       );
-      print('result => $result');
       if (result.isNotEmpty) {
         final dynamic jsonListDynamic = result[0]['list'];
-        listName = result[0]['title'];
-        listClientId = result[0]['clientId'];
+        // listName = result[0]['title'];
+        // listClientId = result[0]['clientId'];
         final String? jsonList = jsonListDynamic as String?;
         if (jsonList != null) {
           final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
@@ -354,8 +401,8 @@ class SqlDb {
       );
       if (result.isNotEmpty) {
         final dynamic jsonListDynamic = result[0]['list'];
-        listName = result[0]['name'];
-        listClientId = result[0]['clientId'];
+        // listName = result[0]['name'];
+        // listClientId = result[0]['clientId'];
         listType = result[0]['type'];
         final String? jsonList = jsonListDynamic as String?;
         if (jsonList != null) {

@@ -10,7 +10,6 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ui/master/master_station.dart';
-import 'package:flutter_reactive_ble_example/src/ble/navigatorTest.dart';
 import 'package:flutter_reactive_ble_example/t_key.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:get/get.dart';
@@ -70,7 +69,12 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
 }
 
 class DeviceList extends StatefulWidget {
-  const DeviceList({required this.scannerState, required this.startScan, required this.stopScan, required this.deviceConnector, super.key,
+  const DeviceList({
+    required this.scannerState,
+    required this.startScan,
+    required this.stopScan,
+    required this.deviceConnector,
+    super.key,
   });
 
   final BleScannerState scannerState;
@@ -89,9 +93,9 @@ class _DeviceListState extends State<DeviceList> {
     fetchData();
     if (!widget.scannerState.scanIsInProgress) {
       _startScanning();
-      Timer(
-          const Duration(seconds: 5), () {
+      Timer(const Duration(seconds: 5), () {
         widget.stopScan();
+        availability = true;
       });
     }
     super.initState();
@@ -108,6 +112,7 @@ class _DeviceListState extends State<DeviceList> {
     final text = deviceNameController.text;
     widget.startScan(text.isEmpty ? [] : [Uuid.parse(text)]);
   }
+
   Future<void> scanQR() async {
     String barcodeScanRes;
     try {
@@ -123,6 +128,7 @@ class _DeviceListState extends State<DeviceList> {
       scanBarcode = barcodeScanRes;
     });
   }
+
   final localizationController = Get.find<LocalizationController>();
   @override
   Widget build(BuildContext context) {
@@ -132,220 +138,262 @@ class _DeviceListState extends State<DeviceList> {
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
-          // Stack(
-          //   children: [
-          //     ClipPath(
-          //       clipper: WaveClipperTwo(reverse: false),
-          //       child: Container(
-          //         height: 150,
-          //         color: Colors.grey.shade200,
-          //       ),
-          //     ),
-          //     Column(
-          //       children: [
-          //         const SizedBox(height:25),
-          //         Row(
-          //           children: [
-          //             const SizedBox(width:10,),
-          //             ElevatedButton(
-          //               onPressed: () {
-          //                 localizationController.toggleLanguage('eng');
-          //               },
-          //               child: Text(TKeys.english.translate(context),style: const TextStyle(color: Colors.black),),
-          //             ),
-          //             const SizedBox(width:10,),
-          //             ElevatedButton(
-          //               onPressed: () {localizationController.toggleLanguage('ara');
-          //               },
-          //               child: Text(TKeys.arabic.translate(context),style: const TextStyle(color: Colors.black),),
-          //             ),
-          //             const SizedBox(width:10,),
-          //           ],
-          //         ),
-          //       ],
-          //     ),
-          //   ],
-          // ),
           Expanded(
             child: Column(
               children: [
-                // SizedBox(
-                //   height: height * 0.25,
-                //   child: Image.asset('images/logo.jpg'),
-                // ),
-                const SizedBox(height:20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(width: 10,),
+                    const SizedBox(
+                      width: 10,
+                    ),
                     Flexible(
                       child: Column(
                         children: [
-                          const SizedBox(height:10,),
-                          const Text("Available Devices to connect", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18,),),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                onPressed: scanQR,
+                                child: Text(
+                                  TKeys.qr.translate(context),
+                                  style: TextStyle(
+                                    color: Colors.green.shade50,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _startScanning();
+                                  Timer(const Duration(seconds: 5), () {
+                                    widget.stopScan();
+                                  });
+                                },
+                                child: Text(
+                                  !widget.scannerState.scanIsInProgress
+                                      ? TKeys.scan.translate(context)
+                                      : TKeys.scanning.translate(context),
+                                  style: TextStyle(
+                                    color: Colors.green.shade50,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Padding(
+                            padding:
+                                EdgeInsets.symmetric(horizontal: width * .1),
+                            child: Visibility(
+                              visible: availability,
+                              child: Text(
+                                "if you can't find your device please turn off the bluetooth then turn it on again",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Text(
+                            TKeys.device.translate(context),
+                            style: TextStyle(
+                                color: Colors.green.shade900,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22,
+                                shadows: const [
+                                  Shadow(
+                                      color: Colors.grey,
+                                      blurRadius: 2.0,
+                                      offset: Offset(2.0, 2.0)),
+                                ]),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              left: width * .07,
+                              right: width * .07,
+                              top: 10,
+                            ),
+                            child: Divider(
+                              height: 1,
+                              thickness: 1,
+                              indent: 0,
+                              endIndent: 10,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
                           ListView(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             children: widget.scannerState.discoveredDevices
                                 .where(
-                                  (device) =>
-                                      (device.name == scanBarcode || nameList.contains(device.name) || device.name == "MasterStation")
-                                          && (device.name.isNotEmpty),
-                                )
-                                .map(
-                                  (device) {
-                                    meterName = device.name;
-                                    if(device.name.startsWith('W')){
-                                      paddingType = "Water";
-                                    }
-                                    else{
-                                      paddingType = "Electricity";
-                                    }
-                                    return Padding(
-                                      padding: EdgeInsets.symmetric(horizontal: width * .1),
-                                      child: ElevatedButton(
-                                        onPressed: () async {
-                                          widget.stopScan();
-                                          await widget.deviceConnector.connect(device.id);
-                                          if (device.name == "MasterStation") {
-                                            await Navigator.push<void>(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) => MasterInteractionTab(
-                                                  device: device,
-                                                  characteristic: QualifiedCharacteristic(
-                                                    characteristicId: Uuid.parse(
-                                                        "0000ffe1-0000-1000-8000-00805f9b34fb"),
-                                                    serviceId: Uuid.parse(
-                                                        "0000ffe0-0000-1000-8000-00805f9b34fb"),
-                                                    deviceId: device.id,
-                                                  ),
+                              (device) =>
+                                  (device.name == scanBarcode ||
+                                      nameList.contains(device.name) ||
+                                      device.name == "MasterStation") &&
+                                  (device.name.isNotEmpty),
+                            )
+                                .map((device) {
+                              meterName = device.name;
+                              if (device.name != 'MasterStation') {
+                                if (device.name.startsWith('W')) {
+                                  paddingType = "Water";
+                                } else {
+                                  paddingType = "Electricity";
+                                }
+                              }
+                              return Padding(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: width * .1),
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      onTap: () async {
+                                        widget.stopScan();
+                                        await widget.deviceConnector
+                                            .connect(device.id);
+                                        if (device.name == "MasterStation") {
+                                          await Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  MasterInteractionTab(
+                                                device: device,
+                                                characteristic:
+                                                    QualifiedCharacteristic(
+                                                  characteristicId: Uuid.parse(
+                                                      "0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                                  serviceId: Uuid.parse(
+                                                      "0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                                  deviceId: device.id,
                                                 ),
                                               ),
-                                            );
+                                            ),
+                                          );
+                                        } else {
+                                          if (nameList.contains(device.name) ==
+                                              false) {
+                                            await sqlDb.insertData('''
+                                                      INSERT OR IGNORE INTO Meters (`name`, `type`)
+                                                      VALUES ("${device.name}","$paddingType")
+                                                      ''');
                                           }
-                                          else {
-                                            if(nameList.contains(device.name) == false){
-                                              await sqlDb.insertData('''
-                                                  INSERT OR IGNORE INTO Meters (`name`, `type`)
-                                                  VALUES ("${device.name}","$paddingType")
-                                                  ''');
-                                            }
-                                            await Navigator.push<void>(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) => DeviceInteractionTab(
-                                                  device: device,
-                                                  characteristic: QualifiedCharacteristic(
-                                                    characteristicId: Uuid.parse(
-                                                        "0000ffe1-0000-1000-8000-00805f9b34fb"),
-                                                    serviceId: Uuid.parse(
-                                                        "0000ffe0-0000-1000-8000-00805f9b34fb"),
-                                                    deviceId: device.id,
-                                                  ),
+                                          await Navigator.push<void>(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  DeviceInteractionTab(
+                                                device: device,
+                                                characteristic:
+                                                    QualifiedCharacteristic(
+                                                  characteristicId: Uuid.parse(
+                                                      "0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                                  serviceId: Uuid.parse(
+                                                      "0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                                  deviceId: device.id,
                                                 ),
                                               ),
-                                            );
-                                          }
-                                        },
-                                        child: Text(
-                                          device.name,
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      leading: SizedBox(
+                                        width: 25,
+                                        child: Image.asset(
+                                          paddingType == 'Electricity'
+                                              ? 'icons/electricityMonth.png'
+                                              : 'icons/waterMonth.png',
                                         ),
                                       ),
-                                    );
-                                  }
-                                )
-                                .toList(),
+                                      title: Text(
+                                        device.name,
+                                        style: TextStyle(
+                                          color: Colors.grey.shade700,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                    ),
+                                    Divider(
+                                      height: 1,
+                                      thickness: 1,
+                                      indent: 0,
+                                      endIndent: 10,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 10,),
-                    Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: scanQR,
-                          child: Text(
-                            TKeys.qr.translate(context),
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            ElevatedButton(
-                              onPressed: _startScanning,
-                              child: const Text('Start',style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),),
-                            ),
-                            ElevatedButton(
-                              onPressed: widget.stopScan,
-                              child: const Text('Stop',style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 10,),
                   ],
                 ),
               ],
             ),
           ),
-          // ClipPath(
-          //   clipper: WaveClipperTwo(reverse: true),
-          //   child: Container(
-          //     height: 150,
-          //     color: Colors.grey.shade200,
-          //   ),
-          // ),
         ],
       ),
     );
   }
 }
+
 class Clip extends StatelessWidget {
   final bool direction;
   const Clip({required this.direction, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => ClipPath(
-      clipper: WaveClipperTwo(reverse: direction),
-      child: Container(
-        height: 150,
-        color: Colors.grey.shade200,
-      ),
-    );
+        clipper: WaveClipperTwo(reverse: direction),
+        child: Container(
+          height: 150,
+          color: Colors.grey.shade200,
+        ),
+      );
 }
 
-class DeviceLayout extends StatelessWidget {
-  DeviceLayout({Key? key}) : super(key: key);
+class LanguageToggle extends StatefulWidget {
+  const LanguageToggle({Key? key}) : super(key: key);
+
+  @override
+  State<LanguageToggle> createState() => _LanguageToggleState();
+}
+
+class _LanguageToggleState extends State<LanguageToggle> {
   final localizationController = Get.find<LocalizationController>();
   @override
-  Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    return SizedBox(
-      height: height * 0.25,
-      child: Image.asset('images/logo.jpg'),
-    );
-  }
+  Widget build(BuildContext context) => Row(
+        children: [
+          IconButton(
+            onPressed: () {
+              if (!toggle) {
+                localizationController.toggleLanguage('ara');
+              } else {
+                localizationController.toggleLanguage('eng');
+              }
+              toggle = !toggle;
+            },
+            icon: const Icon(Icons.language_outlined),
+          ),
+          Text(
+            toggle
+                ? TKeys.arabic.translate(context)
+                : TKeys.english.translate(context),
+          )
+        ],
+      );
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -355,24 +403,30 @@ class MyApp extends StatelessWidget {
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: SizedBox(
-        height:height,
-        width: width,
-        child: Column(
-          children: [
-            const Clip(direction: false,),
-            SizedBox(
-              height: height-300,
-              width: width,
-              child: Column(
-                children: [
-                  DeviceLayout(),
-                  SizedBox(height:height*.4,child: const DeviceListScreen()),
-                ],
+      body: SafeArea(
+        child: SizedBox(
+          height: height,
+          width: width,
+          child: Column(
+            children: [
+              const LanguageToggle(),
+              SizedBox(
+                width: width * .7,
+                child: Image.asset('images/authorize.jpg'),
               ),
-            ),
-            const Clip(direction: true,),
-          ],
+              SizedBox(
+                height: height * .55,
+                width: width,
+                child: Column(
+                  children: [
+                    SizedBox(
+                        height: height * .4, child: const DeviceListScreen()),
+                  ],
+                ),
+              ),
+              // const Clip(direction: true,),
+            ],
+          ),
         ),
       ),
     );

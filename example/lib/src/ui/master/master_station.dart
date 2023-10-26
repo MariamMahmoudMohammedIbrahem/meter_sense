@@ -42,6 +42,7 @@ class MasterInteractionTab extends StatelessWidget {
                   discoverServices: () => serviceDiscoverer.discoverServices(device.id)),
               characteristic: characteristic,
               writeWithoutResponse: interactor.writeCharacteristicWithoutResponse,
+              writeWithResponse: interactor.writeCharacteristicWithResponse,
               readCharacteristic: interactor.readCharacteristic,
               subscribeToCharacteristic: interactor.subScribeToCharacteristic,
             ),
@@ -88,6 +89,7 @@ class _MasterStation extends StatefulWidget {
     required this.viewModel,
     required this.characteristic,
     required this.writeWithoutResponse,
+    required this.writeWithResponse,
     required this.readCharacteristic,
     required this.subscribeToCharacteristic,
     Key? key,
@@ -99,6 +101,9 @@ class _MasterStation extends StatefulWidget {
   final Future<void> Function(
       QualifiedCharacteristic characteristic, List<int> value)
   writeWithoutResponse;
+  final Future<void> Function(
+      QualifiedCharacteristic characteristic, List<int> value)
+  writeWithResponse;
   final Future<List<int>> Function(
       QualifiedCharacteristic characteristic)
   readCharacteristic;
@@ -148,6 +153,7 @@ class _MasterStationState extends State<_MasterStation> {
               print(balance);
             });
           }
+          print(testing);
         });
   }
   @override
@@ -164,160 +170,268 @@ class _MasterStationState extends State<_MasterStation> {
     widget.viewModel.disconnect();
     selectedName = null;
     super.dispose();
-    timer.cancel();
+    // timer.cancel();
+  }
+  List<DropdownMenuItem<String>> _addDividersAfterItems(Set<String> items) {
+    final List<DropdownMenuItem<String>> menuItems = [];
+    for (final String item in items) {
+      menuItems.addAll(
+        [
+          DropdownMenuItem<String>(
+            value: item,
+            child: Text(
+              item,
+              style: TextStyle(
+                color: Colors.green.shade800,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          if (item != items.last)
+            const DropdownMenuItem<String>(
+              enabled: false,
+              child: Divider(),
+            ),
+        ],
+      );
+    }
+    return menuItems;
   }
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: ()=> Future.delayed(
-            const Duration(seconds: 1),(){
-          setState(() {
-            if(!widget.viewModel.deviceConnected){
-              widget.viewModel.connect();
-            }
-            else if(widget.viewModel.deviceConnected){
-              subscribeCharacteristic();
-              widget.readCharacteristic(widget.characteristic);
-            }
-          });
-        }),
-        child: Column(
-          children: [
-            SizedBox(height:width*.25),
-            Center(
-              child: DropdownButton<String>(
-                hint: Text(
-                  TKeys.choose.translate(context),
-                  style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500),
-                ),
-                value: selectedName,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedName = newValue!;
-                    final myInstance = SqlDb();
-                    myInstance.getList(selectedName,'none');
-                  });
-                },
-                items: name.map((name) => DropdownMenuItem<String>(
-                    value: name,
-                    child: Text(name),
-                  )).toList(),
-              ),
-
-            ),
-            Visibility(
-              visible: selectedName != null,
-              child: Expanded(
-                  child: ListView(
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: ()=> Future.delayed(
+              const Duration(seconds: 1),(){
+            setState(() {
+              if(!widget.viewModel.deviceConnected){
+                widget.viewModel.connect();
+              }
+              else if(widget.viewModel.deviceConnected){
+                subscribeCharacteristic();
+                widget.readCharacteristic(widget.characteristic);
+              }
+            });
+          }),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    Flexible(
+                      flex: 2,
+                      child: Column(
+                        children: [
+                          Align(alignment:Alignment.centerLeft,child: Text(TKeys.welcomeMaster.translate(context),style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold, fontSize: 24),)),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              // right: 50,
+                              top: 10,
+                              bottom: 10,
+                            ),
+                            child: Divider(
+                              height: 1,
+                              // thickness: 1,
+                              // indent: 0,
+                              // endIndent: 10,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ],
+                    ),),
+                    Flexible(
+                      flex: 1,
+                      child: ElevatedButton(
+                        onPressed: (){
+                          if(widget.viewModel.connectionStatus == DeviceConnectionState.connecting || widget.viewModel.connectionStatus == DeviceConnectionState.connected){
+                            print("connected");
+                            widget.viewModel.disconnect();
+                          }
+                          else if(widget.viewModel.connectionStatus == DeviceConnectionState.disconnecting || widget.viewModel.connectionStatus == DeviceConnectionState.disconnected){
+                            print("disconnected");
+                            widget.viewModel.connect();
+                          }
+                        },
+                        child: Text((widget.viewModel.connectionStatus == DeviceConnectionState.connecting || widget.viewModel.connectionStatus == DeviceConnectionState.connected)?TKeys.disconnect.translate(context):TKeys.connect.translate(context)),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(flex: 2,child: Text(TKeys.choose.translate(context),style: TextStyle(color: Colors.grey.shade800, fontWeight: FontWeight.bold, fontSize: 20),)),
+                    const Flexible(flex: 1,child: SizedBox(width: 10,)),
+                    Flexible(
+                      flex: 2,
+                      child: SizedBox(
+                        height: 55,
+                        child: DropdownButtonFormField<String>(
+                          borderRadius: BorderRadius.circular(20.0),
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey.shade300, width: 2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey.shade100, width: 2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.shade100,
+                          ),
+                          hint: const Text(
+                            'Device',
+                            style:  TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                            ),
+                          ),
+                          value: selectedName,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              selectedName = newValue!;
+                              myInstance.getList(newValue,'none');
+                            });
+                          },
+                          items: _addDividersAfterItems(name),
+                          // items: name.map((name) => DropdownMenuItem<String>(
+                          //     value: name,
+                          //     child: Text(name,),
+                          //   )).toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Visibility(
+                  visible: selectedName != null,
+                  child: Expanded(
+                      child: ListView(
                       children: [
                         Padding(
-                          padding: const EdgeInsetsDirectional.only(start: 16.0),
-                          child: Text(
-                            "Connection: ${widget.viewModel.connectionStatus}",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Text("${TKeys.name.translate(context)}: $selectedName"),
-                        Text("${TKeys.id.translate(context)}: $listClientId"),
-                        ElevatedButton(
-                            onPressed: ()async {
-                              if(!widget.viewModel.deviceConnected){
-                                widget.viewModel.connect();
-                              }
-                              else{
-                                await writeCharacteristicWithoutResponse();
-                                if(testing.isEmpty){
-                                  Timer(const Duration(seconds: 2), () async{
-                                    await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
-                                    await subscribeCharacteristic();
-                                    await widget.readCharacteristic(widget.characteristic);
-                                  });
-                                }
-                              }
-                            },
-                            child: Text(TKeys.get.translate(context), style: const TextStyle(color: Colors.black),),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal:width*.07,vertical: 10.0),
+                          padding: EdgeInsets.symmetric(horizontal:width*.04,vertical: 10.0),
                           child: Column(
                             children: [
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  SizedBox(width:width*.07),
-                                  Text(
-                                    '${TKeys.tarrif.translate(context)}: ',
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
+                                  Text("${TKeys.name.translate(context)}: ",style: TextStyle(
+                                    color: Colors.green.shade900,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 19,
+                                  ),),
+                                  Text('$selectedName',style: TextStyle(
+                                    color: Colors.grey.shade800,
+                                    fontSize: 17,
+                                  ),),
+                                ],
+                              ),
+                              const SizedBox(height:10),
+                              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${TKeys.tarrif.translate(context)}: ',
+                                        style: TextStyle(
+                                          color: Colors.green.shade900,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 19,
+                                        ),
+                                      ),
+                                      Text(
+                                        tarrifMaster.toString(),
+                                        style: TextStyle(
+                                          color: Colors.grey.shade800,
+                                          fontSize: 17,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    tarrifMaster.toString(),
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 17,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${TKeys.balanceStation.translate(context)}: ',
+                                        style: TextStyle(
+                                          color: Colors.green.shade900,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 19,
+                                        ),
+                                      ),
+                                      Text(
+                                        balanceMaster.toString(),
+                                        style: TextStyle(
+                                          color: Colors.grey.shade800,
+                                          fontSize: 17,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
+                              const SizedBox(height:10),
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  SizedBox(width:width*.07),
-                                  Text(
-                                    '${TKeys.balanceStation.translate(context)}: ',
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
+                                  ElevatedButton(
+                                    onPressed: ()async {
+                                      if(!widget.viewModel.deviceConnected){
+                                        widget.viewModel.connect();
+                                      }
+                                      else{
+                                        await writeCharacteristicWithoutResponse();
+                                        if(testing.isEmpty){
+                                          Timer(const Duration(seconds: 2), () async{
+                                            await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
+                                            await subscribeCharacteristic();
+                                            await widget.readCharacteristic(widget.characteristic);
+                                          });
+                                        }
+                                      }
+                                    },
+                                    child: Text(TKeys.get.translate(context), style: TextStyle(color: Colors.green.shade50, fontWeight: FontWeight.bold,fontSize: 16,),),
                                   ),
-                                  Text(
-                                    balanceMaster.toString(),
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 17,
-                                    ),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                          final myInstance = SqlDb();
+                                          if (balance.isNotEmpty && tarrif.isEmpty){
+                                            await myInstance.saveList( balance, 0,'$selectedName', '$listType' ,'balance');
+                                          }
+                                          else if(tarrif.isNotEmpty && balance.isEmpty){
+                                            await myInstance.saveList( tarrif, 0, '$selectedName', '$listType' ,'tarrif');
+                                          }
+                                          else {
+                                            await myInstance.saveList( balance, 0, '$selectedName', '$listType' ,'balance');
+                                            await myInstance.saveList( tarrif, 0, '$selectedName', '$listType' ,'tarrif');
+                                          }
+                                    },
+                                    child: Text(TKeys.update.translate(context), style: TextStyle(color: Colors.green.shade50,fontWeight: FontWeight.bold,fontSize: 16,),),
                                   ),
                                 ],
                               ),
                             ],
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () async {
-                                final myInstance = SqlDb();
-                                if (balance.isNotEmpty && tarrif.isEmpty){
-                                  await myInstance.saveList( balance, int.parse('$listClientId'),'$listName', '$listType' ,'balance');
-                                }
-                                else if(tarrif.isNotEmpty && balance.isEmpty){
-                                  await myInstance.saveList( tarrif, int.parse('$listClientId'),'$listName', '$listType' ,'tarrif');
-                                }
-                                else {
-                                  await myInstance.saveList( balance, int.parse('$listClientId'),'$listName', '$listType' ,'balance');
-                                  await myInstance.saveList( tarrif, int.parse('$listClientId'),'$listName', '$listType' ,'tarrif');
-                                }
-                          },
-                          child: Text(TKeys.update.translate(context), style: const TextStyle(color: Colors.black),),
-                        ),
                       ],
-                    ),
-                  ],
 
+                    ),
+                  ),
                 ),
-              ),
+                // ElevatedButton(onPressed: (){
+                //   subscribeCharacteristic();
+                //   widget.writeWithResponse(widget.characteristic,[0x59]);
+                //   // widget.readCharacteristic(widget.characteristic);
+                // }, child:const Text('testing') )
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

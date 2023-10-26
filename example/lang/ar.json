@@ -1,13 +1,16 @@
 {
   "arabic": "العربية",
   "english": "الانجليزية",
-  "device": "أضف عداد جديد",
+  "scan": "بدأ البحث",
+  "scanning": "جاري البحث",
+  "device": "الأجهزه",
   "electricity": "كهرباء",
   "water": "مياه",
   "close": "غلق",
   "failed": "فشل الحصول على نسخة النظام الأساسي",
   "qr": "بحث",
   "change": "تفيير اللغه",
+  "welcome": "مرحبا بك",
   "name": "اسم العداد",
   "currentTarrif": "الشريحه الحاليه",
   "today": "اليوم",
@@ -33,5 +36,8 @@
   "tarrif": "الشريحه",
   "balanceStation": "الشحن",
   "get": "ارسال القراءات",
+  "connect": "اتصال",
+  "disconnect": "الغاء الاتصال",
+  "welcomeMaster": "مرحبا في Master Station",
   "id": "رقم العميل"
 }

@@ -137,7 +137,7 @@ List<int> tarrif = [];
 num tarrifMaster = 0;
 String DEVID = "";
 dynamic listName = "";
-dynamic listClientId = 0;
+// dynamic listClientId = 0;
 dynamic listType = "";
 List<int> subList =[];
 int lastValue = 0;
@@ -162,4 +162,7 @@ late List<int> subscribeOutput;
 StreamSubscription<List<int>>? subscribeStream;
 final myInstance = SqlDb();
 bool visible = false;
+bool availability = false;
 List<Map> response = [];
+bool toggle = false; //english
+Completer<void> subscriptionCompleter = Completer<void>();
