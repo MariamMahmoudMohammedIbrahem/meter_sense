@@ -166,3 +166,5 @@ bool availability = false;
 List<Map> response = [];
 bool toggle = false; //english
 Completer<void> subscriptionCompleter = Completer<void>();
+bool write = true;
+String icon = 'icons/masterStation.png';

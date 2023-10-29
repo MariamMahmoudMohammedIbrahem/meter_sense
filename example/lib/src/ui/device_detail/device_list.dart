@@ -243,12 +243,16 @@ class _DeviceListState extends State<DeviceList> {
                             )
                                 .map((device) {
                               meterName = device.name;
-                              if (device.name != 'MasterStation') {
-                                if (device.name.startsWith('W')) {
-                                  paddingType = "Water";
-                                } else {
-                                  paddingType = "Electricity";
-                                }
+                              if (device.name.startsWith('W')) {
+                                paddingType = "Water";
+                                icon =  'icons/waterMonth.png';
+                              }
+                              else if(device.name.startsWith('Ele')){
+                                paddingType = "Electricity";
+                                icon = 'icons/electricityMonth.png';
+                              }
+                              else{
+                                icon =  'icons/masterStation.png';
                               }
                               return Padding(
                                 padding: EdgeInsets.symmetric(
@@ -308,9 +312,7 @@ class _DeviceListState extends State<DeviceList> {
                                       leading: SizedBox(
                                         width: 25,
                                         child: Image.asset(
-                                          paddingType == 'Electricity'
-                                              ? 'icons/electricityMonth.png'
-                                              : 'icons/waterMonth.png',
+                                          icon
                                         ),
                                       ),
                                       title: Text(

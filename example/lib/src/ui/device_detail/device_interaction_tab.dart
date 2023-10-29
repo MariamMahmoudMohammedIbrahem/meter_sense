@@ -14,7 +14,6 @@ import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
 import 'package:collection/collection.dart';
 
-
 import '../../../t_key.dart';
 
 part 'device_interaction_tab.g.dart';
@@ -110,20 +109,25 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   void initState() {
     discoveredServices = [];
     subscribeOutput = [];
+    write = true;
     setState(() {
       timer = Timer.periodic(interval, (Timer t) {
-        print("timer $interval");
-        if(!widget.viewModel.deviceConnected){
-          print("timer connect");
+        if (!widget.viewModel.deviceConnected) {
           widget.viewModel.connect();
         }
-        else if(subscribeOutput.length != 72 ){
-          subscribeOutput = [];
-          subscribeCharacteristic();
-          writeCharacteristicWithResponse();
+        else if (subscribeOutput.length != 72) {
+            subscribeCharacteristic();
+            widget.writeWithoutResponse(widget.characteristic,[0x59]);
         }
-        else if(subscribeOutput.length == 72 ){
-          print("timer 72");
+        else if (subscribeOutput.length == 72) {
+          setState(() {
+            if (paddingType == "Electricity") {
+              calculateElectric(subscribeOutput);
+            }
+            else {
+              calculateWater(subscribeOutput);
+            }
+          });
           t.cancel();
         }
       });
@@ -141,38 +145,33 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
 
   Future<void> subscribeCharacteristic() async {
     var newEventData = <int>[];
-    subscribeStream =
-        widget.subscribeToCharacteristic(widget.characteristic).listen((event) async{
+    subscribeStream = widget
+        .subscribeToCharacteristic(widget.characteristic)
+        .listen((event) async {
       newEventData = event;
-      if(event.first == 89 && subscribeOutput.isEmpty){
+      if (event.first == 89 && subscribeOutput.isEmpty) {
         subscribeOutput += newEventData;
         previousEventData = newEventData;
+        write = false;
       }
       else if (subscribeOutput.length < 72 && subscribeOutput.isNotEmpty) {
-        final equal = (previousEventData.length == newEventData.length) && ListEquality<int>().equals(previousEventData, newEventData);
+        final equal = (previousEventData.length == newEventData.length) &&
+            ListEquality<int>().equals(previousEventData, newEventData);
         if (!equal) {
           subscribeOutput += newEventData;
           previousEventData = newEventData;
-        } else {
+        }
+        else {
           newEventData = [];
         }
       }
-      else {
-        print("subscribe output: $subscribeOutput");
-        setState(() {
-          if (paddingType == "Electricity") {
-            calculateElectric(subscribeOutput);
-          }
-          else{
-            calculateWater(subscribeOutput);
-          }
-        });
-      }
     });
+    print("subscribe output: $subscribeOutput");
     print('subscribe end');
   }
 
   Future<void> writeCharacteristicWithResponse() async {
+    print('object');
     await widget.writeWithResponse(widget.characteristic, [0x59]);
   }
 
@@ -235,16 +234,28 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(TKeys.welcome.translate(context),style: TextStyle(color: Colors.green.shade900,fontSize: 24,fontWeight: FontWeight.bold),),
+                            Text(
+                              TKeys.welcome.translate(context),
+                              style: TextStyle(
+                                  color: Colors.green.shade900,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold),
+                            ),
                             ElevatedButton(
-                                onPressed: (){
-                                  setState(() {
-                                    visible = !visible;
-                                  });
+                              onPressed: () {
+                                setState(() {
+                                  visible = !visible;
+                                });
 
-                                  print(visible);
-                                },
-                                child: Text("Show Devices",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.green.shade50),),
+                                print(visible);
+                              },
+                              child: Text(
+                                "Show Devices",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.green.shade50),
+                              ),
                             ),
                             ElevatedButton(
                               onPressed: () {
@@ -253,7 +264,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                               },
                               child: Text(
                                 TKeys.logout.translate(context),
-                                style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16,color: Colors.green.shade50),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.green.shade50),
                               ),
                             ),
                           ],
@@ -261,30 +275,32 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                       ),
                       Padding(
                         padding: EdgeInsets.symmetric(
-                            horizontal: width * .07,
-                            vertical: 10.0),
+                            horizontal: width * .07, vertical: 10.0),
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18.0),
-                              side: BorderSide(color: widget.viewModel.deviceConnected?Colors.green.shade400:color1),
+                              side: BorderSide(
+                                  color: widget.viewModel.deviceConnected
+                                      ? Colors.green.shade400
+                                      : color1),
                             ),
                             backgroundColor: Colors.white,
                             foregroundColor: Colors.white,
                           ),
-                          onPressed: (){
-                            if(paddingType == "Electricity"){
+                          onPressed: () {
+                            if (paddingType == "Electricity") {
                               Navigator.of(context).push<void>(
                                 MaterialPageRoute<void>(
-                                    builder: (context) =>
-                                    StoreData(name: meterName,)),
+                                    builder: (context) => StoreData(
+                                          name: meterName,
+                                        )),
                               );
-                            }
-                            else{
+                            } else {
                               Navigator.of(context).push<void>(
                                 MaterialPageRoute<void>(
                                     builder: (context) =>
-                                    WaterData(name: meterName)),
+                                        WaterData(name: meterName)),
                               );
                             }
                           },
@@ -293,7 +309,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                             child: Column(
                               children: [
                                 Row(
-                                  mainAxisAlignment:MainAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       '${TKeys.name.translate(context)}: ',
@@ -315,7 +331,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                 const SizedBox(height: 10),
                                 Row(
                                   children: [
-                                    SizedBox(width:width*.07),
+                                    SizedBox(width: width * .07),
                                     Text(
                                       '${TKeys.currentTarrif.translate(context)}: ',
                                       style: TextStyle(
@@ -325,7 +341,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                       ),
                                     ),
                                     Text(
-                                      paddingType=='Electricity'?currentTarrif.toString():currentTarrifWater.toString(),
+                                      paddingType == 'Electricity'
+                                          ? currentTarrif.toString()
+                                          : currentTarrifWater.toString(),
                                       style: TextStyle(
                                         color: Colors.grey.shade800,
                                         fontSize: 17,
@@ -337,7 +355,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                   height: 10,
                                 ),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     const SizedBox(
                                       width: 1,
@@ -357,11 +376,17 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                             SizedBox(
                                               width: 25,
                                               child: Image.asset(
-                                                  paddingType =='Electricity'?'icons/electricityToday.png':'icons/waterToday.png',
+                                                paddingType == 'Electricity'
+                                                    ? 'icons/electricityToday.png'
+                                                    : 'icons/waterToday.png',
                                               ),
                                             ),
                                             Text(
-                                              paddingType=='Electricity'?currentConsumption.toString():currentConsumptionWater.toString(),
+                                              paddingType == 'Electricity'
+                                                  ? currentConsumption
+                                                      .toString()
+                                                  : currentConsumptionWater
+                                                      .toString(),
                                               style: TextStyle(
                                                 color: Colors.grey.shade800,
                                                 fontSize: 17,
@@ -386,11 +411,16 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                           children: [
                                             SizedBox(
                                               width: 25,
-                                              child: Image.asset(
-                                                  paddingType == 'Electricity'?'icons/electricityMonth.png':'icons/waterMonth.png'),
+                                              child: Image.asset(paddingType ==
+                                                      'Electricity'
+                                                  ? 'icons/electricityMonth.png'
+                                                  : 'icons/waterMonth.png'),
                                             ),
                                             Text(
-                                              paddingType=='Electricity'?totalReading.toString():totalReadingWater.toString(),
+                                              paddingType == 'Electricity'
+                                                  ? totalReading.toString()
+                                                  : totalReadingWater
+                                                      .toString(),
                                               style: TextStyle(
                                                 color: Colors.grey.shade800,
                                                 fontSize: 17,
@@ -403,7 +433,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                     const SizedBox(
                                       width: 1,
                                     ),
-
                                   ],
                                 ),
                                 const SizedBox(
@@ -411,7 +440,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(width:width*.07),
+                                    SizedBox(width: width * .07),
                                     Text(
                                       '${TKeys.balance.translate(context)}: ',
                                       style: TextStyle(
@@ -421,7 +450,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                       ),
                                     ),
                                     Text(
-                                      paddingType=='Electricity'?totalCredit.toString():totalCreditWater.toString(),
+                                      paddingType == 'Electricity'
+                                          ? totalCredit.toString()
+                                          : totalCreditWater.toString(),
                                       style: TextStyle(
                                         color: Colors.grey.shade800,
                                         fontSize: 17,
@@ -439,8 +470,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                   onPressed: () async {
                                     if (!widget.viewModel.deviceConnected) {
                                       widget.viewModel.connect();
-                                    }
-                                    else if (widget.viewModel.deviceConnected) {
+                                    } else if (widget
+                                        .viewModel.deviceConnected) {
                                       startTimer();
                                     }
                                   },
@@ -460,187 +491,261 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                       ),
                       Visibility(
                         visible: visible,
-                          child: FutureBuilder(
-                              future: readData(),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<List<Map>> snapshot) {
-                                if (snapshot.hasData) {
-                                  final filteredItems = snapshot.data!.where((item) => item['name'] != meterName).toList();
-                                  return ListView.builder(
-                                      itemCount: filteredItems.length,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      shrinkWrap: true,
-                                      itemBuilder: (context, i) {
-                                        sqlDb.readMeterData(filteredItems[i]['name'].toString(),filteredItems[i]['type'].toString());
-                                        return Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: width * .07,
-                                                  vertical: 10.0),
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(18.0),
-                                                    side: BorderSide(color: widget.viewModel.deviceConnected?Colors.green.shade100:color1),
+                        child: FutureBuilder(
+                            future: readData(),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<List<Map>> snapshot) {
+                              if (snapshot.hasData) {
+                                final filteredItems = snapshot.data!
+                                    .where((item) => item['name'] != meterName)
+                                    .toList();
+                                return ListView.builder(
+                                    itemCount: filteredItems.length,
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemBuilder: (context, i) {
+                                      sqlDb.readMeterData(
+                                          filteredItems[i]['name'].toString(),
+                                          filteredItems[i]['type'].toString());
+                                      return Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: width * .07,
+                                            vertical: 10.0),
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(18.0),
+                                              side: BorderSide(
+                                                  color: widget.viewModel
+                                                          .deviceConnected
+                                                      ? Colors.green.shade100
+                                                      : color1),
+                                            ),
+                                            backgroundColor: Colors.white,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                          onPressed: () {
+                                            if (filteredItems[i]['type'] ==
+                                                "ELectricity") {
+                                              Navigator.of(context).push<void>(
+                                                MaterialPageRoute<void>(
+                                                    builder: (context) =>
+                                                        StoreData(
+                                                          name: eleName,
+                                                        )),
+                                              );
+                                            } else {
+                                              Navigator.of(context).push<void>(
+                                                MaterialPageRoute<void>(
+                                                    builder: (context) =>
+                                                        WaterData(
+                                                          name: filteredItems[i]
+                                                                  ['name']
+                                                              .toString(),
+                                                        )),
+                                              );
+                                            }
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8.0),
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  '${TKeys.name.translate(context)}: ${filteredItems[i]['name']}',
+                                                  style: TextStyle(
+                                                    color:
+                                                        Colors.green.shade900,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 19,
                                                   ),
-                                                  backgroundColor: Colors.white,
-                                                  foregroundColor: Colors.white,
                                                 ),
-                                                onPressed: (){
-                                                  if(filteredItems[i]['type']  == "ELectricity"){
-                                                    Navigator.of(context).push<void>(
-                                                      MaterialPageRoute<void>(
-                                                          builder: (context) =>
-                                                          StoreData(name: eleName,)),
-                                                    );
-                                                  }
-                                                  else{
-                                                    Navigator.of(context).push<void>(
-                                                      MaterialPageRoute<void>(
-                                                          builder: (context) =>
-                                                          WaterData(name: filteredItems[i]['name'].toString(),)),
-                                                    );
-                                                  }
-                                                },
-                                                child: Padding(
-                                                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                                  child: Column(
-                                                    children: [
-                                                      Text(
-                                                        '${TKeys.name.translate(context)}: ${filteredItems[i]['name']}',
-                                                        style: TextStyle(
-                                                          color: Colors.green.shade900,
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 19,
+                                                const SizedBox(height: 10),
+                                                Row(
+                                                  children: [
+                                                    SizedBox(
+                                                        width: width * .07),
+                                                    Text(
+                                                      '${TKeys.currentTarrif.translate(context)}: ',
+                                                      style: TextStyle(
+                                                        color: Colors
+                                                            .green.shade900,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 19,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      (filteredItems[i]
+                                                                  ['type'] ==
+                                                              'Electricity')
+                                                          ? (currentTarrif
+                                                              .toString())
+                                                          : (currentTarrifWater
+                                                              .toString()),
+                                                      style: TextStyle(
+                                                        color: Colors
+                                                            .grey.shade800,
+                                                        fontSize: 17,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    const SizedBox(
+                                                      width: 1,
+                                                    ),
+                                                    Column(
+                                                      children: [
+                                                        Text(
+                                                          TKeys.today.translate(
+                                                              context),
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .green.shade900,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 19,
+                                                          ),
                                                         ),
-                                                      ),
-                                                      const SizedBox(height: 10),
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(width:width*.07),
-                                                          Text(
-                                                            '${TKeys.currentTarrif.translate(context)}: ',
-                                                            style: TextStyle(
-                                                              color: Colors.green.shade900,
-                                                              fontWeight: FontWeight.bold,
-                                                              fontSize: 19,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            (filteredItems[i]['type'] =='Electricity')?(currentTarrif.toString()):(currentTarrifWater.toString()),
-                                                            style: TextStyle(
-                                                              color: Colors.grey.shade800,
-                                                              fontSize: 17,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      const SizedBox(
-                                                        height: 10,
-                                                      ),
-                                                      Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                        children: [
-                                                          const SizedBox(
-                                                            width: 1,
-                                                          ),
-                                                          Column(
-                                                            children: [
-                                                              Text(
-                                                                TKeys.today.translate(context),
-                                                                style: TextStyle(
-                                                                  color: Colors.green.shade900,
-                                                                  fontWeight: FontWeight.bold,
-                                                                  fontSize: 19,
-                                                                ),
+                                                        Row(
+                                                          children: [
+                                                            SizedBox(
+                                                              width: 25,
+                                                              child:
+                                                                  Image.asset(
+                                                                (filteredItems[i]
+                                                                            [
+                                                                            'type'] ==
+                                                                        'Electricity')
+                                                                    ? 'icons/electricityToday.png'
+                                                                    : 'icons/waterToday.png',
                                                               ),
-                                                              Row(
-                                                                children: [
-                                                                  SizedBox(
-                                                                    width: 25,
-                                                                    child: Image.asset(
-                                                                      (filteredItems[i]['type'] =='Electricity')?'icons/electricityToday.png':'icons/waterToday.png',
-                                                                    ),
-                                                                  ),
-                                                                  Text(
-                                                                    (filteredItems[i]['type'] =='Electricity')?(currentConsumption.toString()):(currentConsumptionWater.toString()),
-                                                                    style: TextStyle(
-                                                                      color: Colors.grey.shade800,
-                                                                      fontSize: 17,
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          const SizedBox(width: 30),
-                                                          Column(
-                                                            children: [
-                                                              Text(
-                                                                TKeys.month.translate(context),
-                                                                style: TextStyle(
-                                                                  color: Colors.green.shade900,
-                                                                  fontWeight: FontWeight.bold,
-                                                                  fontSize: 19,
-                                                                ),
-                                                              ),
-                                                              Row(
-                                                                children: [
-                                                                  SizedBox(
-                                                                    width: 25,
-                                                                    child: Image.asset(
-                                                                        filteredItems[i]['type']  == 'Electricity'?'icons/electricityMonth.png':'icons/waterMonth.png'),
-                                                                  ),
-                                                                  Text(
-                                                                    (filteredItems[i]['type'] =='Electricity')?(totalReading.toString()):(totalReadingWater.toString()),
-                                                                    style: TextStyle(
-                                                                      color: Colors.grey.shade800,
-                                                                      fontSize: 17,
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          const SizedBox(
-                                                            width: 1,
-                                                          ),
-
-                                                        ],
-                                                      ),
-                                                      const SizedBox(
-                                                        height: 10,
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(width:width*.07),
-                                                          Text(
-                                                            '${TKeys.balance.translate(context)}: ',
-                                                            style: TextStyle(
-                                                              color: Colors.green.shade900,
-                                                              fontWeight: FontWeight.bold,
-                                                              fontSize: 19,
                                                             ),
-                                                          ),
-                                                          Text(
-                                                            (filteredItems[i]['type'] =='Electricity')?(totalCredit.toString()):(totalCreditWater.toString()),
-                                                            style: TextStyle(
-                                                              color: Colors.grey.shade800,
-                                                              fontWeight: FontWeight.bold,
-                                                              fontSize: 17,
+                                                            Text(
+                                                              (filteredItems[i][
+                                                                          'type'] ==
+                                                                      'Electricity')
+                                                                  ? (currentConsumption
+                                                                      .toString())
+                                                                  : (currentConsumptionWater
+                                                                      .toString()),
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .grey
+                                                                    .shade800,
+                                                                fontSize: 17,
+                                                              ),
                                                             ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(width: 30),
+                                                    Column(
+                                                      children: [
+                                                        Text(
+                                                          TKeys.month.translate(
+                                                              context),
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .green.shade900,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 19,
                                                           ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            SizedBox(
+                                                              width: 25,
+                                                              child: Image.asset(filteredItems[
+                                                                              i]
+                                                                          [
+                                                                          'type'] ==
+                                                                      'Electricity'
+                                                                  ? 'icons/electricityMonth.png'
+                                                                  : 'icons/waterMonth.png'),
+                                                            ),
+                                                            Text(
+                                                              (filteredItems[i][
+                                                                          'type'] ==
+                                                                      'Electricity')
+                                                                  ? (totalReading
+                                                                      .toString())
+                                                                  : (totalReadingWater
+                                                                      .toString()),
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .grey
+                                                                    .shade800,
+                                                                fontSize: 17,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 1,
+                                                    ),
+                                                  ],
                                                 ),
-                                              ),
-                                            );});
-                                }
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    SizedBox(
+                                                        width: width * .07),
+                                                    Text(
+                                                      '${TKeys.balance.translate(context)}: ',
+                                                      style: TextStyle(
+                                                        color: Colors
+                                                            .green.shade900,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 19,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      (filteredItems[i]
+                                                                  ['type'] ==
+                                                              'Electricity')
+                                                          ? (totalCredit
+                                                              .toString())
+                                                          : (totalCreditWater
+                                                              .toString()),
+                                                      style: TextStyle(
+                                                        color: Colors
+                                                            .grey.shade800,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 17,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    });
+                              }
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }),
                       ),
                     ],
                   ),
@@ -654,6 +759,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             if (!widget.viewModel.deviceConnected) {
               widget.viewModel.connect();
             } else if (widget.viewModel.deviceConnected) {
+              write = true;
               subscribeCharacteristic();
               writeCharacteristicWithResponse();
             }
