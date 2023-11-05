@@ -118,7 +118,6 @@ class _DeviceListState extends State<DeviceList> {
     try {
       barcodeScanRes = await qrScan.FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, qrScan.ScanMode.QR);
-      print(barcodeScanRes);
     } on PlatformException {
       barcodeScanRes = TKeys.failed.translate(context);
     }
@@ -133,9 +132,18 @@ class _DeviceListState extends State<DeviceList> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: Colors.green,
+      //   foregroundColor: Colors.black,
+      //   onPressed: () {
+      //     sqlDb.mydeleteDatabase();
+      //     eleMeters.clear();
+      //     watMeter.clear();
+      //   },
+      //   child: Icon(Icons.add),
+      // ),
       body: Column(
         children: [
           Expanded(
@@ -195,26 +203,31 @@ class _DeviceListState extends State<DeviceList> {
                             child: Visibility(
                               visible: availability,
                               child: Text(
-                                "if you can't find your device please turn off the bluetooth then turn it on again",
-                                style: TextStyle(color: Colors.red),
+                                nameList.isEmpty?TKeys.first.translate(context):TKeys.hint.translate(context),
+                                style: const TextStyle(color: Colors.red),
                               ),
                             ),
                           ),
                           const SizedBox(
                             height: 10,
                           ),
-                          Text(
-                            TKeys.device.translate(context),
-                            style: TextStyle(
-                                color: Colors.green.shade900,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                                shadows: const [
-                                  Shadow(
-                                      color: Colors.grey,
-                                      blurRadius: 2.0,
-                                      offset: Offset(2.0, 2.0)),
-                                ]),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Text(
+                                TKeys.device.translate(context),
+                                style: TextStyle(
+                                    color: Colors.green.shade900,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 22,
+                                    shadows: const [
+                                      Shadow(
+                                          color: Colors.grey,
+                                          blurRadius: 2.0,
+                                          offset: Offset(2.0, 2.0)),
+                                    ]),
+                              ),
+                            ],
                           ),
                           Padding(
                             padding: EdgeInsets.only(
@@ -232,7 +245,7 @@ class _DeviceListState extends State<DeviceList> {
                           ),
                           ListView(
                             shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
+                            physics: const AlwaysScrollableScrollPhysics(),
                             children: widget.scannerState.discoveredDevices
                                 .where(
                               (device) =>
@@ -242,13 +255,10 @@ class _DeviceListState extends State<DeviceList> {
                                   (device.name.isNotEmpty),
                             )
                                 .map((device) {
-                              meterName = device.name;
                               if (device.name.startsWith('W')) {
-                                paddingType = "Water";
                                 icon =  'icons/waterMonth.png';
                               }
                               else if(device.name.startsWith('Ele')){
-                                paddingType = "Electricity";
                                 icon = 'icons/electricityMonth.png';
                               }
                               else{
@@ -262,8 +272,13 @@ class _DeviceListState extends State<DeviceList> {
                                     ListTile(
                                       onTap: () async {
                                         widget.stopScan();
-                                        await widget.deviceConnector
-                                            .connect(device.id);
+                                        if(device.name.startsWith('W')){
+                                          paddingType = 'Water';
+                                        }
+                                        else{
+                                          paddingType = "Electricity";
+                                        }
+                                        meterName = device.name;
                                         if (device.name == "MasterStation") {
                                           await Navigator.push<void>(
                                             context,
@@ -281,7 +296,8 @@ class _DeviceListState extends State<DeviceList> {
                                                 ),
                                               ),
                                             ),
-                                          );
+                                          ).then((value) => widget.deviceConnector
+                                              .connect(device.id));
                                         } else {
                                           if (nameList.contains(device.name) ==
                                               false) {
@@ -416,16 +432,7 @@ class MyApp extends StatelessWidget {
                 width: width * .7,
                 child: Image.asset('images/authorize.jpg'),
               ),
-              SizedBox(
-                height: height * .55,
-                width: width,
-                child: Column(
-                  children: [
-                    SizedBox(
-                        height: height * .4, child: const DeviceListScreen()),
-                  ],
-                ),
-              ),
+              const Expanded( child: DeviceListScreen()),
               // const Clip(direction: true,),
             ],
           ),

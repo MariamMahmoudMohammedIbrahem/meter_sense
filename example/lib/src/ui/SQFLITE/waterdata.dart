@@ -9,20 +9,23 @@ import '../../../t_key.dart';
 import 'dataPage.dart';
 
 class WaterData extends StatefulWidget {
-  const WaterData({required this.name,Key? key,}) : super(key: key);
+  const WaterData({required this.name,required this.count,Key? key,}) : super(key: key);
   final String name;
+  final int count;
   @override
   State<WaterData> createState() => _WaterDataState();
 }
 
 class _WaterDataState extends State<WaterData> {
   Future<List<Map>> readWat() async {
-    final response = await sqlDb.read(widget.name,'Water');
+    // final response = await sqlDb.read(widget.name,'Water');
+    final response = await sqlDb.readData('''SELECT * FROM Water''');
+    print("object =>1 $response");
     return response;
   }
   @override
   void initState() {
-    sqlDb.editingList(2);
+    sqlDb.editingList(widget.name,2);
     super.initState();
   }
   @override
@@ -30,14 +33,17 @@ class _WaterDataState extends State<WaterData> {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
+      appBar: AppBar(title: Text('water'),),
       body: RefreshIndicator(
         onRefresh: ()=> Future.delayed(
             const Duration(seconds: 1),(){
           setState(() {
-            Navigator.of(context).push<void>(
+            Navigator.of(context).pushReplacement(
               MaterialPageRoute<void>(
-                  builder: (context) => WaterData(name: widget.name,)),
+                builder: (context) => WaterData(name: widget.name, count: widget.count),
+              ),
             );
+
           });
         }),
         child: ListView(
@@ -90,7 +96,9 @@ class _WaterDataState extends State<WaterData> {
                                     ),
                                   ),
                                   Text(
-                                    currentTarrifWater.toString(),
+                                    widget.name == meterName
+                                        ?watMeter[4].toString()
+                                        :('${watMeters[widget.name]?[0]}'),
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontSize: 17,
@@ -111,7 +119,7 @@ class _WaterDataState extends State<WaterData> {
                                     ),
                                   ),
                                   Text(
-                                    totalCreditWater.toString(),
+                                    widget.name==meterName?watMeter[3].toString():('${watMeters[widget.name]?[2]}'),
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,

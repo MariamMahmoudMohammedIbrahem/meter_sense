@@ -17,72 +17,63 @@ num convertToInt(List<int> data, int start, int size) {
   return converted;
 }
 
-void calculateElectric(List<int> subscribeOutput) {
+void calculateElectric(List<int> subscribeOutput,String name) {
   for (var i = 0; i < conversionIndices.length; i++) {
     final startIndex = conversionIndices[i];
     final size = conversionSizes[i];
     final value = convertToInt(subscribeOutput, startIndex, size);
 
     switch (i) {
-      case 0: clientID = value; break;
-      case 1: totalReading = value; break;
-      case 2: pulses = value; break;
-      case 3: totalCredit = value / 100; break;
-      case 4: currentTarrif = value; break;
-      case 5: valveStatus = value; break;
-      case 6: leackageFlag = value; break;
-      case 7: fraudFlag = value; break;
-      case 8: currentConsumption = value; break;
-      case 9: month1 = value; break;
-      case 10: month2 = value; break;
-      case 11: month3 = value; break;
-      case 12: month4 = value; break;
-      case 13: month5 = value; break;
-      case 14: month6 = value; break;
+      case 0: eleMeter[0] = value; break;
+      case 1: eleMeter[1] = value; break;
+      case 2: {eleMeter[2] = value; eleMeter[1] = merge(eleMeter[1], eleMeter[2]); break;}
+      case 3: eleMeter[3] = value / 100; break;
+      case 4: eleMeter[4] = value; break;
+      case 5: eleMeter[5] = value; break;
+      case 6: eleMeter[6] = value; break;
+      case 7: eleMeter[7] = value; break;
+      case 8: eleMeter[8] = value; break;
+      case 9: eleMeter[9] = value; break;
+      case 10: eleMeter[10] = value; break;
+      case 11: eleMeter[11] = value; break;
+      case 12: eleMeter[12] = value; break;
+      case 13: eleMeter[13] = value; break;
+      case 14: eleMeter[14] = value; break;
     }
   }
-  callFunctionOnce();
+  callFunctionOnce(name);
 }
 
-void calculateWater(List<int> subscribeOutput) {
-  clientIDWater = convertToInt(subscribeOutput, 1, 4);
-  pulsesWater = convertToInt(subscribeOutput, 9, 2);
-  totalCreditWater = convertToInt(subscribeOutput, 11, 4)/100;
-  currentTarrifWater = convertToInt(subscribeOutput, 15, 1);
-  tarrifVersionWater = convertToInt(subscribeOutput, 16, 2);
-  valveStatusWater = convertToInt(subscribeOutput, 18, 1);
-  leackageFlagWater = convertToInt(subscribeOutput, 19, 1);
-  fraudFlagWater = convertToInt(subscribeOutput, 20, 1);
-  fraudHoursWater = convertToInt(subscribeOutput, 21, 1);
-  fraudMinutesWater = convertToInt(subscribeOutput, 22, 1);
-  fraudDayOfWeekWater = convertToInt(subscribeOutput, 23, 1);
-  fraudDayOfMonthWater = convertToInt(subscribeOutput, 24, 1);
-  fraudMonthWater = convertToInt(subscribeOutput, 25, 1);
-  fraudYearWater = convertToInt(subscribeOutput, 26, 1);
-  totalDebitWater = convertToInt(subscribeOutput, 27, 4);
-  currentConsumptionWater = convertToInt(subscribeOutput, 31, 4);
-  lcHourWater = convertToInt(subscribeOutput, 35, 1);
-  lcMinutesWater = convertToInt(subscribeOutput, 36, 1);
-  lcDayWeekWater = convertToInt(subscribeOutput, 37, 1);
-  lcDayMonthWater = convertToInt(subscribeOutput, 38, 1);
-  lcMonthWater = convertToInt(subscribeOutput, 39, 1);
-  lcYearWater = convertToInt(subscribeOutput, 40, 1);
-  lastChargeValueNumberWater = convertToInt(subscribeOutput, 41, 5);
-  month1Water = convertToInt(subscribeOutput, 46, 4);
-  month2Water = convertToInt(subscribeOutput, 50, 4);
-  month3Water = convertToInt(subscribeOutput, 54, 4);
-  month4Water = convertToInt(subscribeOutput, 58, 4);
-  month5Water = convertToInt(subscribeOutput, 62, 4);
-  month6Water = convertToInt(subscribeOutput, 66, 4);
-  warningLimitWater = convertToInt(subscribeOutput, 70, 1);
-  checkSumWater = convertToInt(subscribeOutput, 71, 1);
-  callFunctionOnce();
-}
+void calculateWater(List<int> subscribeOutput, String name) {
+  for (var i = 0; i < conversionIndices.length; i++) {
+    final startIndex = conversionIndices[i];
+    final size = conversionSizes[i];
+    final value = convertToInt(subscribeOutput, startIndex, size);
 
-void callFunctionOnce() {
+    switch (i) {
+      case 0: watMeter[0] = value; break;
+      case 1: watMeter[1] = value; break;
+      case 2: {watMeter[2] = value; watMeter[1] = merge(watMeter[1], watMeter[2]); break;}
+      case 3: watMeter[3] = value / 100; break;
+      case 4: watMeter[4] = value; break;
+      case 5: watMeter[5] = value; break;
+      case 6: watMeter[6] = value; break;
+      case 7: watMeter[7] = value; break;
+      case 8: watMeter[8] = value; break;
+      case 9: watMeter[9] = value; break;
+      case 10: watMeter[10] = value; break;
+      case 11: watMeter[11] = value; break;
+      case 12: watMeter[12] = value; break;
+      case 13: watMeter[13] = value; break;
+      case 14: watMeter[14] = value; break;
+    }
+  }
+  callFunctionOnce(name);
+}
+void callFunctionOnce(String name) {
   if (!isFunctionCalled) {
     isFunctionCalled = true;
-    addData();
+    addData(name);
   }
 }
 
@@ -93,7 +84,7 @@ double merge (num value1, num value2){
 }
 
 //insert into electricity and water tables
-void addData() async {
+void addData(String name) async {
   now = DateTime.now();
   currentTime =DateFormat.yMMMEd().format(now);
   monthList.clear();
@@ -103,24 +94,23 @@ void addData() async {
   }
   print('Month from database: $monthList');
   if(paddingType == "Electricity" ){
-    final totalPulses = merge(totalReading,pulses);
     await sqlDb.insertData(
         '''
                               INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTarrif`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
-                              VALUES ("$clientID","$meterName","${totalPulses.toString()}","${totalCredit.toString()}","${currentTarrif.toString()}","${valveStatus.toString()}","${leackageFlag.toString()}","${fraudFlag.toString()}","${currentConsumption.toString()}","${month1.toString()}","${month2.toString()}","${month3.toString()}","${month4.toString()}","${month5.toString()}","${month6.toString()}","$subscribeOutput","none","$currentTime")
+                              VALUES ("${eleMeter[0]}","$name","${eleMeter[1].toString()}","${eleMeter[3].toString()}","${eleMeter[4].toString()}","${eleMeter[5].toString()}","${eleMeter[6].toString()}","${eleMeter[7].toString()}","${eleMeter[8].toString()}","${eleMeter[9].toString()}","${eleMeter[10].toString()}","${eleMeter[11].toString()}","${eleMeter[12].toString()}","${eleMeter[13].toString()}","${eleMeter[14].toString()}","$subscribeOutput","none","$currentTime")
         '''
     );
+    isFunctionCalled = false;
   }
   else{
-    final totalPulsesWater = merge(totalReadingWater,pulsesWater);
     await sqlDb.insertData(
         '''
-                              INSERT INTO Water (`clientId`,`title`,`totalReading`,`pulses`,`totalCredit`,`currentTarrif`,`tarrifVersion`,`valveStatus`,`leackageFlag`,`fraudFlag`,`fraudHours`,`fraudMinutes`,`fraudDayOfWeek`,`fraudDayOfMonth`,`fraudMonth`,`fraudYear`,`totalDebit`,`currentConsumption`,`lcHour`,`lcMinutes`,`lcDayWeek`,`lcDayMonth`,`lcMonth`,`lcYear`,`lastChargeValueNumber`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`warningLimit`,`time`)
-                              VALUES ("$clientIDWater","$meterName","${totalPulsesWater.toString()}","${pulsesWater.toString()}","${totalCreditWater.toString()}","${currentTarrifWater.toString()}","${tarrifVersionWater.toString()}","${valveStatusWater.toString()}","${leackageFlagWater.toString()}","${fraudFlagWater.toString()}","${fraudHoursWater.toString()}","${fraudMinutesWater.toString()}","${fraudDayOfWeekWater.toString()}","${fraudDayOfMonthWater.toString()}","${fraudMonthWater.toString()}","${fraudYearWater.toString()}","${totalDebitWater.toString()}","${currentConsumptionWater.toString()}","${lcHourWater.toString()}","${lcMinutesWater.toString()}","${lcDayWeekWater.toString()}","${lcDayMonthWater.toString()}","${lcMonthWater.toString()}","${lcYearWater.toString()}","${lastChargeValueNumberWater.toString()}","${month1Water.toString()}","${month2Water.toString()}","${month3Water.toString()}","${month4Water.toString()}","${month5Water.toString()}","${month6Water.toString()}","${warningLimitWater.toString()}","$currentTime")
+                              INSERT INTO Water (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTarrif`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
+                              VALUES ("${watMeter[1]}","$name","${watMeter[1].toString()}","${watMeter[3].toString()}","${watMeter[4].toString()}","${watMeter[5].toString()}","${watMeter[6].toString()}","${watMeter[7].toString()}","${watMeter[8].toString()}","${watMeter[9].toString()}","${watMeter[10].toString()}","${watMeter[11].toString()}","${watMeter[12].toString()}","${watMeter[13].toString()}","${watMeter[14].toString()}","$subscribeOutput","none","$currentTime")
         '''
     );
+    isFunctionCalled = false;
   }
-  isFunctionCalled = false;
 }
 
 // read all data from meter
@@ -138,4 +128,3 @@ Future<void> fetchData() async {
     typeList.add(map['type'].toString());
   }
 }
-

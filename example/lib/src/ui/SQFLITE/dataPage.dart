@@ -11,10 +11,12 @@ import '../../../t_key.dart';
 
 class StoreData extends StatefulWidget {
     const StoreData({
-    required this.name,
+      required this.name,
+      required this.count,
     Key? key,
   }) : super(key: key);
     final String name;
+    final int count;
   // final DiscoveredDevice device;
   @override
   State<StoreData> createState() => _StoreDataState();
@@ -23,12 +25,13 @@ class StoreData extends StatefulWidget {
 class _StoreDataState extends State<StoreData> {
   Future<List<Map>> readEle() async {
     final response  = await sqlDb.read(widget.name,'Electricity');
-    print("object$response");
+    print("object22${widget.name}");
     return response;
   }
   @override
   void initState() {
-    sqlDb.editingList(1);
+    sqlDb.editingList(widget.name,1);
+    print("object2${widget.name}");
     super.initState();
   }
   @override
@@ -40,9 +43,10 @@ class _StoreDataState extends State<StoreData> {
         onRefresh: ()=> Future.delayed(
             const Duration(seconds: 1),(){
           setState(() {
-            Navigator.of(context).push<void>(
+            Navigator.of(context).pushReplacement(
               MaterialPageRoute<void>(
-                  builder: (context) => StoreData(name: widget.name,)),
+                builder: (context) => StoreData(name: widget.name, count: widget.count),
+              ),
             );
           });
         }),
@@ -96,7 +100,10 @@ class _StoreDataState extends State<StoreData> {
                                     ),
                                   ),
                                   Text(
-                                    currentTarrif.toString(),
+                                    widget.name == meterName
+                                        ?eleMeter[4].toString()
+                                        :('${eleMeters[widget.name]?[0]}'),
+                                    // eleMeter[4].toString(),
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontSize: 17,
@@ -104,7 +111,6 @@ class _StoreDataState extends State<StoreData> {
                                   ),
                                 ],
                               ),
-
                               Row(
                                 children: [
                                   SizedBox(width:width*.07),
@@ -117,7 +123,7 @@ class _StoreDataState extends State<StoreData> {
                                     ),
                                   ),
                                   Text(
-                                    totalCredit.toString(),
+                                    widget.name == meterName ?eleMeter[3].toString():('${eleMeters[widget.name]?[2]}'),
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,

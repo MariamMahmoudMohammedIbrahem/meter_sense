@@ -136,7 +136,6 @@ class _MasterStationState extends State<_MasterStation> {
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
           //electric tarrif
-          testing = event;
           if(event.first == 0xA3 || event.first == 0xA5){
             setState(() {
               tarrif = event.sublist(1,12);
@@ -153,13 +152,16 @@ class _MasterStationState extends State<_MasterStation> {
               print(balance);
             });
           }
-          print(testing);
         });
   }
   @override
   void initState() {
     widget.viewModel.connect();
     testing = [];
+    balanceMaster = 0;
+    balance =[];
+    tarrif = [];
+    tarrifMaster = 0;
     // subscribeCharacteristic();
     // widget.readCharacteristic(widget.characteristic);
     super.initState();
@@ -191,7 +193,7 @@ class _MasterStationState extends State<_MasterStation> {
           if (item != items.last)
             const DropdownMenuItem<String>(
               enabled: false,
-              child: Divider(),
+              child: SizedBox(height:2,child: Divider( height:1,thickness: 1,)),
             ),
         ],
       );
@@ -266,45 +268,66 @@ class _MasterStationState extends State<_MasterStation> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Flexible(flex: 2,child: Text(TKeys.choose.translate(context),style: TextStyle(color: Colors.grey.shade800, fontWeight: FontWeight.bold, fontSize: 20),)),
-                    const Flexible(flex: 1,child: SizedBox(width: 10,)),
+                    const Flexible(flex: 1,child: SizedBox(width: 1,)),
                     Flexible(
                       flex: 2,
                       child: SizedBox(
                         height: 55,
-                        child: DropdownButtonFormField<String>(
-                          borderRadius: BorderRadius.circular(20.0),
-                          decoration: InputDecoration(
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey.shade300, width: 2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey.shade100, width: 2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.shade100,
-                          ),
-                          hint: const Text(
-                            'Device',
-                            style:  TextStyle(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                            ),
-                          ),
-                          value: selectedName,
-                          onChanged: (String? newValue) {
+                        child: PopupMenuButton<String>(
+                          onSelected: (String value) {
                             setState(() {
-                              selectedName = newValue!;
-                              myInstance.getList(newValue,'none');
+                              selectedName = value;
+                              myInstance.getList(value, 'none');
                             });
                           },
-                          items: _addDividersAfterItems(name),
-                          // items: name.map((name) => DropdownMenuItem<String>(
-                          //     value: name,
-                          //     child: Text(name,),
-                          //   )).toList(),
+                          itemBuilder: (BuildContext context) {
+                            final List<PopupMenuEntry<String>> items = [];
+                            for (String item in name) {
+                              items.add(
+                                PopupMenuItem<String>(
+                                  value: item,
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(
+                                      color: Colors.green.shade800,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              );
+                              if (item != name.last) {
+                                items.add(
+                                  const PopupMenuDivider(),
+                                );
+                              }
+                            }
+                            return items;
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20.0),
+                              border: Border.all(color: Colors.grey.shade300, width: 2),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    selectedName ?? TKeys.meter.translate(context),
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                const Icon(Icons.arrow_drop_down),
+                              ],
+                            ),
+                          ),
+                          offset: const Offset(0, 50),
+                          tooltip: 'Select a device',
                         ),
                       ),
                     ),
@@ -387,13 +410,11 @@ class _MasterStationState extends State<_MasterStation> {
                                       }
                                       else{
                                         await writeCharacteristicWithoutResponse();
-                                        if(testing.isEmpty){
-                                          Timer(const Duration(seconds: 2), () async{
-                                            await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
-                                            await subscribeCharacteristic();
-                                            await widget.readCharacteristic(widget.characteristic);
-                                          });
-                                        }
+                                        Timer(const Duration(seconds: 2), () async{
+                                          await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
+                                          await subscribeCharacteristic();
+                                          await widget.readCharacteristic(widget.characteristic);
+                                        });
                                       }
                                     },
                                     child: Text(TKeys.get.translate(context), style: TextStyle(color: Colors.green.shade50, fontWeight: FontWeight.bold,fontSize: 16,),),
@@ -412,7 +433,7 @@ class _MasterStationState extends State<_MasterStation> {
                                             await myInstance.saveList( tarrif, 0, '$selectedName', '$listType' ,'tarrif');
                                           }
                                     },
-                                    child: Text(TKeys.update.translate(context), style: TextStyle(color: Colors.green.shade50,fontWeight: FontWeight.bold,fontSize: 16,),),
+                                    child: Text(updated?TKeys.updated.translate(context):TKeys.update.translate(context), style: TextStyle(color: Colors.green.shade50,fontWeight: FontWeight.bold,fontSize: 16,),),
                                   ),
                                 ],
                               ),
