@@ -107,3 +107,4 @@ Map<String, List<num>> watMeters = {};
 String testValue ='';
 bool recharged = false;
 bool updated = false;
+num tarrifVersion = 0;

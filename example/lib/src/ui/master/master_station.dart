@@ -158,10 +158,8 @@ class _MasterStationState extends State<_MasterStation> {
   void initState() {
     widget.viewModel.connect();
     testing = [];
-    balanceMaster = 0;
     balance =[];
     tarrif = [];
-    tarrifMaster = 0;
     // subscribeCharacteristic();
     // widget.readCharacteristic(widget.characteristic);
     super.initState();
@@ -424,16 +422,27 @@ class _MasterStationState extends State<_MasterStation> {
                                           final myInstance = SqlDb();
                                           if (balance.isNotEmpty && tarrif.isEmpty){
                                             await myInstance.saveList( balance, 0,'$selectedName', '$listType' ,'balance');
+                                            recharged = false;
                                           }
                                           else if(tarrif.isNotEmpty && balance.isEmpty){
                                             await myInstance.saveList( tarrif, 0, '$selectedName', '$listType' ,'tarrif');
+                                            recharged = false;
                                           }
                                           else {
                                             await myInstance.saveList( balance, 0, '$selectedName', '$listType' ,'balance');
                                             await myInstance.saveList( tarrif, 0, '$selectedName', '$listType' ,'tarrif');
+                                            recharged = false;
                                           }
                                     },
                                     child: Text(updated?TKeys.updated.translate(context):TKeys.update.translate(context), style: TextStyle(color: Colors.green.shade50,fontWeight: FontWeight.bold,fontSize: 16,),),
+                                  ),
+                                  ElevatedButton(
+                                      onPressed: () async {
+                                        await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
+                                        await subscribeCharacteristic();
+                                        await widget.readCharacteristic(widget.characteristic);
+                                      },
+                                      child: Text('0xAA'),
                                   ),
                                 ],
                               ),

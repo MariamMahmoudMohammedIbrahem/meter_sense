@@ -103,6 +103,9 @@ void addData(String name) async {
     isFunctionCalled = false;
   }
   else{
+    // sqlDb.isTableEmpty();
+    final count = await myInstance.isTableEmpty();
+    // if(count == 0){}
     await sqlDb.insertData(
         '''
                               INSERT INTO Water (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTarrif`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)

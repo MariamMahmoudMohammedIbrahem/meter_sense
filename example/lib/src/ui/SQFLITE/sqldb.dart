@@ -283,6 +283,15 @@ class SqlDb {
 
     return rowCount;
   }
+  Future<bool> isTableEmpty() async {
+    Database? mydb = await db;
+    final count = Sqflite.firstIntValue(
+      await mydb!.rawQuery('SELECT COUNT(*) FROM Water'),
+    );
+    print("count $count");
+    return count == 0;
+  }
+
   //INSERT
   Future<int> insertData(String sql) async {
     Database? mydb = await db;
@@ -314,7 +323,7 @@ class SqlDb {
         query = 'SELECT `list`,`title`,`clientId` FROM Water WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
         listType = 'Water';
       }
-      else{
+      else if(name!.startsWith('E')){
         query = 'SELECT `list`,`title`,`clientId` FROM Electricity WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
         listType = 'Electricity';
       }
@@ -354,7 +363,7 @@ class SqlDb {
 
             if (process == 'balance') {
               myList.insert(0, 0x09);
-            } else {
+            } else if(process == 'tarrif'){
               myList.insert(0, 0x10);
             }
 

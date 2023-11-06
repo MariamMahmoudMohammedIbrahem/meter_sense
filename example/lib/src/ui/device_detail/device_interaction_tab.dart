@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
@@ -44,6 +45,7 @@ class DeviceInteractionTab extends StatelessWidget {
           characteristic: characteristic,
           writeWithResponse: interactor.writeCharacteristicWithResponse,
           writeWithoutResponse: interactor.writeCharacteristicWithoutResponse,
+          readCharacteristic: interactor.readCharacteristic,
           subscribeToCharacteristic: interactor.subScribeToCharacteristic,
               name: device.name,
         ),
@@ -86,6 +88,7 @@ class _DeviceInteractionTab extends StatefulWidget {
     required this.characteristic,
     required this.writeWithResponse,
     required this.writeWithoutResponse,
+    required this.readCharacteristic,
     required this.subscribeToCharacteristic,
     required this.name,
     Key? key,
@@ -99,6 +102,9 @@ class _DeviceInteractionTab extends StatefulWidget {
   final Future<void> Function(
           QualifiedCharacteristic characteristic, List<int> value)
       writeWithoutResponse;
+  final Future<List<int>> Function(
+      QualifiedCharacteristic characteristic)
+  readCharacteristic;
   final Stream<List<int>> Function(QualifiedCharacteristic characteristic)
       subscribeToCharacteristic;
   final String name;
@@ -137,6 +143,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
           setState(() {
             if (paddingType == "Electricity") {
               calculateElectric(subscribeOutput, widget.name);
+              tarrifVersion = convertToInt(subscribeOutput, 16, 2);
             }
             else {
               calculateWater(subscribeOutput, widget.name);
@@ -186,11 +193,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     print('subscribe end');
   }
 
-  // Future<void> writeCharacteristicWithResponse() async {
-  //   print('object');
-  //   await widget.writeWithResponse(widget.characteristic, [0x59]);
-  // }
-
   Future<void> startTimer() async {
     // timer = Timer.periodic(interval, (Timer t) async {
       // cond => balance && cond0 => tarrif
@@ -199,14 +201,33 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         print('cond=> $cond');
         final result = await myInstance.getSpecifiedList(widget.name, 'balance');
         print('result => $result');
+        // if (myList.first == 9) {
+        //   subscribeStream = widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+        //     setState(() {
+        //       cond = false;
+        //     });
+        //   });
+        //   if(!recharged){
+        //     await widget.writeWithoutResponse(widget.characteristic, myList);
+        //     print('hi i am repeated');
+        //     setState(() {
+        //       recharged = true;
+        //     });
+        //   }
+        // }
         if (myList.first == 9) {
-          widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+          await widget.writeWithoutResponse(widget.characteristic, myList);
+          subscribeStream = widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
             setState(() {
-              cond = false;
+              print('balance $event');
+              if(event.first == 9){
+                cond = false;
+                balanceMaster = 0;
+              }
             });
           });
+          await widget.readCharacteristic(widget.characteristic);
           if(!recharged){
-            await widget.writeWithoutResponse(widget.characteristic, myList);
             print('hi i am repeated');
             setState(() {
               recharged = true;
@@ -219,46 +240,60 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         final result = await myInstance.getSpecifiedList(widget.name, 'tarrif');
         print('result => $result');
         if (myList.first == 16) {
-          widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-            setState(() {
-              cond0 = false;
-            });
+          await widget.writeWithoutResponse(widget.characteristic, myList);
+          subscribeStream =  widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+            print('tarrif $event');
+            if(event.first == 0x10){
+              setState(() {
+                cond0 = false;
+                tarrifMaster = 0;
+              });
+              print('cond $cond0');
+            }
           });
-          if(!recharged){
-            await widget.writeWithoutResponse(widget.characteristic, myList);
-            print('hi i am repeated');
-            setState(() {
-              recharged = true;
-            });
-          }
+          await widget.readCharacteristic(widget.characteristic);
         }
+        subscribeStream?.cancel();
       }
       else if(cond0 && cond){
-        await myInstance.getSpecifiedList(widget.name, 'balance');
-        if (myList.first == 9) {
-          widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-            setState(() {
-              cond = false;
-            });
-          });
-            await widget.writeWithoutResponse(widget.characteristic, myList);
-        }
-        Timer(Duration(seconds: 2),(){print('timer is done');});
         await myInstance.getSpecifiedList(widget.name, 'tarrif');
         if (myList.first == 16) {
-          widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+          await widget.writeWithoutResponse(widget.characteristic, myList);
+          subscribeStream =  widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+            print('tarrif $event');
+            if(event.first == 0x10){
+              setState(() {
+                cond0 = false;
+                tarrifMaster = 0;
+              });
+              print('cond $cond0');
+            }
+          });
+          await widget.readCharacteristic(widget.characteristic);
+        }
+        subscribeStream?.cancel();
+        Timer(Duration(seconds: 2),(){print('timer is done');});
+        await myInstance.getSpecifiedList(widget.name, 'balance');
+        if (myList.first == 9 && !cond0) {
+          await widget.writeWithoutResponse(widget.characteristic, myList);
+          subscribeStream = widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
             setState(() {
-              cond0 = false;
+              print('balance $event');
+              if(event.first == 9){
+                cond = false;
+                balanceMaster = 0;
+              }
             });
           });
-          if(!recharged){
-            await widget.writeWithoutResponse(widget.characteristic, myList);
+          await widget.readCharacteristic(widget.characteristic);
+          if(!recharged && !cond){
             print('hi i am repeated');
             setState(() {
               recharged = true;
             });
           }
         }
+        subscribeStream?.cancel();
       }
     // });
   }
@@ -522,6 +557,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                Text('tarrif version: $tarrifVersion',style: const TextStyle(color:Colors.black),),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   children: [
@@ -579,6 +618,20 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                       child: Text(TKeys.update.translate(context)),
                                     ),
                                   ],
+                                ),
+                                ElevatedButton(
+                                  onPressed: (){
+                                    myList = [16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0C];
+                                    final random = Random();
+                                    myList.add(random.nextInt(255));
+
+                                    int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+                                    myList.add(sum);
+                                    widget.writeWithoutResponse(widget.characteristic,myList);
+                                    widget.subscribeToCharacteristic(widget.characteristic).listen((event) {print('write button $event');});
+                                    widget.readCharacteristic(widget.characteristic);
+                                  },
+                                  child: Text('write'),
                                 ),
                               ],
                             ),
