@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -138,17 +139,21 @@ class _MasterStationState extends State<_MasterStation> {
           //electric tarrif
           if(event.first == 0xA3 || event.first == 0xA5){
             setState(() {
-              tarrif = event.sublist(1,12);
+              // tarrif = event.sublist(1,12);
+              tarrif..insert(0, 0x10)
+                ..addAll(event.sublist(1,12))..add(random.nextInt(255));
               tarrifMaster = convertToInt(event, 1, 11);
-              cond0 = true;
               print(tarrif);
             });
           }
           if(event.first == 0xA4 || event.first == 0xA6){
             setState(() {
-              balance = event.sublist(1,5);
+              // balance = event.sublist(1,5);
+              balance = [];
+              balance..insert(0, 0x09)
+              ..addAll(event.sublist(1,5))..add(random.nextInt(255));
               balanceMaster = convertToInt(event, 1, 4)/100;
-              cond = true;
+              // cond = true;
               print(balance);
             });
           }
@@ -157,9 +162,10 @@ class _MasterStationState extends State<_MasterStation> {
   @override
   void initState() {
     widget.viewModel.connect();
-    testing = [];
-    balance =[];
-    tarrif = [];
+    fetchData();
+    // testing = [];
+    // balance =[];
+    // tarrif = [];
     // subscribeCharacteristic();
     // widget.readCharacteristic(widget.characteristic);
     super.initState();
@@ -172,32 +178,32 @@ class _MasterStationState extends State<_MasterStation> {
     super.dispose();
     // timer.cancel();
   }
-  List<DropdownMenuItem<String>> _addDividersAfterItems(Set<String> items) {
-    final List<DropdownMenuItem<String>> menuItems = [];
-    for (final String item in items) {
-      menuItems.addAll(
-        [
-          DropdownMenuItem<String>(
-            value: item,
-            child: Text(
-              item,
-              style: TextStyle(
-                color: Colors.green.shade800,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ),
-          if (item != items.last)
-            const DropdownMenuItem<String>(
-              enabled: false,
-              child: SizedBox(height:2,child: Divider( height:1,thickness: 1,)),
-            ),
-        ],
-      );
-    }
-    return menuItems;
-  }
+  // List<DropdownMenuItem<String>> _addDividersAfterItems(Set<String> items) {
+  //   final List<DropdownMenuItem<String>> menuItems = [];
+  //   for (final String item in items) {
+  //     menuItems.addAll(
+  //       [
+  //         DropdownMenuItem<String>(
+  //           value: item,
+  //           child: Text(
+  //             item,
+  //             style: TextStyle(
+  //               color: Colors.green.shade800,
+  //               fontWeight: FontWeight.bold,
+  //               fontSize: 16,
+  //             ),
+  //           ),
+  //         ),
+  //         if (item != items.last)
+  //           const DropdownMenuItem<String>(
+  //             enabled: false,
+  //             child: SizedBox(height:2,child: Divider( height:1,thickness: 1,)),
+  //           ),
+  //       ],
+  //     );
+  //   }
+  //   return menuItems;
+  // }
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -223,11 +229,56 @@ class _MasterStationState extends State<_MasterStation> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Flexible(
+                    Column(
+                      children: [
+                        Align(alignment:Alignment.centerLeft,child: Text(TKeys.welcome.translate(context),style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold, fontSize: 24),)),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            // right: 50,
+                            top: 10,
+                            bottom: 10,
+                          ),
+                          child: Divider(
+                            height: 1,
+                            // thickness: 1,
+                            // indent: 0,
+                            // endIndent: 10,
+                            color: Colors.grey.shade400,
+                          ),
+                        ),
+                      ],
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        widget.viewModel.disconnect();
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        TKeys.logout.translate(context),
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.green.shade50),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: (){
+                        if(widget.viewModel.connectionStatus == DeviceConnectionState.connecting || widget.viewModel.connectionStatus == DeviceConnectionState.connected){
+                          print("connected");
+                          widget.viewModel.disconnect();
+                        }
+                        else if(widget.viewModel.connectionStatus == DeviceConnectionState.disconnecting || widget.viewModel.connectionStatus == DeviceConnectionState.disconnected){
+                          print("disconnected");
+                          widget.viewModel.connect();
+                        }
+                      },
+                      child: Text((widget.viewModel.connectionStatus == DeviceConnectionState.connecting || widget.viewModel.connectionStatus == DeviceConnectionState.connected)?TKeys.disconnect.translate(context):TKeys.connect.translate(context)),
+                    ),
+                    /*Flexible(
                       flex: 2,
                       child: Column(
                         children: [
-                          Align(alignment:Alignment.centerLeft,child: Text(TKeys.welcomeMaster.translate(context),style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold, fontSize: 24),)),
+                          Align(alignment:Alignment.centerLeft,child: Text(TKeys.welcome.translate(context),style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold, fontSize: 24),)),
                           Padding(
                             padding: EdgeInsets.only(
                               // right: 50,
@@ -259,7 +310,7 @@ class _MasterStationState extends State<_MasterStation> {
                         },
                         child: Text((widget.viewModel.connectionStatus == DeviceConnectionState.connecting || widget.viewModel.connectionStatus == DeviceConnectionState.connected)?TKeys.disconnect.translate(context):TKeys.connect.translate(context)),
                       ),
-                    ),
+                    ),*/
                   ],
                 ),
                 Row(
@@ -275,7 +326,7 @@ class _MasterStationState extends State<_MasterStation> {
                           onSelected: (String value) {
                             setState(() {
                               selectedName = value;
-                              myInstance.getList(value, 'none');
+                              myInstance.getSpecifiedList(value, 'none');
                             });
                           },
                           itemBuilder: (BuildContext context) {
@@ -418,33 +469,70 @@ class _MasterStationState extends State<_MasterStation> {
                                     child: Text(TKeys.get.translate(context), style: TextStyle(color: Colors.green.shade50, fontWeight: FontWeight.bold,fontSize: 16,),),
                                   ),
                                   ElevatedButton(
-                                    onPressed: () async {
+                                    style: ElevatedButton.styleFrom(
+                                      shape: const StadiumBorder(),
+                                      backgroundColor: Colors.grey.shade600,
+                                      foregroundColor: Colors.white,
+                                      disabledBackgroundColor: Colors.grey.shade600,
+                                    ),
+                                    onPressed: !updated?() async {
                                           final myInstance = SqlDb();
                                           if (balance.isNotEmpty && tarrif.isEmpty){
-                                            await myInstance.saveList( balance, 0,'$selectedName', '$listType' ,'balance');
-                                            recharged = false;
+                                            await myInstance.saveList( balance,'$selectedName', '$listType' ,'balance');
+                                            await myInstance.updateData('''
+                                            UPDATE Meters
+                                            SET balance = 1
+                                            WHERE name = '$selectedName'
+                                            ''');
+                                            setState(() {
+                                              updated = true;
+                                            });
+                                            // cond = true;
+                                            // recharged = false;
                                           }
                                           else if(tarrif.isNotEmpty && balance.isEmpty){
-                                            await myInstance.saveList( tarrif, 0, '$selectedName', '$listType' ,'tarrif');
-                                            recharged = false;
+                                            await myInstance.saveList( tarrif,'$selectedName', '$listType' ,'tarrif');
+                                            await myInstance.updateData('''
+                                            UPDATE Meters
+                                            SET 
+                                            tarrif = 1,
+                                            WHERE name = '$selectedName'
+                                            ''');
+                                            setState(() {
+                                              updated = true;
+                                            });
+                                            // cond0 = true;
+                                            // recharged = false;
                                           }
                                           else {
-                                            await myInstance.saveList( balance, 0, '$selectedName', '$listType' ,'balance');
-                                            await myInstance.saveList( tarrif, 0, '$selectedName', '$listType' ,'tarrif');
-                                            recharged = false;
+                                            await myInstance.saveList( balance, '$selectedName', '$listType' ,'balance');
+                                            await myInstance.saveList( tarrif, '$selectedName', '$listType' ,'tarrif');
+                                            await myInstance.updateData('''
+                                            UPDATE Meters
+                                            SET 
+                                            balance = 1,
+                                            tarrif = 1,
+                                            WHERE name = '$selectedName'
+                                            ''');
+                                            setState(() {
+                                              updated = true;
+                                            });
+                                            // cond0 = true;
+                                            // cond = true;
+                                            // recharged = false;
                                           }
-                                    },
-                                    child: Text(updated?TKeys.updated.translate(context):TKeys.update.translate(context), style: TextStyle(color: Colors.green.shade50,fontWeight: FontWeight.bold,fontSize: 16,),),
-                                  ),
-                                  ElevatedButton(
-                                      onPressed: () async {
-                                        await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
-                                        await subscribeCharacteristic();
-                                        await widget.readCharacteristic(widget.characteristic);
-                                      },
-                                      child: Text('0xAA'),
+                                    }:null,
+                                    child: Text(updated?TKeys.updated.translate(context):TKeys.update.translate(context), style: const TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 16,),),
                                   ),
                                 ],
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  await widget.writeWithoutResponse(widget.characteristic,[0xAA]);
+                                  await subscribeCharacteristic();
+                                  await widget.readCharacteristic(widget.characteristic);
+                                },
+                                child: Text(TKeys.request.translate(context), style: const TextStyle(color: Colors.white,fontWeight: FontWeight.bold, fontSize: 16),),
                               ),
                             ],
                           ),

@@ -25,13 +25,11 @@ class StoreData extends StatefulWidget {
 class _StoreDataState extends State<StoreData> {
   Future<List<Map>> readEle() async {
     final response  = await sqlDb.read(widget.name,'Electricity');
-    print("object22${widget.name}");
     return response;
   }
   @override
   void initState() {
-    sqlDb.editingList(widget.name,1);
-    print("object2${widget.name}");
+    // sqlDb.editingList(widget.name,'Electricity');
     super.initState();
   }
   @override
@@ -209,8 +207,8 @@ class _StoreDataState extends State<StoreData> {
                                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                       children: [
                                         Text("${snapshot.data![i]['time']}"),
-                                        Text('${TKeys.balance.translate(context)}: ',),
-                                        Text("${snapshot.data![i]['totalCredit']}"),
+                                        Text('${TKeys.consumption.translate(context)}: ',),
+                                        Text("${snapshot.data![i]['currentConsumption']}"),
                                       ],
                                     ),
                                   ),

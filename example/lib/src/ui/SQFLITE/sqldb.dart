@@ -1,7 +1,4 @@
-
-
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -24,6 +21,7 @@ class SqlDb {
   Future<Database> initialDb() async {
     String databasePath = await getDatabasesPath();
     String path = join(databasePath, 'eoip.db');
+    print(path);
     Database mydb = await openDatabase(
         path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade);
     return mydb;
@@ -37,10 +35,12 @@ class SqlDb {
   //JUST CALLED ONCE
   Future _onCreate(Database db, int version) async {
     //create meters table
+    // CHARGE 1 NO CHARGE 0
     await db.execute('''
     CREATE TABLE "Meters"(
       'name' TEXT NOT NULL UNIQUE,
-      'type' TEXT NOT NULL,
+      'balance' INTEGER NOT NULL,
+      'tarrif' INTEGER NOT NULL,
       PRIMARY KEY ('name')
     )
     ''');
@@ -99,7 +99,6 @@ class SqlDb {
     'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     'list' TEXT NOT NULL,
     'name' TEXT NOT NULL,
-    'clientId' INTEGER NOT NULL,
     'type' TEXT NOT NULL,
     'process' TEXT NOT NULL
     )
@@ -115,11 +114,12 @@ class SqlDb {
     return response;
   }
 
-  Future<List<Map>> readMeterData(String title, String type, int i) async {
+  //get the data of previous connected meters
+  Future<List<Map>> readMeterData(String title) async {
     Database? mydb = await db;
     response =[];
     print('object');
-    if (type == 'Electricity') {
+    if (title.startsWith('Ele')) {
       if (eleMeters[title] == null) {
         eleMeters[title] = [0, 0, 0, 0];
       }
@@ -142,7 +142,7 @@ class SqlDb {
       }
       print("electric $title: $response");
     }
-    else if (type == 'Water') {
+    else if (title.startsWith('W')) {
       if (watMeters[title] == null) {
         watMeters[title] = [0, 0, 0, 0];
       }
@@ -169,19 +169,24 @@ class SqlDb {
     return response;
   }
 
+  // get the data of the last days
   Future<List<Map>> read(String name, String type) async {
     Database? mydb = await db;
     String query = '';
     if(type == 'Electricity'){
       query = '''
-        SELECT * FROM Electricity
+        SELECT `currentConsumption`, `time` FROM Electricity
         WHERE `title` =?
+        ORDER BY id DESC
+        LIMIT 10
       ''';
     }
     else{
       query = '''
-        SELECT * FROM Water
+        SELECT `currentConsumption`, `time` FROM Water
         WHERE `title` =?
+        ORDER BY id DESC
+        LIMIT 10
       ''';
     }
     final response  = await mydb!.rawQuery(
@@ -191,9 +196,12 @@ class SqlDb {
     print("object => $response");
     return response;
   }
-  Future<void> editingList(String name, int i) async {
+
+  //graph data
+  Future<void> editingList(String name, String type) async {
     Database? mydb = await db;
-    if(i == 1){
+    //electric
+    if(type == "Electricity"){
       const query = '''
     SELECT `month1`,`month2`,`month3`,`month4`,`month5`,`month6` 
     FROM Electricity
@@ -231,6 +239,7 @@ class SqlDb {
       }
       print("readings$eleReadings");
     }
+    //water
     else{
       const query = '''
     SELECT `month1`,`month2`,`month3`,`month4`,`month5`,`month6` 
@@ -271,39 +280,68 @@ class SqlDb {
       print("readings$watReadings");
     }
   }
-  Future<int> getRowCountFromDatabase() async {
-    Database? mydb = await db;
-    final queryResult = await mydb!.rawQuery('''
-    SELECT `id` FROM master_table 
-    ORDER BY id DESC 
-    LIMIT 1
-    ''');
-    print(queryResult);
-    final rowCount = queryResult[0]['id'] as int;
 
-    return rowCount;
-  }
-  Future<bool> isTableEmpty() async {
+  //check if the meter has previous stored data or not
+  Future<bool> isTableEmpty(String type, String name) async {
     Database? mydb = await db;
+    if(type == 'Electricity'){
+      query = 'SELECT COUNT(*) FROM Electricity WHERE `title` =?';
+    }
+    else{
+      query = 'SELECT COUNT(*) FROM Water WHERE `title` =?';
+    }
     final count = Sqflite.firstIntValue(
-      await mydb!.rawQuery('SELECT COUNT(*) FROM Water'),
+      await mydb!.rawQuery(query,[name]),
     );
     print("count $count");
     return count == 0;
   }
 
+  // retrieve the last time stored in the database
+  Future<List<Map>> readTime(String name, String type) async{
+    Database? mydb = await db;
+    if(type == 'Electricity'){
+      query = '''
+      SELECT `time` FROM Electricity 
+      WHERE `title` = ?
+      ORDER BY `id` DESC 
+      LIMIT 1 
+    ''';
+    }
+    else if(type == 'Water'){
+      query = '''
+      SELECT `time` FROM Water 
+      WHERE `title` = ?
+      ORDER BY `id` DESC 
+      LIMIT 1 
+    ''';
+    }
+    final response = await mydb!.rawQuery(query,
+    [name],);
+    for(var map in response){
+      time = map['time'].toString();
+    }
+    return response;
+  }
+
   //INSERT
   Future<int> insertData(String sql) async {
     Database? mydb = await db;
-    //take returened data from database
     int response = await mydb!.rawInsert(sql);
+    return response;
+  }
+
+  //UPDATE
+  Future<int> updateData(String sql) async {
+    Database? mydb = await db;
+    int response = await mydb!.rawUpdate(sql);
     return response;
   }
 
   //DELETE
   Future<int> deleteData(String sql) async {
     Database? mydb = await db;
-    int response = await mydb!.rawDelete(sql);
+    int response = await mydb!.rawDelete('DROP TABLE IF EXISTS Water');
     return response;
   }
 
@@ -318,12 +356,40 @@ class SqlDb {
     Database? mydb = await db;
     String query = '';
 
+    // if(process == 'none'){
+    //   if(name!.startsWith('W')){
+    //     query = 'SELECT `list`,`title`,`clientId` FROM Water WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
+    //     listType = 'Water';
+    //   }
+    //   else if(name!.startsWith('E')){
+    //     query = 'SELECT `list`,`title`,`clientId` FROM Electricity WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
+    //     listType = 'Electricity';
+    //   }
+    //   final List<Map<String, dynamic>> result = await mydb!.rawQuery(
+    //     query,
+    //     [name,process],
+    //   );
+    //   if (result.isNotEmpty) {
+    //     final dynamic jsonListDynamic = result[0]['list'];
+    //     // listName = result[0]['title'];
+    //     // listClientId = result[0]['clientId'];
+    //     final String? jsonList = jsonListDynamic as String?;
+    //     if (jsonList != null) {
+    //       final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
+    //       myList = dynamicList.cast<int>();
+    //       if(listType == "Electricity") {myList[0] = 0xA1;}
+    //       else {myList[0] = 0xA0;}
+    //       print("myList => $myList");
+    //       return myList;
+    //     }
+    //   }
+    // }
     if(process == 'none'){
       if(name!.startsWith('W')){
         query = 'SELECT `list`,`title`,`clientId` FROM Water WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
         listType = 'Water';
       }
-      else if(name!.startsWith('E')){
+      else{
         query = 'SELECT `list`,`title`,`clientId` FROM Electricity WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
         listType = 'Electricity';
       }
@@ -333,8 +399,6 @@ class SqlDb {
       );
       if (result.isNotEmpty) {
         final dynamic jsonListDynamic = result[0]['list'];
-        // listName = result[0]['title'];
-        // listClientId = result[0]['clientId'];
         final String? jsonList = jsonListDynamic as String?;
         if (jsonList != null) {
           final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
@@ -353,7 +417,7 @@ class SqlDb {
 
       if (result.isNotEmpty) {
         final dynamic jsonListDynamic = result[0]['list'];
-        listType = result[0]['type'];
+        // listType = result[0]['type'];
 
         if (jsonListDynamic != null) {
           final String jsonList = jsonListDynamic as String;
@@ -361,14 +425,13 @@ class SqlDb {
             final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
             myList = dynamicList.cast<int>();
 
-            if (process == 'balance') {
-              myList.insert(0, 0x09);
-            } else if(process == 'tarrif'){
-              myList.insert(0, 0x10);
-            }
+            // if (process == 'balance') {
+            //   myList.insert(0, 0x09);
+            // } else if(process == 'tarrif'){
+            //   myList.insert(0, 0x10);
+            // }
 
-            final random = Random();
-            myList.add(random.nextInt(255));
+            // myList.add(random.nextInt(255));
 
             int sum = myList.fold(0, (previousValue, element) => previousValue + element);
             myList.add(sum);
@@ -381,93 +444,40 @@ class SqlDb {
 
     return myList;
   }
-
-  Future<List<int>> getList(String? name,  String process) async {
-  Database? mydb = await db;
-  String query = '';
-  if(process == 'none'){
-    if(name!.startsWith('W')){
-      query = 'SELECT `list`,`title`,`clientId` FROM Water WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
-      listType = 'Water';
-    }
-    else{
-      query = 'SELECT `list`,`title`,`clientId` FROM Electricity WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
-      listType = 'Electricity';
-    }
-    final List<Map<String, dynamic>> result = await mydb!.rawQuery(
-      query,
-      [name,process],
-    );
-    if (result.isNotEmpty) {
-      final dynamic jsonListDynamic = result[0]['list'];
-      // listName = result[0]['title'];
-      // listClientId = result[0]['clientId'];
-      final String? jsonList = jsonListDynamic as String?;
-      if (jsonList != null) {
-        final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
-        myList = dynamicList.cast<int>();
-        if(listType == "Electricity") {myList[0] = 0xA1;}
-        else {myList[0] = 0xA0;}
-        print("myList => $myList");
-        return myList;
-      }
-    }
-  }
-  else{
-    myList = [];
-    query = 'SELECT * FROM master_table WHERE `name` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
-    final List<Map<String, dynamic>> result = await mydb!.rawQuery(
-      query,
-      [name,process],
-    );
-    if (result.isNotEmpty) {
-      final dynamic jsonListDynamic = result[0]['list'];
-      // listName = result[0]['name'];
-      // listClientId = result[0]['clientId'];
-      listType = result[0]['type'];
-      final String? jsonList = jsonListDynamic as String?;
-      if (jsonList != null) {
-        final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
-        myList = dynamicList.cast<int>();
-        // balance data
-        if(process == 'balance'){
-          myList.insert(0, 0x09);
-          final random = Random();
-          myList.insert(5, int.parse('${random.nextInt(255)}'));
-          int sum = myList.fold(0, (previousValue, element) => previousValue + element);
-          myList.add(sum);
-          print(myList);
-        }
-        // tarrif data
-        else{
-          print("i = 3");
-          myList.insert(0, 0x10);
-          final random = Random();
-          myList.add(int.parse('${random.nextInt(255)}'));
-          int sum = myList.fold(0, (previousValue, element) => previousValue + element);
-          myList.add(sum);
-          print(myList);
-        }
-        return myList;
-      }
-    }
-  }
-  return myList;
-}
-
-
-    Future<void> saveList(List<int> myList, int clientId, String name, String type, String process) async {
+//save the list in the master station page tarrif or balance
+  Future<void> saveList(List<int> myList, String name, String type, String process) async {
     Database? mydb = await db;
     final jsonList = jsonEncode(myList);
-    print('myList => $myList');
-    print('client => $clientId');
-    print('name => $name');
-    print('type => $type');
-    print('process => $process');
-    await mydb!.rawInsert(
-      'INSERT INTO master_table (list, clientId, name, type, process) VALUES (?, ?, ?, ?, ?)',
-      [ jsonList, clientId, name, type, process],
+    print('saved successfully');
+    final rewrite = Sqflite.firstIntValue(
+      await mydb!.rawQuery(
+      '''
+        SELECT COUNT(*) 
+        FROM master_table 
+        WHERE `name` =? AND `process` =?
+      ''',
+      [name,type],
+      ),
     );
+    // myList.insert(0, 0x09);
+    // myList.add(random.nextInt(255));
+    if(rewrite == 0){
+      await mydb!.rawInsert(
+        'INSERT INTO master_table (list, name, type, process) VALUES (?, ?, ?, ?)',
+        [ jsonList, name, type, process],
+      );
+    }
+    else{
+      print('update');
+      await sqlDb.updateData(
+          '''
+              UPDATE master_table
+              SET 
+                list = $jsonList
+              WHERE name = $name
+            '''
+      );
+    }
     }
 }
 
@@ -587,21 +597,94 @@ class SqlDb {
     }
   }
 */
-//UPDATE
-/*
-  Future<int> updateData(List<int> myList, int clientId) async {
-    Database? mydb = await db;
-    //take returened data from database
-    int response = await mydb!.rawUpdate(
-      'UPDATE master_table SET list = ? WHERE clientId = ?',
-      ['$myList', clientId],
-    );
-    print("done");
-    return response;
-  }
-  */
+
 
 // Future<List<Map>> readWatData() async {
 //   final response  = await sqlDb.readData("SELECT `name`,`type` FROM Meters WHERE type = ?",["Electricity"]);
 //   return response;
+// }
+
+//   Future<List<int>> getList(String? name,  String process) async {
+//   Database? mydb = await db;
+//   String query = '';
+//   if(process == 'none'){
+//     if(name!.startsWith('W')){
+//       query = 'SELECT `list`,`title`,`clientId` FROM Water WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
+//       listType = 'Water';
+//     }
+//     else{
+//       query = 'SELECT `list`,`title`,`clientId` FROM Electricity WHERE `title` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
+//       listType = 'Electricity';
+//     }
+//     final List<Map<String, dynamic>> result = await mydb!.rawQuery(
+//       query,
+//       [name,process],
+//     );
+//     if (result.isNotEmpty) {
+//       final dynamic jsonListDynamic = result[0]['list'];
+//       // listName = result[0]['title'];
+//       // listClientId = result[0]['clientId'];
+//       final String? jsonList = jsonListDynamic as String?;
+//       if (jsonList != null) {
+//         final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
+//         myList = dynamicList.cast<int>();
+//         if(listType == "Electricity") {myList[0] = 0xA1;}
+//         else {myList[0] = 0xA0;}
+//         print("myList => $myList");
+//         return myList;
+//       }
+//     }
+//   }
+//   else{
+//     myList = [];
+//     query = 'SELECT * FROM master_table WHERE `name` = ? AND `process` = ? ORDER BY id DESC LIMIT 1' ;
+//     final List<Map<String, dynamic>> result = await mydb!.rawQuery(
+//       query,
+//       [name,process],
+//     );
+//     if (result.isNotEmpty) {
+//       final dynamic jsonListDynamic = result[0]['list'];
+//       // listName = result[0]['name'];
+//       // listClientId = result[0]['clientId'];
+//       listType = result[0]['type'];
+//       final String? jsonList = jsonListDynamic as String?;
+//       if (jsonList != null) {
+//         final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
+//         myList = dynamicList.cast<int>();
+//         // balance data
+//         if(process == 'balance'){
+//           myList.insert(0, 0x09);
+//           final random = Random();
+//           myList.insert(5, int.parse('${random.nextInt(255)}'));
+//           int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+//           myList.add(sum);
+//           print(myList);
+//         }
+//         // tarrif data
+//         else{
+//           print("i = 3");
+//           myList.insert(0, 0x10);
+//           final random = Random();
+//           myList.add(int.parse('${random.nextInt(255)}'));
+//           int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+//           myList.add(sum);
+//           print(myList);
+//         }
+//         return myList;
+//       }
+//     }
+//   }
+//   return myList;
+// }
+// Future<int> getRowCountFromDatabase() async {
+//   Database? mydb = await db;
+//   final queryResult = await mydb!.rawQuery('''
+//     SELECT `id` FROM master_table
+//     ORDER BY id DESC
+//     LIMIT 1
+//     ''');
+//   print(queryResult);
+//   final rowCount = queryResult[0]['id'] as int;
+//
+//   return rowCount;
 // }

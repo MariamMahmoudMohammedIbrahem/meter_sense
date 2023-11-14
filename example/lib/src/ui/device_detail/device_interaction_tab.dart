@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
@@ -8,12 +8,10 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart'
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/dataPage.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
-import 'package:flutter_reactive_ble_example/src/widgets.dart';
 import 'package:functional_data/functional_data.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:collection/collection.dart';
 
 import '../../../t_key.dart';
 
@@ -116,20 +114,18 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   final dataStreamController = StreamController<List<Map>>();
 
   Stream<List<Map>> get dataStream => dataStreamController.stream;
-  void fetchDataAndAddToStream() async {
-    // Simulate data retrieval (replace with your data fetching logic)
-    // await Future.delayed(Duration(seconds: 2));
-
-    // Add data to the stream
-    final data = await readData();
-    dataStreamController.sink.add(data);
-  }
 
   @override
   void initState() {
     discoveredServices = [];
     subscribeOutput = [];
-    fetchDataAndAddToStream();
+    now = DateTime.now();
+    monthList.clear();
+    for (int i = 0; i < 6; i++) {
+      final previousMonth = DateTime(now.year, now.month - i, now.day);
+      final formattedMonth = DateFormat.MMM().format(previousMonth);
+      monthList.add(formattedMonth);
+    }
     setState(() {
       timer = Timer.periodic(interval, (Timer t) {
         if (!widget.viewModel.deviceConnected) {
@@ -143,7 +139,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
           setState(() {
             if (paddingType == "Electricity") {
               calculateElectric(subscribeOutput, widget.name);
-              tarrifVersion = convertToInt(subscribeOutput, 16, 2);
             }
             else {
               calculateWater(subscribeOutput, widget.name);
@@ -179,7 +174,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       }
       else if (subscribeOutput.length < 72 && subscribeOutput.isNotEmpty) {
         final equal = (previousEventData.length == newEventData.length) &&
-            ListEquality<int>().equals(previousEventData, newEventData);
+            const ListEquality<int>().equals(previousEventData, newEventData);
         if (!equal) {
           subscribeOutput += newEventData;
           previousEventData = newEventData;
@@ -223,14 +218,22 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               if(event.first == 9){
                 cond = false;
                 balanceMaster = 0;
+                balance =[];
               }
             });
           });
           await widget.readCharacteristic(widget.characteristic);
-          if(!recharged){
+          if(recharged){
             print('hi i am repeated');
+            await sqlDb.updateData('''
+            UPDATE Meters
+            SET
+            balance = 0
+            WHERE name = '${widget.name}'
+            ''');
             setState(() {
-              recharged = true;
+              recharged = false;
+              updated = false;
             });
           }
         }
@@ -244,14 +247,21 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
           subscribeStream =  widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
             print('tarrif $event');
             if(event.first == 0x10){
+              tarrif = [];
+              tarrifMaster = 0;
               setState(() {
                 cond0 = false;
-                tarrifMaster = 0;
               });
               print('cond $cond0');
             }
           });
           await widget.readCharacteristic(widget.characteristic);
+          if(recharged){
+            setState(() {
+              recharged = false;
+              updated = false;
+            });
+          }
         }
         subscribeStream?.cancel();
       }
@@ -264,7 +274,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             if(event.first == 0x10){
               setState(() {
                 cond0 = false;
+                //delete the database row
+                //clear the value in master station
                 tarrifMaster = 0;
+                tarrif = [];
               });
               print('cond $cond0');
             }
@@ -272,7 +285,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
           await widget.readCharacteristic(widget.characteristic);
         }
         subscribeStream?.cancel();
-        Timer(Duration(seconds: 2),(){print('timer is done');});
+        Timer(const Duration(seconds: 2),(){print('timer is done');});
         await myInstance.getSpecifiedList(widget.name, 'balance');
         if (myList.first == 9 && !cond0) {
           await widget.writeWithoutResponse(widget.characteristic, myList);
@@ -281,15 +294,19 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               print('balance $event');
               if(event.first == 9){
                 cond = false;
+                // delete the row of db
+                // clear the value in the master station
                 balanceMaster = 0;
+                balance = [];
+                updated = false;
               }
             });
           });
           await widget.readCharacteristic(widget.characteristic);
-          if(!recharged && !cond){
+          if(recharged && !cond){
             print('hi i am repeated');
             setState(() {
-              recharged = true;
+              recharged = false;
             });
           }
         }
@@ -388,6 +405,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                           ),
                           onPressed: () {
                             if (paddingType == "Electricity") {
+                              sqlDb.editingList(widget.name,'Electricity');
                               Navigator.of(context).push<void>(
                                 MaterialPageRoute<void>(
                                     builder: (context) => StoreData(
@@ -396,6 +414,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                         )),
                               );
                             } else {
+                              sqlDb.editingList(widget.name,'Water');
                               Navigator.of(context).push<void>(
                                 MaterialPageRoute<void>(
                                     builder: (context) =>
@@ -560,29 +579,29 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                Text('tarrif version: $tarrifVersion',style: const TextStyle(color:Colors.black),),
+                                // Text('tarrif version: $tarrifVersion',style: const TextStyle(color:Colors.black),),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   children: [
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                         shape: const StadiumBorder(),
-                                        backgroundColor: (cond || cond0)?Colors.green.shade900: Colors.grey.shade600,
+                                        backgroundColor: recharged?Colors.green.shade900: Colors.grey.shade600,
                                         foregroundColor: Colors.white,
-                                        disabledBackgroundColor: (cond || cond0)?Colors.green.shade900: Colors.grey.shade600,
+                                        disabledBackgroundColor: recharged?Colors.green.shade900: Colors.grey.shade600,
                                       ),
-                                      onPressed: () async {
+                                      onPressed: recharged?() async {
                                         if (!widget.viewModel.deviceConnected) {
                                           widget.viewModel.connect();
                                         } else if (widget
                                             .viewModel.deviceConnected) {
                                           await startTimer();
                                         }
-                                      },
+                                      }:null,
                                       child: Text(
-                                        TKeys.recharge.translate(context),
-                                        style: TextStyle(
-                                          color: Colors.green.shade50,
+                                        !recharged?TKeys.recharged.translate(context):TKeys.recharge.translate(context),
+                                        style: const TextStyle(
+                                          color: Colors.white,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                         ),
@@ -615,23 +634,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                           });
                                         });
                                       },
-                                      child: Text(TKeys.update.translate(context)),
+                                      child: Text(TKeys.update.translate(context),style: const TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 16),),
                                     ),
                                   ],
-                                ),
-                                ElevatedButton(
-                                  onPressed: (){
-                                    myList = [16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0C];
-                                    final random = Random();
-                                    myList.add(random.nextInt(255));
-
-                                    int sum = myList.fold(0, (previousValue, element) => previousValue + element);
-                                    myList.add(sum);
-                                    widget.writeWithoutResponse(widget.characteristic,myList);
-                                    widget.subscribeToCharacteristic(widget.characteristic).listen((event) {print('write button $event');});
-                                    widget.readCharacteristic(widget.characteristic);
-                                  },
-                                  child: Text('write'),
                                 ),
                               ],
                             ),
@@ -656,8 +661,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                   itemBuilder: (context, i) {
                                     sqlDb.readMeterData(
                                         '${filteredItems[i]['name']}',
-                                        '${filteredItems[i]['type']}',
-                                        i,
+                                        // '${filteredItems[i]['type']}',
                                     );
                                     // print('khlsna ${filteredItems[i]['name']}');
                                     // print('khlsna ${filteredItems[i]['type']}');
@@ -671,16 +675,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                             borderRadius:
                                                 BorderRadius.circular(18.0),
                                             side: BorderSide(
-                                                color: widget.viewModel
-                                                        .deviceConnected
-                                                    ? Colors.green.shade100
-                                                    : color1),
+                                                color: Colors.green.shade100,),
                                           ),
                                           backgroundColor: Colors.white,
                                           foregroundColor: Colors.white,
                                         ),
                                         onPressed: () {
-                                          if (filteredItems[i]['type'] == "Electricity") {
+                                          if ('${filteredItems[i]['name']}'.startsWith('Ele')) {
+                                            sqlDb.editingList('${filteredItems[i]['name']}','Electricity');
                                             Navigator.of(context).push<void>(
                                               MaterialPageRoute<void>(
                                                   builder: (context) =>
@@ -691,7 +693,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                             );
                                           }
                                           else {
-                                            // print('padding type $paddingType');
+                                            sqlDb.editingList('${filteredItems[i]['name']}','Water');
                                             Navigator.of(context).push<void>(
                                               MaterialPageRoute<void>(
                                                   builder: (context) =>
@@ -734,9 +736,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    (filteredItems[i]
-                                                                ['type'] ==
-                                                            'Electricity')
+                                                    ('${filteredItems[i]['name']}'.startsWith('Ele'))
                                                         ? ('${eleMeters['${filteredItems[i]['name']}']?[0]}')
                                                         : ('${watMeters['${filteredItems[i]['name']}']?[0]}'),
                                                     style: TextStyle(
@@ -777,20 +777,15 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                             width: 25,
                                                             child:
                                                                 Image.asset(
-                                                              (filteredItems[i]
-                                                                          [
-                                                                          'type'] ==
-                                                                      'Electricity')
+                                                              ('${filteredItems[i]['name']}'.startsWith('Ele'))
                                                                   ? 'icons/electricityToday.png'
                                                                   : 'icons/waterToday.png',
                                                             ),
                                                           ),
                                                           Text(
-                                                            (filteredItems[i][
-                                                                        'type'] ==
-                                                                    'Electricity')
-                                                                ? ('${eleMeters['${filteredItems[i]['name']}']?[1]}')
-                                                                : ('${watMeters['${filteredItems[i]['name']}']?[1]}'),
+                                                            ('${filteredItems[i]['name']}'.startsWith('Ele'))
+                                                                ? ('${eleMeters['${filteredItems[i]['name']}']?[3]}')
+                                                                : ('${watMeters['${filteredItems[i]['name']}']?[3]}'),
                                                             style: TextStyle(
                                                               color: Colors
                                                                   .grey
@@ -820,20 +815,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                         children: [
                                                           SizedBox(
                                                             width: 25,
-                                                            child: Image.asset(filteredItems[
-                                                                            i]
-                                                                        [
-                                                                        'type'] ==
-                                                                    'Electricity'
+                                                            child: Image.asset('${filteredItems[i]['name']}'.startsWith('Ele')
                                                                 ? 'icons/electricityMonth.png'
                                                                 : 'icons/waterMonth.png'),
                                                           ),
                                                           Text(
-                                                            (filteredItems[i][
-                                                                        'type'] ==
-                                                                    'Electricity')
-                                                                ? ('${eleMeters['${filteredItems[i]['name']}']?[3]}')
-                                                                : ('${watMeters['${filteredItems[i]['name']}']?[3]}'),
+                                                            ('${filteredItems[i]['name']}'.startsWith('Ele'))
+                                                                ? ('${eleMeters['${filteredItems[i]['name']}']?[1]}')
+                                                                : ('${watMeters['${filteredItems[i]['name']}']?[1]}'),
                                                             style: TextStyle(
                                                               color: Colors
                                                                   .grey
@@ -868,9 +857,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    (filteredItems[i]
-                                                                ['type'] ==
-                                                            'Electricity')
+                                                    ('${filteredItems[i]['name']}'.startsWith('Ele'))
                                                         ? ('${eleMeters['${filteredItems[i]['name']}']?[2]}')
                                                         : ('${watMeters['${filteredItems[i]['name']}']?[2]}'),
                                                     style: TextStyle(
@@ -916,6 +903,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
               else if (subscribeOutput.length == 72) {
                 setState(() {
                   if (paddingType == "Electricity") {
+                    isFunctionCalled = false;
                     calculateElectric(subscribeOutput, widget.name);
                   }
                   else {

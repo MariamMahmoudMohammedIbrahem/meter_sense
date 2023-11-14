@@ -100,7 +100,6 @@ class _DeviceListState extends State<DeviceList> {
     }
     super.initState();
   }
-
   @override
   void dispose() {
     widget.stopScan();
@@ -134,16 +133,17 @@ class _DeviceListState extends State<DeviceList> {
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      // floatingActionButton: FloatingActionButton(
-      //   backgroundColor: Colors.green,
-      //   foregroundColor: Colors.black,
-      //   onPressed: () {
-      //     sqlDb.mydeleteDatabase();
-      //     eleMeters.clear();
-      //     watMeter.clear();
-      //   },
-      //   child: Icon(Icons.add),
-      // ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.green,
+        foregroundColor: Colors.black,
+        onPressed: () {
+          sqlDb.mydeleteDatabase();
+          eleMeters.clear();
+          watMeter.clear();
+          const MyApp();
+        },
+        child: Icon(Icons.add),
+      ),
       body: Column(
         children: [
           Expanded(
@@ -203,7 +203,7 @@ class _DeviceListState extends State<DeviceList> {
                             child: Visibility(
                               visible: availability,
                               child: Text(
-                                nameList.isEmpty?TKeys.first.translate(context):TKeys.hint.translate(context),
+                                name.isEmpty?TKeys.first.translate(context):TKeys.hint.translate(context),
                                 style: const TextStyle(color: Colors.red),
                               ),
                             ),
@@ -272,6 +272,7 @@ class _DeviceListState extends State<DeviceList> {
                                     ListTile(
                                       onTap: () async {
                                         widget.stopScan();
+                                        await fetchData();
                                         if(device.name.startsWith('W')){
                                           paddingType = 'Water';
                                         }
@@ -302,9 +303,20 @@ class _DeviceListState extends State<DeviceList> {
                                           if (nameList.contains(device.name) ==
                                               false) {
                                             await sqlDb.insertData('''
-                                                      INSERT OR IGNORE INTO Meters (`name`, `type`)
-                                                      VALUES ("${device.name}","$paddingType")
+                                                      INSERT OR IGNORE INTO Meters (`name`, `balance`, `tarrif`)
+                                                      VALUES ("${device.name}", 0, 0)
                                                       ''');
+                                          }
+                                          else{
+                                            //retrieve the data from the column in meters table and set it ti bool recharged
+                                            //if 0 recharged = false else recharged = true
+                                            index = nameList.indexOf(device.name);
+                                            // there is recharge to send to the meter
+                                            cond = balanceList[index] == 1;
+                                            cond0 = tarrifList[index] == 1;
+                                            if(cond || cond0){
+                                              recharged = true;
+                                            }
                                           }
                                           await Navigator.push<void>(
                                             context,
@@ -339,6 +351,8 @@ class _DeviceListState extends State<DeviceList> {
                                           fontSize: 18,
                                         ),
                                       ),
+                                      subtitle: Text('${device.connectable}'),
+                                      trailing: Icon(getStrengthIcon(device.rssi),),
                                     ),
                                     Divider(
                                       height: 1,

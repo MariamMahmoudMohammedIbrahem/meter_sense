@@ -18,14 +18,14 @@ class WaterData extends StatefulWidget {
 
 class _WaterDataState extends State<WaterData> {
   Future<List<Map>> readWat() async {
-    // final response = await sqlDb.read(widget.name,'Water');
-    final response = await sqlDb.readData('''SELECT * FROM Water''');
+    final response = await sqlDb.read(widget.name,'Water');
+    // final response = await sqlDb.readData('''SELECT * FROM Water''');
     print("object =>1 $response");
     return response;
   }
   @override
   void initState() {
-    sqlDb.editingList(widget.name,2);
+    // sqlDb.editingList(widget.name,'Water');
     super.initState();
   }
   @override
@@ -205,8 +205,8 @@ class _WaterDataState extends State<WaterData> {
                                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                               children: [
                                                 Text("${snapshot.data![i]['time']}"),
-                                                Text('${TKeys.balance.translate(context)}: ',),
-                                                Text("${snapshot.data![i]['totalCredit']}"),
+                                                Text('${TKeys.consumption.translate(context)}: ',),
+                                                Text("${snapshot.data![i]['currentConsumption']}"),
                                               ],
                                             ),
                                           ),
