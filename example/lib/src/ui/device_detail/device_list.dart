@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart' as qrScan;
-import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/localization_service.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
@@ -17,12 +16,12 @@ import 'package:provider/provider.dart';
 
 import '../../ble/ble_logger.dart';
 import '../../ble/functions.dart';
+import '../SQFLITE/dataPage.dart';
+import '../SQFLITE/waterdata.dart';
 import 'device_interaction_tab.dart';
 
 part 'device_list.g.dart';
 //ignore_for_file: annotate_overrides
-
-late TextEditingController deviceNameController;
 
 class DeviceListScreen extends StatelessWidget {
   const DeviceListScreen({Key? key}) : super(key: key);
@@ -89,7 +88,6 @@ class DeviceList extends StatefulWidget {
 class _DeviceListState extends State<DeviceList> {
   @override
   void initState() {
-    deviceNameController = TextEditingController();
     fetchData();
     if (!widget.scannerState.scanIsInProgress) {
       _startScanning();
@@ -103,17 +101,15 @@ class _DeviceListState extends State<DeviceList> {
   @override
   void dispose() {
     widget.stopScan();
-    deviceNameController.dispose();
     super.dispose();
   }
 
   void _startScanning() {
-    final text = deviceNameController.text;
-    widget.startScan(text.isEmpty ? [] : [Uuid.parse(text)]);
+    widget.startScan([]);
   }
 
   Future<void> scanQR() async {
-    String barcodeScanRes;
+    // String barcodeScanRes;
     try {
       barcodeScanRes = await qrScan.FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, qrScan.ScanMode.QR);
@@ -121,10 +117,9 @@ class _DeviceListState extends State<DeviceList> {
       barcodeScanRes = TKeys.failed.translate(context);
     }
     if (!mounted) return;
-
-    setState(() {
-      scanBarcode = barcodeScanRes;
-    });
+    // setState(() {
+    //   scanBarcode = barcodeScanRes;
+    // });
   }
 
   final localizationController = Get.find<LocalizationController>();
@@ -133,17 +128,17 @@ class _DeviceListState extends State<DeviceList> {
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.black,
-        onPressed: () {
-          sqlDb.mydeleteDatabase();
-          eleMeters.clear();
-          watMeter.clear();
-          const MyApp();
-        },
-        child: Icon(Icons.add),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   backgroundColor: Colors.green,
+      //   foregroundColor: Colors.black,
+      //   onPressed: () {
+      //     sqlDb.mydeleteDatabase();
+      //     eleMeters.clear();
+      //     watMeter.clear();
+      //     const MyApp();
+      //   },
+      //   child: Icon(Icons.add),
+      // ),
       body: Column(
         children: [
           Expanded(
@@ -164,7 +159,13 @@ class _DeviceListState extends State<DeviceList> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               ElevatedButton(
-                                onPressed: scanQR,
+                                onPressed: (){
+                                  scanQR();
+                                  _startScanning();
+                                  Timer(const Duration(seconds: 5), () {
+                                    widget.stopScan();
+                                  });
+                                },
                                 child: Text(
                                   TKeys.qr.translate(context),
                                   style: TextStyle(
@@ -203,7 +204,7 @@ class _DeviceListState extends State<DeviceList> {
                             child: Visibility(
                               visible: availability,
                               child: Text(
-                                name.isEmpty?TKeys.first.translate(context):TKeys.hint.translate(context),
+                                nameList.isEmpty?TKeys.first.translate(context):TKeys.hint.translate(context),
                                 style: const TextStyle(color: Colors.red),
                               ),
                             ),
@@ -246,10 +247,11 @@ class _DeviceListState extends State<DeviceList> {
                           ListView(
                             shrinkWrap: true,
                             physics: const AlwaysScrollableScrollPhysics(),
-                            children: widget.scannerState.discoveredDevices
+                            children: [
+                              ...widget.scannerState.discoveredDevices
                                 .where(
                               (device) =>
-                                  (device.name == scanBarcode ||
+                                  (device.name == barcodeScanRes ||
                                       nameList.contains(device.name) ||
                                       device.name == "MasterStation") &&
                                   (device.name.isNotEmpty),
@@ -271,7 +273,7 @@ class _DeviceListState extends State<DeviceList> {
                                   children: [
                                     ListTile(
                                       onTap: () async {
-                                        widget.stopScan();
+                                        // widget.stopScan();
                                         await fetchData();
                                         if(device.name.startsWith('W')){
                                           paddingType = 'Water';
@@ -300,25 +302,28 @@ class _DeviceListState extends State<DeviceList> {
                                           ).then((value) => widget.deviceConnector
                                               .connect(device.id));
                                         } else {
-                                          if (nameList.contains(device.name) ==
-                                              false) {
-                                            await sqlDb.insertData('''
-                                                      INSERT OR IGNORE INTO Meters (`name`, `balance`, `tarrif`)
-                                                      VALUES ("${device.name}", 0, 0)
-                                                      ''');
+                                        if (nameList.contains(device.name) == false) {
+                                          await sqlDb.insertData('''
+                                                    INSERT OR IGNORE INTO Meters (`name`, `balance`, `tarrif`)
+                                                    VALUES ("${device.name}", 0, 0)
+                                                    ''');
+                                        }
+                                        else{
+                                          //retrieve the data from the column in meters table and set it to bool recharged
+                                          //if 0 recharged = false else recharged = true
+                                          index = nameList.indexOf(device.name);
+                                          // there is recharge to send to the meter
+                                          cond = balanceList[index] == 1;
+                                          cond0 = tarrifList[index] == 1;
+                                          if(cond || cond0){
+                                            recharged = true;
                                           }
                                           else{
-                                            //retrieve the data from the column in meters table and set it ti bool recharged
-                                            //if 0 recharged = false else recharged = true
-                                            index = nameList.indexOf(device.name);
-                                            // there is recharge to send to the meter
-                                            cond = balanceList[index] == 1;
-                                            cond0 = tarrifList[index] == 1;
-                                            if(cond || cond0){
-                                              recharged = true;
-                                            }
+                                            recharged = false;
                                           }
-                                          await Navigator.push<void>(
+                                          print('device list');
+                                        }
+                                        await Navigator.push<void>(
                                             context,
                                             MaterialPageRoute(
                                               builder: (_) =>
@@ -351,8 +356,7 @@ class _DeviceListState extends State<DeviceList> {
                                           fontSize: 18,
                                         ),
                                       ),
-                                      subtitle: Text('${device.connectable}'),
-                                      trailing: Icon(getStrengthIcon(device.rssi),),
+                                      // trailing: Icon(getStrengthIcon(device.rssi),),
                                     ),
                                     Divider(
                                       height: 1,
@@ -365,6 +369,73 @@ class _DeviceListState extends State<DeviceList> {
                                 ),
                               );
                             }).toList(),
+                              ...nameList
+                                  .where((name) => !widget.scannerState.discoveredDevices
+                                  .any((device) => device.name == name))
+                                  .map((name) {
+                                if (name.startsWith('W')) {
+                                  icon =  'icons/waterMonth.png';
+                                }
+                                else if(name.startsWith('Ele')){
+                                  icon = 'icons/electricityMonth.png';
+                                }
+                                return Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: width * .1),
+                                  child: Column(
+                                    children: [
+                                      ListTile(
+                                        leading: SizedBox(
+                                          width: 25,
+                                          child: Image.asset(
+                                              icon
+                                          ),
+                                        ),
+                                        title: Text(
+                                          name,
+                                          style: TextStyle(
+                                            color: Colors.grey.shade700,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        trailing: const Icon(Icons.error),
+                                        onTap: (){
+                                          if(name.startsWith('W')){
+                                            paddingType = 'Water';
+                                            Navigator.of(context).push<void>(
+                                              MaterialPageRoute<void>(
+                                                  builder: (context) =>
+                                                      WaterData(
+                                                        name: name,
+                                                        // count: i,
+                                                      )),
+                                            );
+                                          }
+                                          else{
+                                            paddingType = "Electricity";
+                                            Navigator.of(context).push<void>(
+                                              MaterialPageRoute<void>(
+                                                  builder: (context) => StoreData(
+                                                    name: name,
+                                                    // count: 0,
+                                                  )),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                      Divider(
+                                        height: 1,
+                                        thickness: 1,
+                                        indent: 0,
+                                        endIndent: 10,
+                                        color: Colors.grey.shade400,
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              })
+                                  .toList(),
+                            ]
                           ),
                         ],
                       ),
@@ -378,20 +449,6 @@ class _DeviceListState extends State<DeviceList> {
       ),
     );
   }
-}
-
-class Clip extends StatelessWidget {
-  final bool direction;
-  const Clip({required this.direction, Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) => ClipPath(
-        clipper: WaveClipperTwo(reverse: direction),
-        child: Container(
-          height: 150,
-          color: Colors.grey.shade200,
-        ),
-      );
 }
 
 class LanguageToggle extends StatefulWidget {

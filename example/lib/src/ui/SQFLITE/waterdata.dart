@@ -9,9 +9,9 @@ import '../../../t_key.dart';
 import 'dataPage.dart';
 
 class WaterData extends StatefulWidget {
-  const WaterData({required this.name,required this.count,Key? key,}) : super(key: key);
+  const WaterData({required this.name,Key? key,}) : super(key: key);
   final String name;
-  final int count;
+  // final int count;
   @override
   State<WaterData> createState() => _WaterDataState();
 }
@@ -33,14 +33,13 @@ class _WaterDataState extends State<WaterData> {
     final width = MediaQuery.of(context).size.width;
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
-      appBar: AppBar(title: Text('water'),),
       body: RefreshIndicator(
         onRefresh: ()=> Future.delayed(
             const Duration(seconds: 1),(){
           setState(() {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute<void>(
-                builder: (context) => WaterData(name: widget.name, count: widget.count),
+                builder: (context) => WaterData(name: widget.name),
               ),
             );
 

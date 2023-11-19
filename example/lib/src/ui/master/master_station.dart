@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -126,35 +125,29 @@ class _MasterStationState extends State<_MasterStation> {
         end = myList.length;
       }
       List<int> chunk = myList.sublist(i, end);
-      print("Sending chunk: $chunk");
       await widget.writeWithoutResponse(widget.characteristic, chunk);
     }
   }
   Future<void> subscribeCharacteristic() async {
     if (kDebugMode) {
-      print("subscribe in");
     }
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
           //electric tarrif
           if(event.first == 0xA3 || event.first == 0xA5){
             setState(() {
-              // tarrif = event.sublist(1,12);
+              tarrif = [];
               tarrif..insert(0, 0x10)
                 ..addAll(event.sublist(1,12))..add(random.nextInt(255));
               tarrifMaster = convertToInt(event, 1, 11);
-              print(tarrif);
             });
           }
           if(event.first == 0xA4 || event.first == 0xA6){
             setState(() {
-              // balance = event.sublist(1,5);
               balance = [];
               balance..insert(0, 0x09)
               ..addAll(event.sublist(1,5))..add(random.nextInt(255));
               balanceMaster = convertToInt(event, 1, 4)/100;
-              // cond = true;
-              print(balance);
             });
           }
         });
@@ -264,11 +257,9 @@ class _MasterStationState extends State<_MasterStation> {
                     ElevatedButton(
                       onPressed: (){
                         if(widget.viewModel.connectionStatus == DeviceConnectionState.connecting || widget.viewModel.connectionStatus == DeviceConnectionState.connected){
-                          print("connected");
                           widget.viewModel.disconnect();
                         }
                         else if(widget.viewModel.connectionStatus == DeviceConnectionState.disconnecting || widget.viewModel.connectionStatus == DeviceConnectionState.disconnected){
-                          print("disconnected");
                           widget.viewModel.connect();
                         }
                       },
@@ -331,7 +322,7 @@ class _MasterStationState extends State<_MasterStation> {
                           },
                           itemBuilder: (BuildContext context) {
                             final List<PopupMenuEntry<String>> items = [];
-                            for (String item in name) {
+                            for (String item in nameList) {
                               items.add(
                                 PopupMenuItem<String>(
                                   value: item,
@@ -345,7 +336,7 @@ class _MasterStationState extends State<_MasterStation> {
                                   ),
                                 ),
                               );
-                              if (item != name.last) {
+                              if (item != nameList.last) {
                                 items.add(
                                   const PopupMenuDivider(),
                                 );
@@ -487,8 +478,6 @@ class _MasterStationState extends State<_MasterStation> {
                                             setState(() {
                                               updated = true;
                                             });
-                                            // cond = true;
-                                            // recharged = false;
                                           }
                                           else if(tarrif.isNotEmpty && balance.isEmpty){
                                             await myInstance.saveList( tarrif,'$selectedName', '$listType' ,'tarrif');
@@ -501,8 +490,6 @@ class _MasterStationState extends State<_MasterStation> {
                                             setState(() {
                                               updated = true;
                                             });
-                                            // cond0 = true;
-                                            // recharged = false;
                                           }
                                           else {
                                             await myInstance.saveList( balance, '$selectedName', '$listType' ,'balance');
@@ -511,15 +498,12 @@ class _MasterStationState extends State<_MasterStation> {
                                             UPDATE Meters
                                             SET 
                                             balance = 1,
-                                            tarrif = 1,
+                                            tarrif = 1
                                             WHERE name = '$selectedName'
                                             ''');
                                             setState(() {
                                               updated = true;
                                             });
-                                            // cond0 = true;
-                                            // cond = true;
-                                            // recharged = false;
                                           }
                                     }:null,
                                     child: Text(updated?TKeys.updated.translate(context):TKeys.update.translate(context), style: const TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 16,),),

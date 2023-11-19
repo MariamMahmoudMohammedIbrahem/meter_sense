@@ -12,11 +12,11 @@ import '../../../t_key.dart';
 class StoreData extends StatefulWidget {
     const StoreData({
       required this.name,
-      required this.count,
+      // required this.count,
     Key? key,
   }) : super(key: key);
     final String name;
-    final int count;
+    // final int count;
   // final DiscoveredDevice device;
   @override
   State<StoreData> createState() => _StoreDataState();
@@ -43,7 +43,7 @@ class _StoreDataState extends State<StoreData> {
           setState(() {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute<void>(
-                builder: (context) => StoreData(name: widget.name, count: widget.count),
+                builder: (context) => StoreData(name: widget.name),
               ),
             );
           });

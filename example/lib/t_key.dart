@@ -8,6 +8,7 @@ enum TKeys{
   scan,
   scanning,
   device,
+  notConnected,
   hint,
   first,
   electricity,

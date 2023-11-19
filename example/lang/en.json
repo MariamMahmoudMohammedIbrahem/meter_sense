@@ -4,6 +4,7 @@
   "scan": "Start Scanning",
   "scanning": "Scanning",
   "device": "Devices",
+  "notConnected": "Not Connected Devices",
   "hint": "if you can't find your device, turn off the bluetooth and turn it on again.",
   "first": "please scan the QR code on the device",
   "electricity": "Electricity",

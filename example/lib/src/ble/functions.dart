@@ -187,37 +187,37 @@ void addData(String name) async {
   }
 }
 
-// read all data from meters
-Future<List<Map>> readData() async {
-  final response  = await sqlDb.readData("SELECT * FROM Meters");
-  return response;
-}
-
-//fetch meter data
 Future<void> fetchData() async {
   balanceList.clear();
   tarrifList.clear();
-  final testing = await readData();
+  final testing = await sqlDb.readData('SELECT * FROM Meters');
   for (Map<dynamic, dynamic> map in testing) {
     if (!nameList.contains(map['name'].toString())){
       nameList.add(map['name'].toString());
-      name.add(map['name'].toString());
+      // name.add(map['name'].toString());
     }
     balanceList.add(int.parse(map['balance'].toString()));
     tarrifList.add(int.parse(map['tarrif'].toString()));
-    // typeList.add(map['type'].toString());
   }
 }
-IconData getStrengthIcon(int rssi) {
-  if (-30 >= rssi && rssi >= -55) {
-    return Icons.signal_cellular_alt_outlined; // Icon for more strong
-  } else if (-55 >= rssi && rssi >= -67) {
-    return Icons.signal_cellular_alt_2_bar_outlined; // Icon for strong
-  } else if (-80 >= rssi && rssi >= -90) {
-    return Icons.signal_cellular_alt_1_bar_outlined; // Icon for terrible
-  } else if (rssi < -90) {
-    return Icons.signal_cellular_off; // Icon for unusable
-  } else {
-    return Icons.error; // Handle any other cases
-  }
-}
+// IconData getStrengthIcon(int rssi) {
+//   if (-30 >= rssi && rssi >= -55) {
+//     return Icons.signal_cellular_alt_outlined; // Icon for more strong
+//   } else if (-55 >= rssi && rssi >= -67) {
+//     return Icons.signal_cellular_alt_2_bar_outlined; // Icon for strong
+//   } else if (-80 >= rssi && rssi >= -90) {
+//     return Icons.signal_cellular_alt_1_bar_outlined; // Icon for terrible
+//   } else if (rssi < -90) {
+//     return Icons.signal_cellular_off; // Icon for unusable
+//   } else {
+//     return Icons.error; // Handle any other cases
+//   }
+// }
+
+// read all data from meters
+// Future<List<Map>> readData() async {
+//   final response  = await sqlDb.readData("SELECT * FROM Meters");
+//   return response;
+// }
+
+//fetch meter data

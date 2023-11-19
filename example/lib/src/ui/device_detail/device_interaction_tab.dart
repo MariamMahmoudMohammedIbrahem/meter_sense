@@ -45,7 +45,7 @@ class DeviceInteractionTab extends StatelessWidget {
           writeWithoutResponse: interactor.writeCharacteristicWithoutResponse,
           readCharacteristic: interactor.readCharacteristic,
           subscribeToCharacteristic: interactor.subScribeToCharacteristic,
-              name: device.name,
+          name: device.name,
         ),
       );
 }
@@ -100,9 +100,8 @@ class _DeviceInteractionTab extends StatefulWidget {
   final Future<void> Function(
           QualifiedCharacteristic characteristic, List<int> value)
       writeWithoutResponse;
-  final Future<List<int>> Function(
-      QualifiedCharacteristic characteristic)
-  readCharacteristic;
+  final Future<List<int>> Function(QualifiedCharacteristic characteristic)
+      readCharacteristic;
   final Stream<List<int>> Function(QualifiedCharacteristic characteristic)
       subscribeToCharacteristic;
   final String name;
@@ -111,14 +110,12 @@ class _DeviceInteractionTab extends StatefulWidget {
 }
 
 class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
-  final dataStreamController = StreamController<List<Map>>();
-
-  Stream<List<Map>> get dataStream => dataStreamController.stream;
 
   @override
   void initState() {
     discoveredServices = [];
     subscribeOutput = [];
+    print('device interaction tab');
     now = DateTime.now();
     monthList.clear();
     for (int i = 0; i < 6; i++) {
@@ -130,17 +127,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
       timer = Timer.periodic(interval, (Timer t) {
         if (!widget.viewModel.deviceConnected) {
           widget.viewModel.connect();
-        }
-        else if (subscribeOutput.length != 72) {
-            subscribeCharacteristic();
-            widget.writeWithoutResponse(widget.characteristic,[0x59]);
-        }
-        else if (subscribeOutput.length == 72) {
+        } else if (subscribeOutput.length != 72) {
+          subscribeCharacteristic();
+          widget.writeWithoutResponse(widget.characteristic, [0x59]);
+        } else if (subscribeOutput.length == 72) {
           setState(() {
             if (paddingType == "Electricity") {
               calculateElectric(subscribeOutput, widget.name);
-            }
-            else {
+            } else {
               calculateWater(subscribeOutput, widget.name);
             }
           });
@@ -155,14 +149,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
   void dispose() {
     subscribeStream?.cancel();
     widget.viewModel.disconnect();
-    dataStreamController.close();
     super.dispose();
     timer.cancel();
   }
 
   Future<void> subscribeCharacteristic() async {
     var newEventData = <int>[];
-    subscribeOutput=[];
+    subscribeOutput = [];
     subscribeStream = widget
         .subscribeToCharacteristic(widget.characteristic)
         .listen((event) async {
@@ -171,148 +164,126 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         subscribeOutput += newEventData;
         previousEventData = newEventData;
         // write = false;
-      }
-      else if (subscribeOutput.length < 72 && subscribeOutput.isNotEmpty) {
+      } else if (subscribeOutput.length < 72 && subscribeOutput.isNotEmpty) {
         final equal = (previousEventData.length == newEventData.length) &&
             const ListEquality<int>().equals(previousEventData, newEventData);
         if (!equal) {
           subscribeOutput += newEventData;
           previousEventData = newEventData;
-        }
-        else {
+        } else {
           newEventData = [];
         }
       }
     });
-    print("subscribe output: $subscribeOutput");
-    print('subscribe end');
   }
 
   Future<void> startTimer() async {
-    // timer = Timer.periodic(interval, (Timer t) async {
-      // cond => balance && cond0 => tarrif
-      if (cond && !cond0) {
-        // Code for sublist 1
-        print('cond=> $cond');
-        final result = await myInstance.getSpecifiedList(widget.name, 'balance');
-        print('result => $result');
-        // if (myList.first == 9) {
-        //   subscribeStream = widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-        //     setState(() {
-        //       cond = false;
-        //     });
-        //   });
-        //   if(!recharged){
-        //     await widget.writeWithoutResponse(widget.characteristic, myList);
-        //     print('hi i am repeated');
-        //     setState(() {
-        //       recharged = true;
-        //     });
-        //   }
-        // }
-        if (myList.first == 9) {
-          await widget.writeWithoutResponse(widget.characteristic, myList);
-          subscribeStream = widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-            setState(() {
-              print('balance $event');
-              if(event.first == 9){
-                cond = false;
-                balanceMaster = 0;
-                balance =[];
-              }
-            });
+    if (cond && !cond0) {
+      await myInstance.getSpecifiedList(widget.name, 'balance');
+      if (myList.first == 9) {
+        await widget.writeWithoutResponse(widget.characteristic, myList);
+        subscribeStream = widget
+            .subscribeToCharacteristic(widget.characteristic)
+            .listen((event) {
+          setState(() {
+            if (event.first == 9) {
+              cond = false;
+              balanceMaster = 0;
+              balance = [];
+            }
           });
-          await widget.readCharacteristic(widget.characteristic);
-          if(recharged){
-            print('hi i am repeated');
-            await sqlDb.updateData('''
-            UPDATE Meters
-            SET
-            balance = 0
-            WHERE name = '${widget.name}'
-            ''');
-            setState(() {
-              recharged = false;
-              updated = false;
-            });
-          }
+        });
+        await widget.readCharacteristic(widget.characteristic);
+        if (recharged) {
+          await sqlDb.updateData('''
+          UPDATE Meters
+          SET
+          balance = 0
+          WHERE name = '${widget.name}'
+          ''');
+          setState(() {
+            recharged = false;
+            updated = false;
+          });
         }
       }
-      else if (cond0 && !cond) {
-        // Code for sublist 2
-        final result = await myInstance.getSpecifiedList(widget.name, 'tarrif');
-        print('result => $result');
-        if (myList.first == 16) {
-          await widget.writeWithoutResponse(widget.characteristic, myList);
-          subscribeStream =  widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-            print('tarrif $event');
-            if(event.first == 0x10){
+    } else if (cond0 && !cond) {
+      await myInstance.getSpecifiedList(widget.name, 'tarrif');
+      if (myList.first == 16) {
+        await widget.writeWithoutResponse(widget.characteristic, myList);
+        subscribeStream = widget
+            .subscribeToCharacteristic(widget.characteristic)
+            .listen((event) {
+          setState(() {
+            if (event.first == 0x10) {
+              cond0 = false;
               tarrif = [];
               tarrifMaster = 0;
-              setState(() {
-                cond0 = false;
-              });
-              print('cond $cond0');
             }
           });
-          await widget.readCharacteristic(widget.characteristic);
-          if(recharged){
-            setState(() {
-              recharged = false;
-              updated = false;
-            });
-          }
+        });
+        await widget.readCharacteristic(widget.characteristic);
+        if (recharged) {
+          await sqlDb.updateData('''
+          UPDATE Meters
+          SET
+          tarrif = 0
+          WHERE name = '${widget.name}'
+          ''');
+          setState(() {
+            recharged = false;
+            updated = false;
+          });
         }
-        subscribeStream?.cancel();
       }
-      else if(cond0 && cond){
-        await myInstance.getSpecifiedList(widget.name, 'tarrif');
-        if (myList.first == 16) {
-          await widget.writeWithoutResponse(widget.characteristic, myList);
-          subscribeStream =  widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-            print('tarrif $event');
-            if(event.first == 0x10){
-              setState(() {
-                cond0 = false;
-                //delete the database row
-                //clear the value in master station
-                tarrifMaster = 0;
-                tarrif = [];
-              });
-              print('cond $cond0');
+    } else if (cond0 && cond) {
+      await myInstance.getSpecifiedList(widget.name, 'tarrif');
+      if (myList.first == 16) {
+        await widget.writeWithoutResponse(widget.characteristic, myList);
+        subscribeStream = widget
+            .subscribeToCharacteristic(widget.characteristic)
+            .listen((event) {
+          setState(() {
+            if (event.first == 0x10) {
+              cond0 = false;
+              tarrifMaster = 0;
+              tarrif = [];
             }
           });
-          await widget.readCharacteristic(widget.characteristic);
-        }
-        subscribeStream?.cancel();
-        Timer(const Duration(seconds: 2),(){print('timer is done');});
-        await myInstance.getSpecifiedList(widget.name, 'balance');
-        if (myList.first == 9 && !cond0) {
-          await widget.writeWithoutResponse(widget.characteristic, myList);
-          subscribeStream = widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-            setState(() {
-              print('balance $event');
-              if(event.first == 9){
-                cond = false;
-                // delete the row of db
-                // clear the value in the master station
-                balanceMaster = 0;
-                balance = [];
-                updated = false;
-              }
-            });
-          });
-          await widget.readCharacteristic(widget.characteristic);
-          if(recharged && !cond){
-            print('hi i am repeated');
-            setState(() {
-              recharged = false;
-            });
-          }
-        }
-        subscribeStream?.cancel();
+        });
+        await widget.readCharacteristic(widget.characteristic);
       }
-    // });
+      await myInstance.getSpecifiedList(widget.name, 'balance');
+      if (myList.first == 9 && !cond0) {
+        await widget.writeWithoutResponse(widget.characteristic, myList);
+        subscribeStream = widget
+            .subscribeToCharacteristic(widget.characteristic)
+            .listen((event) {
+          setState(() {
+            if (event.first == 9) {
+              cond = false;
+              balanceMaster = 0;
+              balance = [];
+            }
+          });
+        });
+        await widget.readCharacteristic(widget.characteristic);
+        if (recharged && !cond) {
+          await sqlDb.updateData('''
+          UPDATE Meters
+          SET
+          balance = 0,
+          tarrif = 0
+          WHERE name = '${widget.name}'
+          ''');
+          setState(() {
+            recharged = false;
+            updated = false;
+          });
+        }
+      }
+    }
+    await subscribeStream?.cancel();
   }
 
   @override
@@ -362,15 +333,25 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                             //   ),
                             // ),
                             ElevatedButton(
-                              onPressed: (){
-                                if(widget.viewModel.connectionStatus == DeviceConnectionState.connecting || widget.viewModel.connectionStatus == DeviceConnectionState.connected){
+                              onPressed: () {
+                                if (widget.viewModel.connectionStatus ==
+                                        DeviceConnectionState.connecting ||
+                                    widget.viewModel.connectionStatus ==
+                                        DeviceConnectionState.connected) {
                                   widget.viewModel.disconnect();
-                                }
-                                else if(widget.viewModel.connectionStatus == DeviceConnectionState.disconnecting || widget.viewModel.connectionStatus == DeviceConnectionState.disconnected){
+                                } else if (widget.viewModel.connectionStatus ==
+                                        DeviceConnectionState.disconnecting ||
+                                    widget.viewModel.connectionStatus ==
+                                        DeviceConnectionState.disconnected) {
                                   widget.viewModel.connect();
                                 }
                               },
-                              child: Text((widget.viewModel.connectionStatus == DeviceConnectionState.connecting || widget.viewModel.connectionStatus == DeviceConnectionState.connected)?TKeys.disconnect.translate(context):TKeys.connect.translate(context)),
+                              child: Text((widget.viewModel.connectionStatus ==
+                                          DeviceConnectionState.connecting ||
+                                      widget.viewModel.connectionStatus ==
+                                          DeviceConnectionState.connected)
+                                  ? TKeys.disconnect.translate(context)
+                                  : TKeys.connect.translate(context)),
                             ),
                             ElevatedButton(
                               onPressed: () {
@@ -405,20 +386,22 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                           ),
                           onPressed: () {
                             if (paddingType == "Electricity") {
-                              sqlDb.editingList(widget.name,'Electricity');
+                              sqlDb.editingList(widget.name, 'Electricity');
                               Navigator.of(context).push<void>(
                                 MaterialPageRoute<void>(
                                     builder: (context) => StoreData(
                                           name: widget.name,
-                                      count: 0,
+                                          // count: 0,
                                         )),
                               );
                             } else {
-                              sqlDb.editingList(widget.name,'Water');
+                              sqlDb.editingList(widget.name, 'Water');
                               Navigator.of(context).push<void>(
                                 MaterialPageRoute<void>(
-                                    builder: (context) =>
-                                        WaterData(name: widget.name,count: 0,)),
+                                    builder: (context) => WaterData(
+                                          name: widget.name,
+                                          // count: 0,
+                                        )),
                               );
                             }
                           },
@@ -501,8 +484,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                             ),
                                             Text(
                                               paddingType == 'Electricity'
-                                                  ? eleMeter[8]
-                                                      .toString()
+                                                  ? eleMeter[8].toString()
                                                   : watMeter[8].toString(),
                                               style: TextStyle(
                                                 color: Colors.grey.shade800,
@@ -581,25 +563,35 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                 ),
                                 // Text('tarrif version: $tarrifVersion',style: const TextStyle(color:Colors.black),),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
                                   children: [
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                         shape: const StadiumBorder(),
-                                        backgroundColor: recharged?Colors.green.shade900: Colors.grey.shade600,
+                                        backgroundColor: recharged
+                                            ? Colors.green.shade900
+                                            : Colors.grey.shade600,
                                         foregroundColor: Colors.white,
-                                        disabledBackgroundColor: recharged?Colors.green.shade900: Colors.grey.shade600,
+                                        disabledBackgroundColor: recharged
+                                            ? Colors.green.shade900
+                                            : Colors.grey.shade600,
                                       ),
-                                      onPressed: recharged?() async {
-                                        if (!widget.viewModel.deviceConnected) {
-                                          widget.viewModel.connect();
-                                        } else if (widget
-                                            .viewModel.deviceConnected) {
-                                          await startTimer();
-                                        }
-                                      }:null,
+                                      onPressed: recharged
+                                          ? () async {
+                                              if (!widget
+                                                  .viewModel.deviceConnected) {
+                                                widget.viewModel.connect();
+                                              } else if (widget
+                                                  .viewModel.deviceConnected) {
+                                                await startTimer();
+                                              }
+                                            }
+                                          : null,
                                       child: Text(
-                                        !recharged?TKeys.recharged.translate(context):TKeys.recharge.translate(context),
+                                        !recharged
+                                            ? TKeys.recharged.translate(context)
+                                            : TKeys.recharge.translate(context),
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
@@ -608,25 +600,32 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                       ),
                                     ),
                                     ElevatedButton(
-                                      onPressed: (){
+                                      onPressed: () {
                                         subscribeOutput = [];
                                         setState(() {
-                                          timer = Timer.periodic(interval, (Timer t) {
-                                            if (!widget.viewModel.deviceConnected) {
+                                          timer = Timer.periodic(interval,
+                                              (Timer t) {
+                                            if (!widget
+                                                .viewModel.deviceConnected) {
                                               widget.viewModel.connect();
-                                            }
-                                            else if (subscribeOutput.length != 72) {
+                                            } else if (subscribeOutput.length !=
+                                                72) {
                                               subscribeCharacteristic();
-                                              widget.writeWithoutResponse(widget.characteristic,[0x59]);
-                                            }
-                                            else if (subscribeOutput.length == 72) {
+                                              widget.writeWithoutResponse(
+                                                  widget.characteristic,
+                                                  [0x59]);
+                                            } else if (subscribeOutput.length ==
+                                                72) {
                                               setState(() {
-                                                if (paddingType == "Electricity") {
-                                                  calculateElectric(subscribeOutput, widget.name);
-                                                }
-                                                else {
-                                                  print('why not calculated?');
-                                                  calculateWater(subscribeOutput, widget.name);
+                                                if (paddingType ==
+                                                    "Electricity") {
+                                                  calculateElectric(
+                                                      subscribeOutput,
+                                                      widget.name);
+                                                } else {
+                                                  calculateWater(
+                                                      subscribeOutput,
+                                                      widget.name);
                                                 }
                                               });
                                               t.cancel();
@@ -634,7 +633,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                           });
                                         });
                                       },
-                                      child: Text(TKeys.update.translate(context),style: const TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 16),),
+                                      child: Text(
+                                        TKeys.update.translate(context),
+                                        style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -643,249 +648,308 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                           ),
                         ),
                       ),
-                      FutureBuilder(
-                          future: readData(),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<List<Map>> snapshot) {
-                            if (snapshot.hasData) {
-                              final filteredItems = snapshot.data!
-                                  .where((item) => (item['name'] != widget.name))
-                                  .toList();
-                              print('1   $filteredItems');
-                              print('2   $widget.name');
-                              return ListView.builder(
-                                  itemCount: filteredItems.length,
-                                  physics:
-                                      const NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemBuilder: (context, i) {
-                                    sqlDb.readMeterData(
+                      Visibility(
+                        visible: nameList.isNotEmpty,
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Text(
+                                  TKeys.notConnected.translate(context),
+                                  style: TextStyle(
+                                      color: Colors.grey.shade700,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 22,
+                                      shadows: [
+                                        Shadow(
+                                            color: Colors.grey.shade400,
+                                            blurRadius: 2.0,
+                                            offset: Offset(2.0, 2.0)),
+                                      ]),
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(
+                                left: width * .07,
+                                right: width * .07,
+                                top: 10,
+                              ),
+                              child: Divider(
+                                height: 1,
+                                thickness: 1,
+                                indent: 0,
+                                endIndent: 10,
+                                color: Colors.grey.shade800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Visibility(
+                        visible: nameList.isNotEmpty,
+                        child: FutureBuilder(
+                            future: sqlDb.readData('SELECT * FROM Meters'),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<List<Map>> snapshot) {
+                              if (snapshot.hasData) {
+                                final filteredItems = snapshot.data!
+                                    .where(
+                                        (item) => (item['name'] != widget.name))
+                                    .toList();
+                                return ListView.builder(
+                                    itemCount: filteredItems.length,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemBuilder: (context, i) {
+                                      sqlDb.readMeterData(
                                         '${filteredItems[i]['name']}',
-                                        // '${filteredItems[i]['type']}',
-                                    );
-                                    // print('khlsna ${filteredItems[i]['name']}');
-                                    // print('khlsna ${filteredItems[i]['type']}');
-                                    return Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: width * .07,
-                                          vertical: 10.0),
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(18.0),
-                                            side: BorderSide(
-                                                color: Colors.green.shade100,),
+                                      );
+                                      return Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: width * .07,
+                                            vertical: 10.0),
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                              BorderRadius.circular(18.0),
+                                              side: BorderSide(
+                                                color: Colors.grey.shade800,
+                                              ),
+                                            ),
+                                            backgroundColor: Colors.white,
+                                            foregroundColor: Colors.white,
                                           ),
-                                          backgroundColor: Colors.white,
-                                          foregroundColor: Colors.white,
-                                        ),
-                                        onPressed: () {
-                                          if ('${filteredItems[i]['name']}'.startsWith('Ele')) {
-                                            sqlDb.editingList('${filteredItems[i]['name']}','Electricity');
-                                            Navigator.of(context).push<void>(
-                                              MaterialPageRoute<void>(
-                                                  builder: (context) =>
-                                                      StoreData(
-                                                        name: '${filteredItems[i]['name']}',
-                                                        count: i,
-                                                      )),
-                                            );
-                                          }
-                                          else {
-                                            sqlDb.editingList('${filteredItems[i]['name']}','Water');
-                                            Navigator.of(context).push<void>(
-                                              MaterialPageRoute<void>(
-                                                  builder: (context) =>
-                                                      WaterData(
-                                                        name: filteredItems[i]
-                                                                ['name']
-                                                            .toString(),
-                                                        count: i,
-                                                      )),
-                                            );
-                                          }
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8.0),
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                '${TKeys.name.translate(context)}: ${filteredItems[i]['name']}',
-                                                style: TextStyle(
-                                                  color:
-                                                      Colors.green.shade900,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 19,
+                                          onPressed: () {
+                                            if ('${filteredItems[i]['name']}'
+                                                .startsWith('Ele')) {
+                                              sqlDb.editingList(
+                                                  '${filteredItems[i]['name']}',
+                                                  'Electricity');
+                                              Navigator.of(context).push<void>(
+                                                MaterialPageRoute<void>(
+                                                    builder: (context) =>
+                                                        StoreData(
+                                                          name:
+                                                          '${filteredItems[i]['name']}',
+                                                          // count: i,
+                                                        )),
+                                              );
+                                            } else {
+                                              sqlDb.editingList(
+                                                  '${filteredItems[i]['name']}',
+                                                  'Water');
+                                              Navigator.of(context).push<void>(
+                                                MaterialPageRoute<void>(
+                                                    builder: (context) =>
+                                                        WaterData(
+                                                          name: filteredItems[i]
+                                                          ['name']
+                                                              .toString(),
+                                                          // count: i,
+                                                        )),
+                                              );
+                                            }
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 8.0),
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      '${TKeys.name.translate(context)}: ',
+                                                      style: TextStyle(
+                                                        color: Colors.green.shade900,
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 19,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                        '${filteredItems[i]['name']}',
+                                                      style: TextStyle(
+                                                        color: Colors.grey.shade800,
+                                                        fontSize: 17,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Row(
-                                                children: [
-                                                  SizedBox(
-                                                      width: width * .07),
-                                                  Text(
-                                                    '${TKeys.currentTarrif.translate(context)}: ',
-                                                    style: TextStyle(
-                                                      color: Colors
-                                                          .green.shade900,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 19,
+                                                const SizedBox(height: 10),
+                                                Row(
+                                                  children: [
+                                                    SizedBox(width: width * .07),
+                                                    Text(
+                                                      '${TKeys.currentTarrif.translate(context)}: ',
+                                                      style: TextStyle(
+                                                        color:
+                                                        Colors.green.shade900,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        fontSize: 19,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  Text(
-                                                    ('${filteredItems[i]['name']}'.startsWith('Ele'))
-                                                        ? ('${eleMeters['${filteredItems[i]['name']}']?[0]}')
-                                                        : ('${watMeters['${filteredItems[i]['name']}']?[0]}'),
-                                                    style: TextStyle(
-                                                      color: Colors
-                                                          .grey.shade800,
-                                                      fontSize: 17,
+                                                    Text(
+                                                      ('${filteredItems[i]['name']}'
+                                                          .startsWith('Ele'))
+                                                          ? ('${eleMeters['${filteredItems[i]['name']}']?[0]}')
+                                                          : ('${watMeters['${filteredItems[i]['name']}']?[0]}'),
+                                                      style: TextStyle(
+                                                        color:
+                                                        Colors.grey.shade800,
+                                                        fontSize: 17,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(
-                                                height: 10,
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  const SizedBox(
-                                                    width: 1,
-                                                  ),
-                                                  Column(
-                                                    children: [
-                                                      Text(
-                                                        TKeys.today.translate(
-                                                            context),
-                                                        style: TextStyle(
-                                                          color: Colors
-                                                              .green.shade900,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 19,
+                                                  ],
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                                  children: [
+                                                    const SizedBox(
+                                                      width: 1,
+                                                    ),
+                                                    Column(
+                                                      children: [
+                                                        Text(
+                                                          TKeys.today
+                                                              .translate(context),
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .green.shade900,
+                                                            fontWeight:
+                                                            FontWeight.bold,
+                                                            fontSize: 19,
+                                                          ),
                                                         ),
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                            width: 25,
-                                                            child:
-                                                                Image.asset(
-                                                              ('${filteredItems[i]['name']}'.startsWith('Ele'))
-                                                                  ? 'icons/electricityToday.png'
-                                                                  : 'icons/waterToday.png',
+                                                        Row(
+                                                          children: [
+                                                            SizedBox(
+                                                              width: 25,
+                                                              child: Image.asset(
+                                                                ('${filteredItems[i]['name']}'
+                                                                    .startsWith(
+                                                                    'Ele'))
+                                                                    ? 'icons/electricityToday.png'
+                                                                    : 'icons/waterToday.png',
+                                                              ),
                                                             ),
-                                                          ),
-                                                          Text(
-                                                            ('${filteredItems[i]['name']}'.startsWith('Ele'))
-                                                                ? ('${eleMeters['${filteredItems[i]['name']}']?[3]}')
-                                                                : ('${watMeters['${filteredItems[i]['name']}']?[3]}'),
-                                                            style: TextStyle(
-                                                              color: Colors
-                                                                  .grey
-                                                                  .shade800,
-                                                              fontSize: 17,
+                                                            Text(
+                                                              ('${filteredItems[i]['name']}'
+                                                                  .startsWith(
+                                                                  'Ele'))
+                                                                  ? ('${eleMeters['${filteredItems[i]['name']}']?[3]}')
+                                                                  : ('${watMeters['${filteredItems[i]['name']}']?[3]}'),
+                                                              style: TextStyle(
+                                                                color: Colors.grey
+                                                                    .shade800,
+                                                                fontSize: 17,
+                                                              ),
                                                             ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(width: 30),
-                                                  Column(
-                                                    children: [
-                                                      Text(
-                                                        TKeys.month.translate(
-                                                            context),
-                                                        style: TextStyle(
-                                                          color: Colors
-                                                              .green.shade900,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 19,
+                                                          ],
                                                         ),
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          SizedBox(
-                                                            width: 25,
-                                                            child: Image.asset('${filteredItems[i]['name']}'.startsWith('Ele')
-                                                                ? 'icons/electricityMonth.png'
-                                                                : 'icons/waterMonth.png'),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(width: 30),
+                                                    Column(
+                                                      children: [
+                                                        Text(
+                                                          TKeys.month
+                                                              .translate(context),
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .green.shade900,
+                                                            fontWeight:
+                                                            FontWeight.bold,
+                                                            fontSize: 19,
                                                           ),
-                                                          Text(
-                                                            ('${filteredItems[i]['name']}'.startsWith('Ele'))
-                                                                ? ('${eleMeters['${filteredItems[i]['name']}']?[1]}')
-                                                                : ('${watMeters['${filteredItems[i]['name']}']?[1]}'),
-                                                            style: TextStyle(
-                                                              color: Colors
-                                                                  .grey
-                                                                  .shade800,
-                                                              fontSize: 17,
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            SizedBox(
+                                                              width: 25,
+                                                              child: Image.asset(
+                                                                  '${filteredItems[i]['name']}'
+                                                                      .startsWith(
+                                                                      'Ele')
+                                                                      ? 'icons/electricityMonth.png'
+                                                                      : 'icons/waterMonth.png'),
                                                             ),
-                                                          ),
-                                                        ],
+                                                            Text(
+                                                              ('${filteredItems[i]['name']}'
+                                                                  .startsWith(
+                                                                  'Ele'))
+                                                                  ? ('${eleMeters['${filteredItems[i]['name']}']?[1]}')
+                                                                  : ('${watMeters['${filteredItems[i]['name']}']?[1]}'),
+                                                              style: TextStyle(
+                                                                color: Colors.grey
+                                                                    .shade800,
+                                                                fontSize: 17,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 1,
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(
+                                                  height: 10,
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    SizedBox(width: width * .07),
+                                                    Text(
+                                                      '${TKeys.balance.translate(context)}: ',
+                                                      style: TextStyle(
+                                                        color:
+                                                        Colors.green.shade900,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        fontSize: 19,
                                                       ),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(
-                                                    width: 1,
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(
-                                                height: 10,
-                                              ),
-                                              Row(
-                                                children: [
-                                                  SizedBox(
-                                                      width: width * .07),
-                                                  Text(
-                                                    '${TKeys.balance.translate(context)}: ',
-                                                    style: TextStyle(
-                                                      color: Colors
-                                                          .green.shade900,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 19,
                                                     ),
-                                                  ),
-                                                  Text(
-                                                    ('${filteredItems[i]['name']}'.startsWith('Ele'))
-                                                        ? ('${eleMeters['${filteredItems[i]['name']}']?[2]}')
-                                                        : ('${watMeters['${filteredItems[i]['name']}']?[2]}'),
-                                                    style: TextStyle(
-                                                      color: Colors
-                                                          .grey.shade800,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 17,
+                                                    Text(
+                                                      ('${filteredItems[i]['name']}'
+                                                          .startsWith('Ele'))
+                                                          ? ('${eleMeters['${filteredItems[i]['name']}']?[2]}')
+                                                          : ('${watMeters['${filteredItems[i]['name']}']?[2]}'),
+                                                      style: TextStyle(
+                                                        color:
+                                                        Colors.grey.shade800,
+                                                        fontWeight:
+                                                        FontWeight.bold,
+                                                        fontSize: 17,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  });
-                            }
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }),
+                                      );
+                                    });
+                              }
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }),
+                      ),
                     ],
                   ),
                 ),
-              ]
-              ),
+              ]),
             ),
           ],
         ),
@@ -895,18 +959,15 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             timer = Timer.periodic(interval, (Timer t) {
               if (!widget.viewModel.deviceConnected) {
                 widget.viewModel.connect();
-              }
-              else if (subscribeOutput.length != 72) {
+              } else if (subscribeOutput.length != 72) {
                 subscribeCharacteristic();
-                widget.writeWithoutResponse(widget.characteristic,[0x59]);
-              }
-              else if (subscribeOutput.length == 72) {
+                widget.writeWithoutResponse(widget.characteristic, [0x59]);
+              } else if (subscribeOutput.length == 72) {
                 setState(() {
                   if (paddingType == "Electricity") {
                     isFunctionCalled = false;
                     calculateElectric(subscribeOutput, widget.name);
-                  }
-                  else {
+                  } else {
                     calculateWater(subscribeOutput, widget.name);
                   }
                 });

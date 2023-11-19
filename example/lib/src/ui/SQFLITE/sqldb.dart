@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
-
+import 'package:sqflite_sqlcipher/sqflite.dart';
 import '../../ble/constants.dart';
 class SqlDb {
 
@@ -19,11 +19,11 @@ class SqlDb {
   }
 
   Future<Database> initialDb() async {
+    String password = 'eoIp28waad';
     String databasePath = await getDatabasesPath();
     String path = join(databasePath, 'eoip.db');
-    print(path);
     Database mydb = await openDatabase(
-        path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade);
+        path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade, password: password);
     return mydb;
   }
 
@@ -104,13 +104,11 @@ class SqlDb {
     )
     ''');
   }
-
-  //SELECT
+  //get the names of the meters
   Future<List<Map>> readData(String sql) async {
     Database? mydb = await db;
     //take returened data from database
     List<Map> response = await mydb!.rawQuery(sql);
-    print("responsein read$response");
     return response;
   }
 
@@ -169,7 +167,7 @@ class SqlDb {
     return response;
   }
 
-  // get the data of the last days
+  // get the data of the last days "history data"
   Future<List<Map>> read(String name, String type) async {
     Database? mydb = await db;
     String query = '';
@@ -197,7 +195,7 @@ class SqlDb {
     return response;
   }
 
-  //graph data
+  //graph data "months data"
   Future<void> editingList(String name, String type) async {
     Database? mydb = await db;
     //electric
@@ -286,13 +284,32 @@ class SqlDb {
     Database? mydb = await db;
     if(type == 'Electricity'){
       query = 'SELECT COUNT(*) FROM Electricity WHERE `title` =?';
+      query2 = '''
+      SELECT `time` FROM Electricity
+      WHERE `title` = ?
+      ORDER BY `id` DESC
+      LIMIT 1
+    ''';
     }
     else{
       query = 'SELECT COUNT(*) FROM Water WHERE `title` =?';
+      query2 = '''
+      SELECT `time` FROM Water
+      WHERE `title` = ?
+      ORDER BY `id` DESC
+      LIMIT 1
+    ''';
     }
     final count = Sqflite.firstIntValue(
       await mydb!.rawQuery(query,[name]),
     );
+    if(count != 0){
+      final response = await mydb!.rawQuery(query2,
+        [name],);
+      for(var map in response){
+        time = map['time'].toString();
+      }
+    }
     print("count $count");
     return count == 0;
   }
@@ -335,13 +352,6 @@ class SqlDb {
   Future<int> updateData(String sql) async {
     Database? mydb = await db;
     int response = await mydb!.rawUpdate(sql);
-    return response;
-  }
-
-  //DELETE
-  Future<int> deleteData(String sql) async {
-    Database? mydb = await db;
-    int response = await mydb!.rawDelete('DROP TABLE IF EXISTS Water');
     return response;
   }
 
@@ -421,23 +431,11 @@ class SqlDb {
 
         if (jsonListDynamic != null) {
           final String jsonList = jsonListDynamic as String;
-          if (jsonList != null) {
-            final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
-            myList = dynamicList.cast<int>();
-
-            // if (process == 'balance') {
-            //   myList.insert(0, 0x09);
-            // } else if(process == 'tarrif'){
-            //   myList.insert(0, 0x10);
-            // }
-
-            // myList.add(random.nextInt(255));
-
-            int sum = myList.fold(0, (previousValue, element) => previousValue + element);
-            myList.add(sum);
-
-            return myList;
-          }
+          final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
+          myList = dynamicList.cast<int>();
+          int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+          myList.add(sum);
+          return myList;
         }
       }
     }
@@ -462,7 +460,7 @@ class SqlDb {
     // myList.insert(0, 0x09);
     // myList.add(random.nextInt(255));
     if(rewrite == 0){
-      await mydb!.rawInsert(
+      await mydb.rawInsert(
         'INSERT INTO master_table (list, name, type, process) VALUES (?, ?, ?, ?)',
         [ jsonList, name, type, process],
       );
@@ -687,4 +685,9 @@ class SqlDb {
 //   final rowCount = queryResult[0]['id'] as int;
 //
 //   return rowCount;
+// }
+// Future<int> deleteData(String sql) async {
+//   Database? mydb = await db;
+//   int response = await mydb!.rawDelete('DROP TABLE IF EXISTS Water');
+//   return response;
 // }
