@@ -5,9 +5,13 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_status_monitor.dart';
+import 'package:flutter_reactive_ble_example/src/permissions/camera_permission.dart';
+import 'package:flutter_reactive_ble_example/src/permissions/location_permission.dart';
+import 'package:flutter_reactive_ble_example/src/permissions/permission_provider.dart';
 import 'package:flutter_reactive_ble_example/src/ui/ble_status_screen.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_list.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import 'src/ble/ble_logger.dart';
@@ -52,6 +56,9 @@ void main() {
         StreamProvider<BleStatus?>(
           create: (_) => _monitor.state,
           initialData: BleStatus.unknown,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => PermissionProvider(),
         ),
         StreamProvider<ConnectionStateUpdate>(
           create: (_) => _connector.state,
@@ -106,16 +113,25 @@ void main() {
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
 
   @override
-  Widget build(BuildContext context) => Consumer<BleStatus?>(
-    builder: (_, status, __) {
-      if (status == BleStatus.ready) {
+  Widget build(BuildContext context) => Consumer2<BleStatus?, PermissionProvider>(
+    builder: (_, status, permission, __) {
+      if (status == BleStatus.ready && permission.cameraStatus.isGranted && permission.locationStatus.isGranted) {
         return const MyApp();
-      } else {
+      }
+      else if(permission.locationStatus.isDenied){
+        permission.requestLocationPermission();
+        return const LocationPermission();
+      }
+      else if(permission.cameraStatus.isDenied){
+        permission.requestCameraPermission();
+        return const CameraPermission();
+      }
+      else {
         return BleStatusScreen(status: status ?? BleStatus.unknown);
       }
     },

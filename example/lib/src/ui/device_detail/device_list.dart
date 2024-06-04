@@ -12,6 +12,7 @@ import 'package:flutter_reactive_ble_example/src/ui/master/master_station.dart';
 import 'package:flutter_reactive_ble_example/t_key.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../ble/ble_logger.dart';
@@ -88,6 +89,12 @@ class DeviceList extends StatefulWidget {
 class _DeviceListState extends State<DeviceList> {
   @override
   void initState() {
+    now = DateTime.now();
+    for (int i = 0; i < 6; i++) {
+      final previousMonth = DateTime(now.year, now.month - i, now.day);
+      final formattedMonth = DateFormat.MMM().format(previousMonth);
+      monthList.add(formattedMonth);
+    }
     fetchData();
     if (!widget.scannerState.scanIsInProgress) {
       _startScanning();
@@ -400,7 +407,12 @@ class _DeviceListState extends State<DeviceList> {
                                         ),
                                         trailing: const Icon(Icons.error),
                                         onTap: (){
+                                          sqlDb.readMeterData(
+                                            name,
+                                          );
+                                          meterName = 'unKnown';
                                           if(name.startsWith('W')){
+                                            sqlDb.editingList(name, 'Water');
                                             paddingType = 'Water';
                                             Navigator.of(context).push<void>(
                                               MaterialPageRoute<void>(
@@ -412,6 +424,7 @@ class _DeviceListState extends State<DeviceList> {
                                             );
                                           }
                                           else{
+                                            sqlDb.editingList(name, 'Electricity');
                                             paddingType = "Electricity";
                                             Navigator.of(context).push<void>(
                                               MaterialPageRoute<void>(

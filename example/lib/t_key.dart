@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'localization_service.dart';
 
 enum TKeys{
+  accessLocation,
+  accessCamera,
   arabic,
   english,
   scan,

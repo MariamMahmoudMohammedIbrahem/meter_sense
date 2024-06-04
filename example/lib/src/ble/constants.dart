@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
+import 'package:permission_handler/permission_handler.dart';
 SqlDb sqlDb = SqlDb();
 bool isFunctionCalled = false;
 List<int> previousEventData = [];
@@ -116,3 +117,6 @@ bool visible = false;
 // num tarrifVersion = 0;
 // Completer<void> subscriptionCompleter = Completer<void>();
 // Set<String> name = <String>{};
+///*Permissions Directory**
+PermissionStatus statusLocation = PermissionStatus.denied;
+PermissionStatus statusCamera = PermissionStatus.denied;

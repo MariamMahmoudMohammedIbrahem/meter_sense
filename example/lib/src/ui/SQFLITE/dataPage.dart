@@ -1,10 +1,6 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
-import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_interaction_tab.dart';
 
 import '../../../t_key.dart';
 
@@ -13,8 +9,8 @@ class StoreData extends StatefulWidget {
     const StoreData({
       required this.name,
       // required this.count,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
     final String name;
     // final int count;
   // final DiscoveredDevice device;
@@ -66,7 +62,7 @@ class _StoreDataState extends State<StoreData> {
                           const SizedBox(
                             height: 10,
                           ),
-                          Text(widget.name, style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20)),
+                          Text(widget.name, style: const TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20)),
                           Padding(
                             padding: EdgeInsets.only(
                               left: width * .07,

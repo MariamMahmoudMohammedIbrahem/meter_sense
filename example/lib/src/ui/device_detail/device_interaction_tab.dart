@@ -9,6 +9,7 @@ import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/dataPage.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -22,8 +23,8 @@ class DeviceInteractionTab extends StatelessWidget {
   const DeviceInteractionTab({
     required this.device,
     required this.characteristic,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
   final DiscoveredDevice device;
   final QualifiedCharacteristic characteristic;
 
@@ -89,8 +90,8 @@ class _DeviceInteractionTab extends StatefulWidget {
     required this.readCharacteristic,
     required this.subscribeToCharacteristic,
     required this.name,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
   final DeviceInteractionViewModel viewModel;
 
   final QualifiedCharacteristic characteristic;
@@ -116,13 +117,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
     discoveredServices = [];
     subscribeOutput = [];
     print('device interaction tab');
-    now = DateTime.now();
-    monthList.clear();
-    for (int i = 0; i < 6; i++) {
-      final previousMonth = DateTime(now.year, now.month - i, now.day);
-      final formattedMonth = DateFormat.MMM().format(previousMonth);
-      monthList.add(formattedMonth);
-    }
     setState(() {
       timer = Timer.periodic(interval, (Timer t) {
         if (!widget.viewModel.deviceConnected) {
@@ -139,6 +133,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
             }
           });
           t.cancel();
+          Fluttertoast.showToast(
+            msg: 'all data are up to date',
+          );
         }
       });
     });
@@ -629,6 +626,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                                 }
                                               });
                                               t.cancel();
+                                              Fluttertoast.showToast(
+                                                msg: 'all data are up to date',
+                                              );
                                             }
                                           });
                                         });
@@ -648,8 +648,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                           ),
                         ),
                       ),
+                      ElevatedButton(onPressed: (){print(monthList);}, child: Text('Print')),
                       Visibility(
-                        visible: nameList.isNotEmpty,
+                        visible: nameList.length != 1 && nameList.isNotEmpty,
                         child: Column(
                           children: [
                             Row(
@@ -688,7 +689,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                         ),
                       ),
                       Visibility(
-                        visible: nameList.isNotEmpty,
+                        visible: nameList.length != 1 && nameList.isNotEmpty,
                         child: FutureBuilder(
                             future: sqlDb.readData('SELECT * FROM Meters'),
                             builder: (BuildContext context,
