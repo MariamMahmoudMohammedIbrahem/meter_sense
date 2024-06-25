@@ -23,11 +23,11 @@ class _StoreDataState extends State<StoreData> {
     final response  = await sqlDb.read(widget.name,'Electricity');
     return response;
   }
-  @override
-  void initState() {
-    // sqlDb.editingList(widget.name,'Electricity');
-    super.initState();
-  }
+  // @override
+  // void initState() {
+  //   // sqlDb.editingList(widget.name,'Electricity');
+  //   super.initState();
+  // }
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;

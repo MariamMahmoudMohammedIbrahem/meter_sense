@@ -191,6 +191,7 @@ Future<void> fetchData() async {
   balanceList.clear();
   tarrifList.clear();
   final testing = await sqlDb.readData('SELECT * FROM Meters');
+  print('SELECT * FROM Meters $testing');
   for (Map<dynamic, dynamic> map in testing) {
     if (!nameList.contains(map['name'].toString())){
       nameList.add(map['name'].toString());

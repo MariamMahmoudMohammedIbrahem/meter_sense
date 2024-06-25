@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
 
@@ -137,6 +138,7 @@ class _MasterStationState extends State<_MasterStation> {
           if(event.first == 0xA3 || event.first == 0xA5){
             setState(() {
               tarrif = [];
+              updated = false;
               tarrif..insert(0, 0x10)
                 ..addAll(event.sublist(1,12))..add(random.nextInt(255));
               tarrifMaster = convertToInt(event, 1, 11);
@@ -145,6 +147,7 @@ class _MasterStationState extends State<_MasterStation> {
           if(event.first == 0xA4 || event.first == 0xA6){
             setState(() {
               balance = [];
+              updated = false;
               balance..insert(0, 0x09)
               ..addAll(event.sublist(1,5))..add(random.nextInt(255));
               balanceMaster = convertToInt(event, 1, 4)/100;
@@ -226,7 +229,7 @@ class _MasterStationState extends State<_MasterStation> {
                       children: [
                         Align(alignment:Alignment.centerLeft,child: Text(TKeys.welcome.translate(context),style: TextStyle(color: Colors.green.shade800, fontWeight: FontWeight.bold, fontSize: 24),)),
                         Padding(
-                          padding: EdgeInsets.only(
+                          padding: const EdgeInsets.only(
                             // right: 50,
                             top: 10,
                             bottom: 10,
@@ -344,6 +347,8 @@ class _MasterStationState extends State<_MasterStation> {
                             }
                             return items;
                           },
+                          offset: const Offset(0, 50),
+                          tooltip: 'Select a device',
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20.0),
@@ -366,8 +371,6 @@ class _MasterStationState extends State<_MasterStation> {
                               ],
                             ),
                           ),
-                          offset: const Offset(0, 50),
-                          tooltip: 'Select a device',
                         ),
                       ),
                     ),
@@ -455,9 +458,12 @@ class _MasterStationState extends State<_MasterStation> {
                                           await subscribeCharacteristic();
                                           await widget.readCharacteristic(widget.characteristic);
                                         });
+                                        await Fluttertoast.showToast(
+                                          msg: 'Data Sent Successfully',
+                                        );
                                       }
                                     },
-                                    child: Text(TKeys.get.translate(context), style: TextStyle(color: Colors.green.shade50, fontWeight: FontWeight.bold,fontSize: 16,),),
+                                    child: Text(TKeys.get.translate(context), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold,fontSize: 16,),),
                                   ),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
@@ -483,8 +489,7 @@ class _MasterStationState extends State<_MasterStation> {
                                             await myInstance.saveList( tarrif,'$selectedName', '$listType' ,'tarrif');
                                             await myInstance.updateData('''
                                             UPDATE Meters
-                                            SET 
-                                            tarrif = 1,
+                                            SET tarrif = 1
                                             WHERE name = '$selectedName'
                                             ''');
                                             setState(() {

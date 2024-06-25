@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_reactive_ble_example/src/permissions/permission_provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 
 import '../../t_key.dart';
 import '../ble/constants.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 class LocationPermission extends StatefulWidget {
   const LocationPermission({super.key});
 
@@ -40,12 +42,8 @@ class _LocationPermissionState extends State<LocationPermission> {
     );
   }
   Future<void> _requestPermission() async {
-    if(statusLocation.isDenied){
-      statusLocation = await Permission.location.request();
-      if(statusLocation.isGranted){
-        statusLocation = PermissionStatus.granted;
-        await Fluttertoast.showToast(msg: 'location granted');
-      }
+    if (locationWhenInUse.isDenied) {
+      await Permission.locationWhenInUse.request();
     }
   }
 }

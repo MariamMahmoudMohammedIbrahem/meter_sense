@@ -196,10 +196,10 @@ class SqlDb {
   }
 
   //graph data "months data"
-  Future<void> editingList(String name, String type) async {
+  Future<void> editingList(String name) async {
     Database? mydb = await db;
     //electric
-    if(type == "Electricity"){
+    if(name.startsWith('Ele')){
       const query = '''
     SELECT `month1`,`month2`,`month3`,`month4`,`month5`,`month6` 
     FROM Electricity

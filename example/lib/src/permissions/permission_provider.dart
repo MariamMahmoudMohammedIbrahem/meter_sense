@@ -6,17 +6,19 @@ import '../ble/constants.dart';
 
 class PermissionProvider extends ChangeNotifier {
   // Define the permissions you want to manage
-  PermissionStatus _locationStatus = statusLocation;
+  PermissionStatus _locationWhenInUse = locationWhenInUse;
   PermissionStatus _cameraStatus = statusCamera;
+  PermissionStatus _bluetoothStatus = statusBluetoothConnect;
 
   // Getters for permission statuses
-  PermissionStatus get locationStatus => _locationStatus;
+  PermissionStatus get whenInUseLocation => _locationWhenInUse;
   PermissionStatus get cameraStatus => _cameraStatus;
+  PermissionStatus get bluetoothStatus => _bluetoothStatus;
 
   // Function to request location permission
-  Future<void> requestLocationPermission() async {
-    final status = await Permission.location.status;
-    _locationStatus = status;
+  Future<void> requestLocationWhenInUse() async {
+    final status = await Permission.locationWhenInUse.status;
+    _locationWhenInUse = status;
     notifyListeners();
   }
 
@@ -24,6 +26,12 @@ class PermissionProvider extends ChangeNotifier {
   Future<void> requestCameraPermission() async {
     final status = await Permission.camera.status;
     _cameraStatus = status;
+    notifyListeners();
+  }
+  // Function to request bluetooth permission
+  Future<void> requestBluetoothPermission() async {
+    final status = await Permission.bluetoothConnect.status;
+    _bluetoothStatus = status;
     notifyListeners();
   }
 }

@@ -5,6 +5,7 @@ import 'localization_service.dart';
 enum TKeys{
   accessLocation,
   accessCamera,
+  accessBluetooth,
   arabic,
   english,
   scan,

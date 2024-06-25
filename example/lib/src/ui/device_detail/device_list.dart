@@ -25,7 +25,7 @@ part 'device_list.g.dart';
 //ignore_for_file: annotate_overrides
 
 class DeviceListScreen extends StatelessWidget {
-  const DeviceListScreen({Key? key}) : super(key: key);
+  const DeviceListScreen({super.key});
 
   @override
   Widget build(BuildContext context) =>
@@ -151,7 +151,8 @@ class _DeviceListState extends State<DeviceList> {
           Expanded(
             child: Column(
               children: [
-                const SizedBox(height: 20),
+                // const SizedBox(height: 20),
+                // ElevatedButton(onPressed: (){sqlDb.mydeleteDatabase();}, child: const Text('del'),),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,6 +173,7 @@ class _DeviceListState extends State<DeviceList> {
                                   Timer(const Duration(seconds: 5), () {
                                     widget.stopScan();
                                   });
+                                  fetchData();
                                 },
                                 child: Text(
                                   TKeys.qr.translate(context),
@@ -202,9 +204,9 @@ class _DeviceListState extends State<DeviceList> {
                               ),
                             ],
                           ),
-                          const SizedBox(
-                            height: 10,
-                          ),
+                          // const SizedBox(
+                          //   height: 10,
+                          // ),
                           Padding(
                             padding:
                                 EdgeInsets.symmetric(horizontal: width * .1),
@@ -281,7 +283,6 @@ class _DeviceListState extends State<DeviceList> {
                                     ListTile(
                                       onTap: () async {
                                         // widget.stopScan();
-                                        await fetchData();
                                         if(device.name.startsWith('W')){
                                           paddingType = 'Water';
                                         }
@@ -289,6 +290,7 @@ class _DeviceListState extends State<DeviceList> {
                                           paddingType = "Electricity";
                                         }
                                         meterName = device.name;
+                                        print('meterName $meterName');
                                         if (device.name == "MasterStation") {
                                           await Navigator.push<void>(
                                             context,
@@ -308,7 +310,8 @@ class _DeviceListState extends State<DeviceList> {
                                             ),
                                           ).then((value) => widget.deviceConnector
                                               .connect(device.id));
-                                        } else {
+                                        }
+                                        else {
                                         if (nameList.contains(device.name) == false) {
                                           await sqlDb.insertData('''
                                                     INSERT OR IGNORE INTO Meters (`name`, `balance`, `tarrif`)
@@ -330,23 +333,28 @@ class _DeviceListState extends State<DeviceList> {
                                           }
                                           print('device list');
                                         }
-                                        await Navigator.push<void>(
+                                        print('connectioon status${widget.deviceConnector.state}');
+                                        await widget.deviceConnector.connect(device.id);
+                                        print('widget connector state${widget.deviceConnector.state}');
+                                        await fetchData().then((value) {
+                                          Navigator.push<void>(
                                             context,
                                             MaterialPageRoute(
                                               builder: (_) =>
                                                   DeviceInteractionTab(
-                                                device: device,
-                                                characteristic:
+                                                    device: device,
+                                                    characteristic:
                                                     QualifiedCharacteristic(
-                                                  characteristicId: Uuid.parse(
-                                                      "0000ffe1-0000-1000-8000-00805f9b34fb"),
-                                                  serviceId: Uuid.parse(
-                                                      "0000ffe0-0000-1000-8000-00805f9b34fb"),
-                                                  deviceId: device.id,
-                                                ),
-                                              ),
+                                                      characteristicId: Uuid.parse(
+                                                          "0000ffe1-0000-1000-8000-00805f9b34fb"),
+                                                      serviceId: Uuid.parse(
+                                                          "0000ffe0-0000-1000-8000-00805f9b34fb"),
+                                                      deviceId: device.id,
+                                                    ),
+                                                  ),
                                             ),
                                           );
+                                        });
                                         }
                                       },
                                       leading: SizedBox(
@@ -412,7 +420,7 @@ class _DeviceListState extends State<DeviceList> {
                                           );
                                           meterName = 'unKnown';
                                           if(name.startsWith('W')){
-                                            sqlDb.editingList(name, 'Water');
+                                            sqlDb.editingList(name);
                                             paddingType = 'Water';
                                             Navigator.of(context).push<void>(
                                               MaterialPageRoute<void>(
@@ -424,7 +432,7 @@ class _DeviceListState extends State<DeviceList> {
                                             );
                                           }
                                           else{
-                                            sqlDb.editingList(name, 'Electricity');
+                                            sqlDb.editingList(name);
                                             paddingType = "Electricity";
                                             Navigator.of(context).push<void>(
                                               MaterialPageRoute<void>(
@@ -513,7 +521,7 @@ class MyApp extends StatelessWidget {
             children: [
               const LanguageToggle(),
               SizedBox(
-                width: width * .7,
+                width: width * .6,
                 child: Image.asset('images/authorize.jpg'),
               ),
               const Expanded( child: DeviceListScreen()),

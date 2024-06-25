@@ -118,5 +118,6 @@ bool visible = false;
 // Completer<void> subscriptionCompleter = Completer<void>();
 // Set<String> name = <String>{};
 ///*Permissions Directory**
-PermissionStatus statusLocation = PermissionStatus.denied;
+PermissionStatus locationWhenInUse = PermissionStatus.denied;
 PermissionStatus statusCamera = PermissionStatus.denied;
+PermissionStatus statusBluetoothConnect = PermissionStatus.denied;
