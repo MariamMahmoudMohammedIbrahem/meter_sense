@@ -4,19 +4,19 @@ import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 class BleDeviceInteractor {
   BleDeviceInteractor({
-    required Future<List<DiscoveredService>> Function(String deviceId)
-        bleDiscoverServices,
+    required Future<List<Service>> Function(String deviceId)
+    bleDiscoverServices,
     required Future<List<int>> Function(QualifiedCharacteristic characteristic)
-        readCharacteristic,
+    readCharacteristic,
     required Future<void> Function(QualifiedCharacteristic characteristic,
-            {required List<int> value})
-        writeWithResponse,
+        {required List<int> value})
+    writeWithResponse,
     required Future<void> Function(QualifiedCharacteristic characteristic,
-            {required List<int> value})
-        writeWithOutResponse,
+        {required List<int> value})
+    writeWithOutResponse,
     required void Function(String message) logMessage,
     required Stream<List<int>> Function(QualifiedCharacteristic characteristic)
-        subscribeToCharacteristic,
+    subscribeToCharacteristic,
   })  : _bleDiscoverServices = bleDiscoverServices,
         _readCharacteristic = readCharacteristic,
         _writeWithResponse = writeWithResponse,
@@ -24,11 +24,11 @@ class BleDeviceInteractor {
         _subScribeToCharacteristic = subscribeToCharacteristic,
         _logMessage = logMessage;
 
-  final Future<List<DiscoveredService>> Function(String deviceId)
-      _bleDiscoverServices;
+  final Future<List<Service>> Function(String deviceId)
+  _bleDiscoverServices;
 
   final Future<List<int>> Function(QualifiedCharacteristic characteristic)
-      _readCharacteristic;
+  _readCharacteristic;
 
   final Future<void> Function(QualifiedCharacteristic characteristic,
       {required List<int> value}) _writeWithResponse;
@@ -37,11 +37,11 @@ class BleDeviceInteractor {
       {required List<int> value}) _writeWithoutResponse;
 
   final Stream<List<int>> Function(QualifiedCharacteristic characteristic)
-      _subScribeToCharacteristic;
+  _subScribeToCharacteristic;
 
   final void Function(String message) _logMessage;
 
-  Future<List<DiscoveredService>> discoverServices(String deviceId) async {
+  Future<List<Service>> discoverServices(String deviceId) async {
     try {
       _logMessage('Start discovering services for: $deviceId');
       final result = await _bleDiscoverServices(deviceId);

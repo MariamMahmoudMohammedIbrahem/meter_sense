@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
 class BleStatusScreen extends StatelessWidget {
-  const BleStatusScreen({required this.status, Key? key}) : super(key: key);
+  const BleStatusScreen({required this.status, super.key});
 
   final BleStatus status;
 
@@ -41,7 +41,7 @@ class BleStatusScreen extends StatelessWidget {
       );}
 }
 class AnimatedImage extends StatefulWidget {
-  const AnimatedImage({required this.status,Key? key}) : super(key: key);
+  const AnimatedImage({required this.status,super.key});
   final BleStatus status;
 
   @override

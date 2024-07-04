@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble_example/src/permissions/permission_provider.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
 
 import '../../t_key.dart';
 import '../ble/constants.dart';

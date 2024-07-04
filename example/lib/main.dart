@@ -13,13 +13,11 @@ import 'package:flutter_reactive_ble_example/src/permissions/permission_provider
 import 'package:flutter_reactive_ble_example/src/ui/ble_status_screen.dart';
 import 'package:flutter_reactive_ble_example/src/ui/device_detail/device_list.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import 'src/ble/ble_logger.dart';
 
-Color _themeColor = Colors.grey.shade200;
 
 Future<void> main() async {
   final localizationController = Get.put(LocalizationController());
@@ -28,46 +26,49 @@ Future<void> main() async {
   statusCamera = await Permission.camera.status;
   WidgetsFlutterBinding.ensureInitialized();
 
-  final _ble = FlutterReactiveBle();
-  final _bleLogger = BleLogger(ble: _ble);
-  final _scanner = BleScanner(ble: _ble, logMessage: _bleLogger.addToLog);
-  final _monitor = BleStatusMonitor(_ble);
-  final _connector = BleDeviceConnector(
-    ble: _ble,
-    logMessage: _bleLogger.addToLog,
+  final ble = FlutterReactiveBle();
+  final bleLogger = BleLogger(ble: ble);
+  final scanner = BleScanner(ble: ble, logMessage: bleLogger.addToLog);
+  final monitor = BleStatusMonitor(ble);
+  final connector = BleDeviceConnector(
+    ble: ble,
+    logMessage: bleLogger.addToLog,
   );
-  final _serviceDiscoverer = BleDeviceInteractor(
-    bleDiscoverServices: _ble.discoverServices,
-    readCharacteristic: _ble.readCharacteristic,
-    writeWithResponse: _ble.writeCharacteristicWithResponse,
-    writeWithOutResponse: _ble.writeCharacteristicWithoutResponse,
-    subscribeToCharacteristic: _ble.subscribeToCharacteristic,
-    logMessage: _bleLogger.addToLog,
+  final serviceDiscoverer = BleDeviceInteractor(
+    bleDiscoverServices: (deviceId) async {
+      await ble.discoverAllServices(deviceId);
+      return ble.getDiscoveredServices(deviceId);
+    },
+    readCharacteristic: ble.readCharacteristic,
+    writeWithResponse: ble.writeCharacteristicWithResponse,
+    writeWithOutResponse: ble.writeCharacteristicWithoutResponse,
+    subscribeToCharacteristic: ble.subscribeToCharacteristic,
+    logMessage: bleLogger.addToLog,
   );
   runApp(
     MultiProvider(
       providers: [
-        Provider.value(value: _scanner),
-        Provider.value(value: _monitor),
-        Provider.value(value: _connector),
-        Provider.value(value: _serviceDiscoverer),
-        Provider.value(value: _bleLogger),
+        Provider.value(value: scanner),
+        Provider.value(value: monitor),
+        Provider.value(value: connector),
+        Provider.value(value: serviceDiscoverer),
+        Provider.value(value: bleLogger),
         StreamProvider<BleScannerState?>(
-          create: (_) => _scanner.state,
+          create: (_) => scanner.state,
           initialData: const BleScannerState(
             discoveredDevices: [],
             scanIsInProgress: false,
           ),
         ),
         StreamProvider<BleStatus?>(
-          create: (_) => _monitor.state,
+          create: (_) => monitor.state,
           initialData: BleStatus.unknown,
         ),
         ChangeNotifierProvider(
           create: (context) => PermissionProvider(),
         ),
         StreamProvider<ConnectionStateUpdate>(
-          create: (_) => _connector.state,
+          create: (_) => connector.state,
           initialData: const ConnectionStateUpdate(
             deviceId: 'Unknown device',
             connectionState: DeviceConnectionState.disconnected,
@@ -113,15 +114,6 @@ Future<void> main() async {
                 supportedLocales: LocalizationService.supportedLocales,
                 localizationsDelegates:
                     LocalizationService.localizationsDelegate,
-                // localizationsDelegates: const [
-                //   GlobalMaterialLocalizations.delegate,
-                //   GlobalWidgetsLocalizations.delegate,
-                // ],
-                // supportedLocales: const [
-                //   Locale('en', ''), // English
-                //   Locale('ar', ''), // Arabic
-                //   // Add more locales as needed
-                // ],
                 home: const HomeScreen(),
               )),
     ),

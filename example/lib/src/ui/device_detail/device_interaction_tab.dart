@@ -7,8 +7,8 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/dataPage.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/waterdata.dart';
+import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/data_page.dart';
+import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/water_data.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:functional_data/functional_data.dart';
 import 'package:provider/provider.dart';
@@ -66,7 +66,7 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
   final DeviceConnectionState connectionStatus;
   final BleDeviceConnector deviceConnector;
   @CustomEquality(Ignore())
-  final Future<List<DiscoveredService>> Function() discoverServices;
+  final Future<List<Service>> Function() discoverServices;
 
   bool get deviceConnected =>
       connectionStatus == DeviceConnectionState.connected;
@@ -108,192 +108,8 @@ class _DeviceInteractionTab extends StatefulWidget {
   _DeviceInteractionTabState createState() => _DeviceInteractionTabState();
 }
 
-class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
-  @override
-  void initState() {
-    discoveredServices = [];
-    subscribeOutput = [];
-    print('device interaction tab');
-    setState(() {
-      timer = Timer.periodic(interval, (Timer t) {
-        if (!widget.viewModel.deviceConnected) {
-          widget.viewModel.connect();
-        } else if (subscribeOutput.length != 72) {
-          subscribeCharacteristic();
-          widget.writeWithoutResponse(widget.characteristic, [0x59]);
-        } else if (subscribeOutput.length == 72) {
-          setState(() {
-            if (paddingType == "Electricity") {
-              calculateElectric(subscribeOutput, widget.name);
-            } else {
-              calculateWater(subscribeOutput, widget.name);
-            }
-          });
-          t.cancel();
-          Fluttertoast.showToast(
-            msg: 'all data are up to date',
-          );
-        }
-      });
-    });
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    subscribeStream?.cancel();
-    widget.viewModel.disconnect();
-    super.dispose();
-    timer.cancel();
-  }
-
-  List testingEvent = [];
-  Future<void> subscribeCharacteristic() async {
-    var newEventData = <int>[];
-    subscribeOutput = [];
-    subscribeStream = widget
-        .subscribeToCharacteristic(widget.characteristic)
-        .listen((event) async {
-      newEventData = event;
-      testingEvent = event;
-      print('event $event');
-      if (event.first == 89 && subscribeOutput.isEmpty) {
-        subscribeOutput += newEventData;
-        previousEventData = newEventData;
-        print('here 89 $newEventData');
-        // write = false;
-      } else if (subscribeOutput.length < 72 && subscribeOutput.isNotEmpty) {
-        final equal = (previousEventData.length == newEventData.length) &&
-            ListEquality<int>().equals(previousEventData, newEventData);
-        print('equal $equal');
-        if (!equal) {
-          subscribeOutput += newEventData;
-          previousEventData = newEventData;
-          print('inside equal new $newEventData');
-          print('inside equal old $previousEventData');
-        } else {
-          print('sadly equal');
-          newEventData = [];
-        }
-      }
-    });
-  }
-
-  Future<void> startTimer() async {
-    if (cond && !cond0) {
-      await myInstance.getSpecifiedList(widget.name, 'balance');
-      if (myList.first == 9) {
-        await widget.writeWithoutResponse(widget.characteristic, myList);
-        subscribeStream = widget
-            .subscribeToCharacteristic(widget.characteristic)
-            .listen((event) {
-          setState(() {
-            if (event.first == 9) {
-              cond = false;
-              balanceMaster = 0;
-              balance = [];
-            }
-          });
-        });
-        await widget.readCharacteristic(widget.characteristic);
-        if (recharged) {
-          await sqlDb.updateData('''
-          UPDATE Meters
-          SET
-          balance = 0
-          WHERE name = '${widget.name}'
-          ''');
-          setState(() {
-            recharged = false;
-            updated = false;
-          });
-          await Fluttertoast.showToast(
-            msg: 'Charged Successfully',
-          );
-        }
-      }
-    } else if (cond0 && !cond) {
-      await myInstance.getSpecifiedList(widget.name, 'tarrif');
-      if (myList.first == 16) {
-        await widget.writeWithoutResponse(widget.characteristic, myList);
-        subscribeStream = widget
-            .subscribeToCharacteristic(widget.characteristic)
-            .listen((event) {
-          setState(() {
-            if (event.first == 0x10) {
-              cond0 = false;
-              tarrif = [];
-              tarrifMaster = 0;
-            }
-          });
-        });
-        await widget.readCharacteristic(widget.characteristic);
-        if (recharged) {
-          await sqlDb.updateData('''
-          UPDATE Meters
-          SET
-          tarrif = 0
-          WHERE name = '${widget.name}'
-          ''');
-          setState(() {
-            recharged = false;
-            updated = false;
-          });
-          await Fluttertoast.showToast(
-            msg: 'Charged Successfully',
-          );
-        }
-      }
-    } else if (cond0 && cond) {
-      await myInstance.getSpecifiedList(widget.name, 'tarrif');
-      if (myList.first == 16) {
-        await widget.writeWithoutResponse(widget.characteristic, myList);
-        subscribeStream = widget
-            .subscribeToCharacteristic(widget.characteristic)
-            .listen((event) {
-          setState(() {
-            if (event.first == 0x10) {
-              cond0 = false;
-              tarrifMaster = 0;
-              tarrif = [];
-            }
-          });
-        });
-        await widget.readCharacteristic(widget.characteristic);
-      }
-      await myInstance.getSpecifiedList(widget.name, 'balance');
-      if (myList.first == 9 && !cond0) {
-        await widget.writeWithoutResponse(widget.characteristic, myList);
-        subscribeStream = widget
-            .subscribeToCharacteristic(widget.characteristic)
-            .listen((event) {
-          setState(() {
-            if (event.first == 9) {
-              cond = false;
-              balanceMaster = 0;
-              balance = [];
-            }
-          });
-        });
-        await widget.readCharacteristic(widget.characteristic);
-        if (recharged && !cond) {
-          await sqlDb.updateData('''
-          UPDATE Meters
-          SET
-          balance = 0,
-          tarrif = 0
-          WHERE name = '${widget.name}'
-          ''');
-          setState(() {
-            recharged = false;
-            updated = false;
-          });
-        }
-      }
-    }
-    await subscribeStream?.cancel();
-  }
-
+class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
+    with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -312,15 +128,18 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                 Flexible(
                   child: ListView(
                     children: [
-                      Text(
-                        TKeys.welcome.translate(context),
-                        style: TextStyle(
-                            color: Colors.green.shade900,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: width*.07),
+                        child: Text(
+                          TKeys.welcome.translate(context),
+                          style: TextStyle(
+                              color: Colors.green.shade900,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        padding: EdgeInsets.symmetric(horizontal: width*.07),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -382,8 +201,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                           ],
                         ),
                       ),
-                      /*Text('event $testingEvent'),
-                      Text('subscribeOutput $subscribeOutput'),*/
                       Padding(
                         padding: EdgeInsets.symmetric(
                             horizontal: width * .07, vertical: 10.0),
@@ -394,7 +211,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                               side: BorderSide(
                                   color: widget.viewModel.deviceConnected
                                       ? Colors.green.shade400
-                                      : color1),
+                                      : Colors.red.shade900),
                             ),
                             backgroundColor: Colors.white,
                             foregroundColor: Colors.white,
@@ -406,7 +223,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                   MaterialPageRoute<void>(
                                       builder: (context) => StoreData(
                                             name: widget.name,
-                                            // count: 0,
                                           )),
                                 );
                               } else {
@@ -414,7 +230,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                   MaterialPageRoute<void>(
                                       builder: (context) => WaterData(
                                             name: widget.name,
-                                            // count: 0,
                                           )),
                                 );
                               }
@@ -584,15 +399,15 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                         shape: const StadiumBorder(),
-                                        backgroundColor: recharged
+                                        backgroundColor: (cond || cond0)
                                             ? Colors.green.shade900
                                             : Colors.grey.shade600,
                                         foregroundColor: Colors.white,
-                                        disabledBackgroundColor: recharged
+                                        disabledBackgroundColor: (cond || cond0)
                                             ? Colors.green.shade900
                                             : Colors.grey.shade600,
                                       ),
-                                      onPressed: recharged
+                                      onPressed: (cond || cond0)
                                           ? () async {
                                               if (!widget
                                                   .viewModel.deviceConnected) {
@@ -604,7 +419,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                             }
                                           : null,
                                       child: Text(
-                                        !recharged
+                                        !(cond || cond0)
                                             ? TKeys.recharged.translate(context)
                                             : TKeys.recharge.translate(context),
                                         style: const TextStyle(
@@ -622,33 +437,46 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                                           testingEvent = [];
                                           timer = Timer.periodic(interval,
                                               (Timer t) {
-                                            if (!widget
-                                                .viewModel.deviceConnected) {
-                                              widget.viewModel.connect();
-                                            } else if (subscribeOutput.length !=
-                                                72) {
-                                              subscribeCharacteristic();
-                                              widget.writeWithoutResponse(
-                                                  widget.characteristic,
-                                                  [0x59]);
-                                            } else if (subscribeOutput.length ==
-                                                72) {
+                                            if (start == 15) {
+                                              showToast('Time out',
+                                                  Colors.red, Colors.white);
+                                              timer.cancel();
+                                              start = 0;
+                                            } else {
                                               setState(() {
-                                                if (paddingType ==
-                                                    "Electricity") {
-                                                  calculateElectric(
-                                                      subscribeOutput,
-                                                      widget.name);
-                                                } else {
-                                                  calculateWater(
-                                                      subscribeOutput,
-                                                      widget.name);
-                                                }
+                                                start++;
                                               });
-                                              t.cancel();
-                                              Fluttertoast.showToast(
-                                                msg: 'all data are up to date',
-                                              );
+                                              if (!widget
+                                                  .viewModel.deviceConnected) {
+                                                widget.viewModel.connect();
+                                              } else if (subscribeOutput
+                                                      .length !=
+                                                  72) {
+                                                subscribeCharacteristic();
+                                                widget.writeWithoutResponse(
+                                                    widget.characteristic,
+                                                    [0x59]);
+                                              } else if (subscribeOutput
+                                                      .length ==
+                                                  72) {
+                                                setState(() {
+                                                  if (paddingType ==
+                                                      "Electricity") {
+                                                    calculateElectric(
+                                                        subscribeOutput,
+                                                        widget.name);
+                                                  } else {
+                                                    calculateWater(
+                                                        subscribeOutput,
+                                                        widget.name);
+                                                  }
+                                                });
+                                                t.cancel();
+                                                showToast(
+                                                    'All Data Are UpToDate',
+                                                    const Color(0xFF2196F3),
+                                                    Colors.black);
+                                              }
                                             }
                                           });
                                         });
@@ -716,7 +544,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
                               if (snapshot.hasData) {
                                 final filteredItems = snapshot.data!
                                     .where(
-                                        (item) => (item['name'] != widget.name))
+                                        (item) => item['name'] != widget.name)
                                     .toList();
                                 return ListView.builder(
                                     itemCount: filteredItems.length,
@@ -985,44 +813,296 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab> {
         onRefresh: () => Future.delayed(const Duration(seconds: 1), () {
           subscribeOutput = [];
           setState(() {
-            timer = Timer.periodic(interval, (Timer t) {
-              if (!widget.viewModel.deviceConnected) {
-                widget.viewModel.connect();
-              } else if (subscribeOutput.length != 72) {
-                subscribeCharacteristic();
-                widget.writeWithoutResponse(widget.characteristic, [0x59]);
-              } else if (subscribeOutput.length == 72) {
+            timer = Timer.periodic(interval, (timer) {
+              if (start == 15) {
+                showToast('Time out', Colors.red, Colors.white);
+                timer.cancel();
+                start = 0;
+              } else {
                 setState(() {
-                  if (paddingType == "Electricity") {
-                    isFunctionCalled = false;
-                    calculateElectric(subscribeOutput, widget.name);
-                  } else {
-                    calculateWater(subscribeOutput, widget.name);
-                  }
+                  start++;
                 });
-                t.cancel();
+                if (!widget.viewModel.deviceConnected) {
+                  widget.viewModel.connect();
+                } else if (subscribeOutput.length != 72) {
+                  subscribeCharacteristic();
+                  widget.writeWithoutResponse(widget.characteristic, [0x59]);
+                } else if (subscribeOutput.length == 72) {
+                  setState(() {
+                    if (paddingType == "Electricity") {
+                      isFunctionCalled = false;
+                      calculateElectric(subscribeOutput, widget.name);
+                    } else {
+                      calculateWater(subscribeOutput, widget.name);
+                    }
+                  });
+                  timer.cancel();
+                }
               }
             });
           });
-          // setState(() {
-          //   if (widget.viewModel.deviceConnected) {
-          //     // write = true;
-          //     subscribeCharacteristic();
-          //     widget.writeWithoutResponse(widget.characteristic,[0x59]);
-          //   }
-          //   else if (subscribeOutput.length == 72) {
-          //     setState(() {
-          //       if (paddingType == "Electricity") {
-          //         calculateElectric(subscribeOutput, widget.name);
-          //       }
-          //       else {
-          //         calculateWater(subscribeOutput, widget.name);
-          //       }
-          //     });
-          //   }
-          // });
         }),
       ),
     );
+  }
+
+  // OverlayEntry? _overlayEntry;
+  // AnimationController? _animationController;
+  List testingEvent = [];
+
+  /*void _showTimeoutSnackBar(String text, Color bgColor, Color txtColor) {
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    _overlayEntry = _createOverlayEntry(text, bgColor, txtColor);
+
+    Overlay.of(context).insert(_overlayEntry!);
+    _animationController?.forward();
+
+    _animationController?.addStatusListener((status) {
+      if (status == AnimationStatus.dismissed) {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
+    });
+
+    Timer(const Duration(seconds: 3), () {
+      if (_animationController != null && _animationController!.isAnimating) {
+        _animationController?.reverse().whenComplete(() {
+          _animationController?.dispose();
+          _animationController = null;
+        });
+      }
+    });
+  }
+
+  OverlayEntry _createOverlayEntry(String text, Color bgColor, Color txtColor) => OverlayEntry(
+        builder: (context) => Positioned(
+          bottom: 20.0,
+          left: MediaQuery.of(context).size.width * 0.1,
+          width: MediaQuery.of(context).size.width * 0.8,
+          child: Material(
+            color: Colors.transparent,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 1),
+                end: const Offset(0, 0),
+              ).animate(CurvedAnimation(
+                parent: _animationController!,
+                curve: Curves.easeInOut,
+              )),
+              child: FadeTransition(
+                opacity: _animationController!,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    text,
+                    style: TextStyle(color: txtColor,fontWeight: FontWeight.bold, fontSize: 18,),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );*/
+  @override
+  void initState() {
+    // discoveredServices = [];
+    subscribeOutput = [];
+    setState(() {
+      timer = Timer.periodic(interval, (timer) {
+        if (start == 15) {
+          if(widget.viewModel.connectionStatus != DeviceConnectionState.connected) {
+            widget.viewModel.disconnect();
+            showToast('Time out', Colors.red, Colors.white);
+          }
+          timer.cancel();
+          start = 0;
+        } else {
+          if (!widget.viewModel.deviceConnected && start == 0) {
+            widget.viewModel.connect();
+          }
+          else if (subscribeOutput.length != 72 && widget.viewModel.deviceConnected) {
+            subscribeCharacteristic();
+            widget.writeWithoutResponse(widget.characteristic, [0x59]);
+          }
+          else if (subscribeOutput.length == 72 && widget.viewModel.deviceConnected) {
+            setState(() {
+              if (paddingType == "Electricity") {
+                calculateElectric(subscribeOutput, widget.name);
+              } else {
+                calculateWater(subscribeOutput, widget.name);
+              }
+            });
+            timer.cancel();
+            showToast(
+                'All Data Are UpToDate', const Color(0xFF2196F3), Colors.black);
+          }
+          setState(() {
+            start++;
+          });
+        }
+      });
+    });
+    super.initState();
+  }
+
+  Future<void> subscribeCharacteristic() async {
+    var newEventData = <int>[];
+    subscribeOutput = [];
+    subscribeStream = widget
+        .subscribeToCharacteristic(widget.characteristic)
+        .listen((event) async {
+      newEventData = event;
+      testingEvent = event;
+      print('event $event');
+      if (event.first == 89 && subscribeOutput.isEmpty) {
+        subscribeOutput += newEventData;
+        previousEventData = newEventData;
+        print('here 89 $newEventData');
+        // write = false;
+      } else if (subscribeOutput.length < 72 && subscribeOutput.isNotEmpty) {
+        final equal = (previousEventData.length == newEventData.length) &&
+            const ListEquality<int>().equals(previousEventData, newEventData);
+        print('equal $equal');
+        if (!equal) {
+          subscribeOutput += newEventData;
+          previousEventData = newEventData;
+          print('inside equal new $newEventData');
+          print('inside equal old $previousEventData');
+        } else {
+          print('sadly equal');
+          newEventData = [];
+        }
+      }
+    });
+  }
+
+  Future<void> startTimer() async {
+    if (cond && !cond0) {
+      await sqlDb.getSpecifiedList(widget.name, 'balance');
+      if (myList.first == 9) {
+        await widget.writeWithoutResponse(widget.characteristic, myList);
+        subscribeStream = widget
+            .subscribeToCharacteristic(widget.characteristic)
+            .listen((event) {
+          setState(() {
+            if (event.first == 9) {
+              cond = false;
+              balanceMaster = 0;
+              balance = [];
+              // if (recharged) {
+              //last edit
+              sqlDb.updateData('''
+                UPDATE Meters
+                SET
+                balance = 0
+                WHERE name = '${widget.name}'
+              ''');
+              // recharged = false;
+              updated = false;
+              Fluttertoast.showToast(
+                msg: 'Charged Successfully',
+              );
+              // }
+            }
+          });
+        });
+        await widget.readCharacteristic(widget.characteristic);
+      }
+    } else if (cond0 && !cond) {
+      await sqlDb.getSpecifiedList(widget.name, 'tarrif');
+      if (myList.first == 16) {
+        await widget.writeWithoutResponse(widget.characteristic, myList);
+        subscribeStream = widget
+            .subscribeToCharacteristic(widget.characteristic)
+            .listen((event) {
+          setState(() {
+            if (event.first == 0x10) {
+              cond0 = false;
+              tarrif = [];
+              tarrifMaster = 0;
+              // if (recharged) {
+              sqlDb.updateData('''
+                UPDATE Meters
+                SET
+                tarrif = 0
+                WHERE name = '${widget.name}'
+              ''');
+              // recharged = false;
+              updated = false;
+              Fluttertoast.showToast(
+                msg: 'Charged Successfully',
+              );
+              // }
+            }
+          });
+        });
+        await widget.readCharacteristic(widget.characteristic);
+      }
+    } else if (cond0 && cond) {
+      await sqlDb.getSpecifiedList(widget.name, 'tarrif');
+      if (myList.first == 16) {
+        await widget.writeWithoutResponse(widget.characteristic, myList);
+        subscribeStream = widget
+            .subscribeToCharacteristic(widget.characteristic)
+            .listen((event) {
+          setState(() {
+            if (event.first == 0x10) {
+              cond0 = false;
+              tarrifMaster = 0;
+              tarrif = [];
+            }
+          });
+        });
+        await widget.readCharacteristic(widget.characteristic);
+      }
+      await sqlDb.getSpecifiedList(widget.name, 'balance');
+      if (myList.first == 9 && !cond0) {
+        await widget.writeWithoutResponse(widget.characteristic, myList);
+        subscribeStream = widget
+            .subscribeToCharacteristic(widget.characteristic)
+            .listen((event) {
+          setState(() {
+            if (event.first == 9) {
+              cond = false;
+              balanceMaster = 0;
+              balance = [];
+            }
+          });
+        });
+        await widget.readCharacteristic(widget.characteristic);
+        // if (recharged && !cond) {
+        await sqlDb.updateData('''
+          UPDATE Meters
+          SET
+          balance = 0,
+          tarrif = 0
+          WHERE name = '${widget.name}'
+          ''');
+        setState(() {
+          // recharged = false;
+          updated = false;
+        });
+        // }
+      }
+    }
+    await subscribeStream?.cancel();
+  }
+
+  @override
+  void dispose() {
+    subscribeStream?.cancel();
+    widget.viewModel.disconnect();
+    timer.cancel();
+    Fluttertoast.cancel();
+    super.dispose();
   }
 }

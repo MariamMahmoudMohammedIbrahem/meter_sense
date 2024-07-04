@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../t_key.dart';
 
 class BluetoothIcon extends StatelessWidget {
-  const BluetoothIcon({Key? key}) : super(key: key);
+  const BluetoothIcon({super.key});
 
   @override
   Widget build(BuildContext context) => const SizedBox(
@@ -16,8 +16,8 @@ class BluetoothIcon extends StatelessWidget {
 class StatusMessage extends StatelessWidget {
   const StatusMessage({
     required this.text,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final String text;
 
@@ -46,7 +46,6 @@ class MeterButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
     return Padding(
       padding: EdgeInsets.symmetric(
           horizontal: width * .07,

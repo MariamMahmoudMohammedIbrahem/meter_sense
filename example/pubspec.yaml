@@ -32,6 +32,8 @@ dependencies:
   permission_handler: ^11.3.1
   fluttertoast: ^8.2.6
   get_storage: ^2.1.1
+  meta: ^1.11.0
+  path: ^1.9.0
 
 dev_dependencies:
   build_runner: ^2.3.3

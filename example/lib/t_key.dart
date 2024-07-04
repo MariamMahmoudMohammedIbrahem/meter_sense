@@ -45,12 +45,13 @@ enum TKeys{
   december,
   update,
   updated,
+  charge,
   request,
   choose,
   meter,
   tarrif,
   balanceStation,
-  get,
+  submit,
   connect,
   disconnect,
   welcomeMaster,
@@ -60,7 +61,5 @@ enum TKeys{
 //Tkeys.device
 extension TKeysExtention on TKeys{
   String get _string => toString().split('.')[1];
-  String translate(BuildContext context){
-    return LocalizationService.of(context)?.translate(_string)??'';
-  }
+  String translate(BuildContext context)=> LocalizationService.of(context)?.translate(_string)??'';
 }

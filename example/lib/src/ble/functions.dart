@@ -1,12 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 import 'constants.dart';
 
 num convertToInt(List<int> data, int start, int size) {
   final buffer = List<int>.filled(size, 0);
-  int converted = 0;
+  var converted = 0;
 
   for (var i = start, j = 0; i < start + size && j < size; i++, j++) {
     buffer[j] = data[i];
@@ -86,10 +86,10 @@ double merge (num value1, num value2){
 }
 
 //insert into electricity and water tables
-void addData(String name) async {
+Future<void> addData(String name) async {
   currentTime =DateFormat.yMMMEd().format(DateTime.now());
   if(paddingType == "Electricity" ){
-    final count  = await myInstance.isTableEmpty('$paddingType', name);
+    final count  = await sqlDb.isTableEmpty('$paddingType', name);
     if(count){
       await sqlDb.insertData(
           '''
@@ -136,7 +136,7 @@ void addData(String name) async {
     isFunctionCalled = false;
   }
   else{
-    final count = await myInstance.isTableEmpty('$paddingType', name);
+    final count = await sqlDb.isTableEmpty('$paddingType', name);
     //IF TABLE IS EMPTY insert the data
     if(count){
       await sqlDb.insertData(
@@ -192,7 +192,7 @@ Future<void> fetchData() async {
   tarrifList.clear();
   final testing = await sqlDb.readData('SELECT * FROM Meters');
   print('SELECT * FROM Meters $testing');
-  for (Map<dynamic, dynamic> map in testing) {
+  for (final map in testing) {
     if (!nameList.contains(map['name'].toString())){
       nameList.add(map['name'].toString());
       // name.add(map['name'].toString());
@@ -201,24 +201,17 @@ Future<void> fetchData() async {
     tarrifList.add(int.parse(map['tarrif'].toString()));
   }
 }
-// IconData getStrengthIcon(int rssi) {
-//   if (-30 >= rssi && rssi >= -55) {
-//     return Icons.signal_cellular_alt_outlined; // Icon for more strong
-//   } else if (-55 >= rssi && rssi >= -67) {
-//     return Icons.signal_cellular_alt_2_bar_outlined; // Icon for strong
-//   } else if (-80 >= rssi && rssi >= -90) {
-//     return Icons.signal_cellular_alt_1_bar_outlined; // Icon for terrible
-//   } else if (rssi < -90) {
-//     return Icons.signal_cellular_off; // Icon for unusable
-//   } else {
-//     return Icons.error; // Handle any other cases
-//   }
-// }
 
-// read all data from meters
-// Future<List<Map>> readData() async {
-//   final response  = await sqlDb.readData("SELECT * FROM Meters");
-//   return response;
-// }
+void masterValues(List<int> data){
+  clientID = convertToInt(data, 1, 4);
+  currentBalance = convertToInt(data, 11, 4)/100;
+  currentTarrif = convertToInt(data, 16, 2);
+}
 
-//fetch meter data
+void showToast(String text, Color bgColor, Color txtColor) {
+  Fluttertoast.showToast(
+    msg: text,
+    backgroundColor: bgColor,
+    textColor: txtColor,
+  );
+}
