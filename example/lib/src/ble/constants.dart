@@ -19,22 +19,17 @@ dynamic paddingType;
 List<double> eleReadings =[];
 List<double> watReadings =[];
 List<Color> gradientColors = [
-  Colors.grey,
+  const Color(0xff4CAF50),
   Colors.grey.shade500,
 ];
 List<int> myList = [];
-List<int> balance = [];
-num balanceMaster = 0;
-List<int> tarrif = [];
-num tarrifMaster = 0;
 dynamic listType = "";
 var monthList = <String>[];
-bool cond = false;
-bool cond0 = false;
+bool balanceCond = false;
+bool tarrifCond = false;
 late List<int> subscribeOutput;
 Map<String, List<num>> eleMeters = {};
 Map<String, List<num>> watMeters = {};
-bool updated = true;
 
 ///*Permissions Directory**
 PermissionStatus locationWhenInUse = PermissionStatus.denied;
@@ -46,14 +41,26 @@ var start = 0;
 List<int> previousEventData = [];
 late Timer timer;
 StreamSubscription<List<int>>? subscribeStream;
+bool isLoading = false;
 
 ///*MASTER-STATION**
 num clientID = 0;
-num currentTarrif = 0;
+num totalReadings = 0;
+num pulses = 0;
+num totalReadingsPulses = 0;
 num currentBalance = 0;
+num currentTarrif = 0;
+num currentTarrifVersion = 0;
 String? selectedName ;
 final random = Random();
 bool charging = false;
+bool updated = true;
+bool updatingMaster = false;
+num tarrifMaster = 0;
+num tarrifVersionMaster = 0;
+List<int> balance = [];
+num balanceMaster = 0;
+List<int> tarrif = [];
 
 ///*FUNCTIONS**
 late String currentTime;
@@ -104,3 +111,8 @@ String barcodeScanRes = '';
 List<Map> response = [];
 String query = '';
 String query2='';
+
+///*testing**
+int countBefore = 0;
+int countAfter = 0;
+StreamSubscription<List<int>>? balanceTarrif;

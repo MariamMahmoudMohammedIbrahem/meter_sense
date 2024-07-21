@@ -19,6 +19,8 @@
   "welcome": "مرحبا بك",
   "name": "اسم العداد",
   "currentTarrif": "الشريحه الحاليه",
+  "totalReadings": "القراءات",
+  "valveStatus": "حالة المحبس",
   "today": "اليوم",
   "month": "هذا الشهر",
   "balance": "الرصيد",

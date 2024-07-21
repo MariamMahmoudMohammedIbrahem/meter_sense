@@ -14,11 +14,12 @@ import '../../ble/ble_device_connector.dart';
 import '../../ble/ble_device_interactor.dart';
 import '../../ble/constants.dart';
 import '../device_detail/device_interaction_tab.dart';
-
+///TODO: Remove
 num electricTarrif = 0;
 num electricBalance = 0;
 num waterTarrif = 0;
 num waterBalance = 0;
+///TODO: Remove
 
 class MasterInteractionTab extends StatelessWidget {
   const MasterInteractionTab({
@@ -115,7 +116,6 @@ class _MasterStation extends StatefulWidget {
 }
 
 class _MasterStationState extends State<_MasterStation> {
-
   @override
   Widget build(BuildContext context) {
     final nameLabelStyle = TextStyle(
@@ -138,41 +138,20 @@ class _MasterStationState extends State<_MasterStation> {
                 widget.viewModel.connect();
               } else if (widget.viewModel.deviceConnected) {
                 subscribeCharacteristic();
-                widget.readCharacteristic(widget.characteristic);
+                // widget.readCharacteristic(widget.characteristic);
               }
             });
           }),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: width*.07),
+            padding: EdgeInsets.symmetric(horizontal: width * .07),
             child: Column(
               children: [
-                Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      TKeys.welcome.translate(context),
-                      style: const TextStyle(
-                          color: Color(0xff4CAF50),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 40),
-                    )),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff4CAF50),
-                      ),
-                      onPressed: () {
-                        widget.viewModel.disconnect();
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        TKeys.logout.translate(context),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Colors.black),
-                      ),
+                    Text(
+                      TKeys.welcome.translate(context),
+                      style: Theme.of(context).textTheme.displayLarge,
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -184,44 +163,48 @@ class _MasterStationState extends State<_MasterStation> {
                             widget.viewModel.connectionStatus ==
                                 DeviceConnectionState.connected) {
                           widget.viewModel.disconnect();
+                          start = 0;
+                          timer.cancel();
                         } else if (widget.viewModel.connectionStatus ==
                                 DeviceConnectionState.disconnecting ||
                             widget.viewModel.connectionStatus ==
                                 DeviceConnectionState.disconnected) {
-                          Timer.periodic(interval, (timer) {
-                            if (start == 15 || widget.viewModel.connectionStatus == DeviceConnectionState.connected) {
-                              if(widget.viewModel.connectionStatus != DeviceConnectionState.connected) {
+                          timer = Timer.periodic(interval, (timer) {
+                            if (start == 15 ||
+                                widget.viewModel.connectionStatus ==
+                                    DeviceConnectionState.connected) {
+                              if (widget.viewModel.connectionStatus !=
+                                  DeviceConnectionState.connected) {
                                 widget.viewModel.disconnect();
                                 showToast('Time out', Colors.red, Colors.white);
                               }
                               timer.cancel();
                               start = 0;
-                            }
-                            else {
+                            } else {
                               widget.viewModel.connect();
-                              setState(() {
+                              // setState(() {
                                 start++;
-                              });
+                              // });
                               print('start$start');
                             }
                           });
                         }
                       },
-                      child: Text((widget.viewModel.connectionStatus ==
-                          DeviceConnectionState.connected)
-                          ? TKeys.disconnect.translate(context)
-                          : (widget.viewModel.connectionStatus ==
-                          DeviceConnectionState.connecting)
-                          ? 'connecting'
-                          : (widget.viewModel.connectionStatus ==
-                          DeviceConnectionState
-                              .disconnected)
-                          ? TKeys.connect.translate(context)
-                          : 'disconnecting',
-                        style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,),
+                      child: Text(
+                        (widget.viewModel.connectionStatus ==
+                                DeviceConnectionState.connected)
+                            ? TKeys.disconnect.translate(context)
+                            : (widget.viewModel.connectionStatus ==
+                                    DeviceConnectionState.connecting)
+                                ? 'connecting'
+                                : (widget.viewModel.connectionStatus ==
+                                        DeviceConnectionState.disconnected)
+                                    ? TKeys.connect.translate(context)
+                                    : 'disconnecting',
+                        // style: const TextStyle(
+                        //     color: Colors.black,
+                        //     fontWeight: FontWeight.bold,
+                        //     fontSize: 18,),
                       ),
                     ),
                   ],
@@ -317,9 +300,9 @@ class _MasterStationState extends State<_MasterStation> {
                   child: Container(
                     width: width * .86,
                     decoration: BoxDecoration(
-                      color: const Color(0xff4CAF50),
+                      color: Colors.black,
                       border: Border.all(
-                        color: const Color(0xff4CAF50),
+                        color: Colors.black,
                         width: 3,
                       ),
                       borderRadius: BorderRadius.circular(
@@ -331,34 +314,32 @@ class _MasterStationState extends State<_MasterStation> {
                       children: [
                         RichText(
                           textAlign: TextAlign.center,
-                          text: TextSpan(
+                          text: const TextSpan(
                             text: 'Upload Your Meter Readings\n',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.normal,
-                              color: Colors.black,
+                              color: Color(0xff4CAF50),
                             ),
-                            children: <TextSpan>[
-                              TextSpan(
-                                text:
-                                    'before ${now.day}/${now.month}/${now.year}',
-                                style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        Colors.black),
-                              ),
-                            ],
+                            // children: <TextSpan>[
+                            //   TextSpan(
+                            //     text:
+                            //         'before ${now.day}/${now.month}/${now.year}',
+                            //     style: const TextStyle(
+                            //         fontSize: 20,
+                            //         fontWeight: FontWeight.bold,
+                            //         color: Colors.black),
+                            //   ),
+                            // ],
                           ),
-                        ),
-                        const SizedBox(
-                          height: 10,
                         ),
                         SizedBox(
                           width: width * .4,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black),
+                                backgroundColor: const Color(0xff4CAF50),
+                              foregroundColor: Colors.black,
+                            ),
                             onPressed: () async {
                               if (!widget.viewModel.deviceConnected) {
                                 print('printing connecting');
@@ -370,8 +351,8 @@ class _MasterStationState extends State<_MasterStation> {
                                   await widget.writeWithoutResponse(
                                       widget.characteristic, [0xAA]);
                                   await subscribeCharacteristic();
-                                  await widget.readCharacteristic(
-                                      widget.characteristic);
+                                  // await widget.readCharacteristic(
+                                  //     widget.characteristic);
                                 });
                                 setState(() {
                                   charging = true;
@@ -383,11 +364,11 @@ class _MasterStationState extends State<_MasterStation> {
                             },
                             child: Text(
                               TKeys.submit.translate(context),
-                              style: const TextStyle(
-                                color: Color(0xff4CAF50),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
+                              // style: const TextStyle(
+                              //   color: Color(0xff4CAF50),
+                              //   fontWeight: FontWeight.bold,
+                              //   fontSize: 18,
+                              // ),
                             ),
                           ),
                         ),
@@ -406,12 +387,13 @@ class _MasterStationState extends State<_MasterStation> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Text('Meter Data:', style: Theme.of(context).textTheme.displayMedium,),
                               Row(
                                 mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Meter SN:',
+                                    'Client ID:',
                                     style: nameLabelStyle,
                                   ),
                                   Text(
@@ -420,22 +402,22 @@ class _MasterStationState extends State<_MasterStation> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height:10),
+                              const SizedBox(height: 10),
                               Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '${TKeys.currentTarrif.translate(context)}: ',
+                                    'Total Readings: ',
                                     style: nameLabelStyle,
                                   ),
                                   Text(
-                                    '$currentTarrif',
+                                    totalReadingsPulses.toString(),
                                     style: nameValueStyle,
                                   ),
                                 ],
                               ),
-                              const SizedBox(height:10),
+                              const SizedBox(height: 10),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -450,21 +432,39 @@ class _MasterStationState extends State<_MasterStation> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height:10),
+                              const SizedBox(height: 10),
                               Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '${TKeys.tarrif.translate(context)}: ',
+                                    '${TKeys.currentTarrif.translate(context)}: ',
                                     style: nameLabelStyle,
                                   ),
                                   Text(
-                                    tarrifMaster.toString(),
+                                    '$currentTarrif',
                                     style: nameValueStyle,
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Tarrif Version: ',
+                                    style: nameLabelStyle,
+                                  ),
+                                  Text(
+                                    currentTarrifVersion.toString(),
+                                    style: nameValueStyle,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              const Divider(),
+                              Text('Charging Data:', style: Theme.of(context).textTheme.displayMedium,),
                               const SizedBox(height: 10),
                               Row(
                                 mainAxisAlignment:
@@ -480,13 +480,43 @@ class _MasterStationState extends State<_MasterStation> {
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Tarrif Value: ',
+                                    style: nameLabelStyle,
+                                  ),
+                                  Text(
+                                    tarrifMaster.toString(),
+                                    style: nameValueStyle,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Tarrif Version: ',
+                                    style: nameLabelStyle,
+                                  ),
+                                  Text(
+                                    tarrifVersionMaster.toString(),
+                                    style: nameValueStyle,
+                                  ),
+                                ],
+                              ),
                               const SizedBox(height: 20),
                               Row(
                                 mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                (updatingMaster && !updated)?MainAxisAlignment.spaceBetween:MainAxisAlignment.center,
                                 children: [
                                   SizedBox(
-                                    width: width * .3,
+                                    width: (updatingMaster && !updated)?width * .4:width * .6,
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
@@ -496,29 +526,33 @@ class _MasterStationState extends State<_MasterStation> {
                                         await widget.writeWithoutResponse(
                                             widget.characteristic, [0xAA]);
                                         await subscribeCharacteristic();
-                                        await widget.readCharacteristic(
-                                            widget.characteristic);
+                                        setState(() {
+                                          updatingMaster = true;
+                                        });
+                                        // await widget.readCharacteristic(
+                                        //     widget.characteristic);
                                       },
                                       child: Text(
                                         TKeys.charge.translate(context),
-                                        style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18),
+                                        // style: const TextStyle(
+                                        //     color: Colors.black,
+                                        //     fontWeight: FontWeight.bold,
+                                        //     fontSize: 18),
                                       ),
                                     ),
                                   ),
-                                  SizedBox(
-                                    width: width * .3,
+                                  Visibility(
+                                    visible: updatingMaster && !updated,
+                                    child: SizedBox(
+                                    width: width * .4,
                                     child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xff4CAF50),
-                                        disabledBackgroundColor:
-                                            Colors.black,
-                                      ),
-                                      onPressed: !updated
-                                          ? () async {
+                                      // style: ElevatedButton.styleFrom(
+                                      //   backgroundColor:
+                                      //       const Color(0xff4CAF50),
+                                      //   disabledBackgroundColor:
+                                      //       Colors.black,
+                                      // ),
+                                      onPressed: !updated?() async {
                                               final myInstance = SqlDb();
                                               if (balance.isNotEmpty &&
                                                   tarrif.isEmpty) {
@@ -572,17 +606,19 @@ class _MasterStationState extends State<_MasterStation> {
                                                   updated = true;
                                                 });
                                               }
-                                            }
-                                          : null,
+                                            }:null,
                                       child: Text(
                                         TKeys.update.translate(context),
-                                        style: TextStyle(
-                                          color: updated?const Color(0xff4CAF50):Colors.black,
+                                        style: const TextStyle(
+                                          // color: updated
+                                          //     ? const Color(0xff4CAF50)
+                                          //     : Colors.black,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18,
                                         ),
                                       ),
                                     ),
+                                  ),
                                   ),
                                 ],
                               ),
@@ -617,36 +653,43 @@ class _MasterStationState extends State<_MasterStation> {
     if (kDebugMode) {}
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-          if (event.first == 0xA3 || event.first == 0xA5) {
-            setState(() {
-              tarrif = [];
-              updated = false;
-              tarrif
-                ..insert(0, 0x10)
-                ..addAll(event.sublist(1, 12))
-                ..add(random.nextInt(255));
-              tarrifMaster = convertToInt(event, 1, 11);
-            });
-          }
-          if (event.first == 0xA4 || event.first == 0xA6) {
-            setState(() {
-              balance = [];
-              updated = false;
-              balance
-                ..insert(0, 0x09)
-                ..addAll(event.sublist(1, 5))
-                ..add(random.nextInt(255));
-              balanceMaster = convertToInt(event, 1, 4) / 100;
-            });
-          }
+      if (event.first == 0xA3 || event.first == 0xA5) {
+        setState(() {
+          tarrif = [];
+          // updated = false;
+          tarrif
+            ..insert(0, 0x10)
+            ..addAll(event.sublist(1, 12))
+            ..add(random.nextInt(255));
+          print('tarrif master : $tarrif');
+          tarrifMaster = convertToInt(event, 1, 11);
+          tarrifVersionMaster = convertToInt(event, 1, 2);
         });
+      }
+      if (event.first == 0xA4 || event.first == 0xA6) {
+        print('balanceMaster $event');
+        setState(() {
+          balance = [];
+          updated = false;
+          balance
+            ..insert(0, 0x09)
+            ..addAll(event.sublist(1, 5))
+            ..add(random.nextInt(255));
+          print('objectMaster $balance');
+          balanceMaster = convertToInt(event, 1, 4) / 100;
+        });
+      }
+    });
   }
 
   @override
   void initState() {
-    Timer.periodic(interval, (timer) {
-      if (start == 15 || widget.viewModel.connectionStatus == DeviceConnectionState.connected) {
-        if(widget.viewModel.connectionStatus != DeviceConnectionState.connected) {
+    timer = Timer.periodic(interval, (timer) {
+      if (start == 15 ||
+          widget.viewModel.connectionStatus ==
+              DeviceConnectionState.connected) {
+        if (widget.viewModel.connectionStatus !=
+            DeviceConnectionState.connected) {
           widget.viewModel.disconnect();
           showToast('Time out', Colors.red, Colors.white);
         }
@@ -655,7 +698,9 @@ class _MasterStationState extends State<_MasterStation> {
       } else {
         print('start$start');
         print('start${widget.viewModel.connectionStatus}');
-        if (widget.viewModel.connectionStatus == DeviceConnectionState.disconnected && start == 0) {
+        if (widget.viewModel.connectionStatus ==
+                DeviceConnectionState.disconnected &&
+            start == 0) {
           widget.viewModel.connect();
         }
         start++;
@@ -670,6 +715,8 @@ class _MasterStationState extends State<_MasterStation> {
   void dispose() {
     subscribeStream?.cancel();
     widget.viewModel.disconnect();
+    timer.cancel();
+    start = 0;
     selectedName = null;
     charging = false;
     clientID = 0;
@@ -677,6 +724,7 @@ class _MasterStationState extends State<_MasterStation> {
     currentBalance = 0;
     tarrifMaster = 0;
     balanceMaster = 0;
+    tarrif = [];
     super.dispose();
   }
 }

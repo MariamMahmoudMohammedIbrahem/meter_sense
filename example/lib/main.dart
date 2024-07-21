@@ -81,29 +81,72 @@ Future<void> main() async {
           builder: (LocalizationController controller) => MaterialApp(
                 debugShowCheckedModeBanner: false,
                 title: 'MeterSense',
-                color: Colors.grey,
+                color: Colors.black,
                 theme: ThemeData(
                   popupMenuTheme:  PopupMenuThemeData(
                     color: Colors.grey.shade100, // Default background color
                   ),
-                  primaryColor: Colors.grey,
-                  primarySwatch: Colors.grey,
                   scaffoldBackgroundColor: Colors.white,
                   elevatedButtonTheme: ElevatedButtonThemeData(
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.grey[600],
+                      backgroundColor: const Color(0xff4CAF50),
+                      disabledBackgroundColor: Colors.black,
                       shape: const StadiumBorder(),
-                      disabledForegroundColor: Colors.grey.withOpacity(0.38),
-                      disabledBackgroundColor: Colors.grey.withOpacity(0.12),
+                      textStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                      foregroundColor: Colors.black, // Add this line to set text color
+                      disabledForegroundColor: const Color(0xff4CAF50),
                     ),
                   ),
-                  textTheme: const TextTheme(
-                    displayLarge: TextStyle(
+                  textTheme: TextTheme(
+                    displayLarge: const TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xff4CAF50),
+                    ),
+                    displayMedium: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xff4CAF50),
+                    ),
+                    displaySmall: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xff4CAF50),
+                    ),
+                    titleMedium: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w500,
                       color: Colors.black,
+                    ),
+                    titleSmall: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black,
+                    ),
+                    bodyMedium: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    bodySmall: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.green.shade900,
+                    ),
+                    bodyLarge: const TextStyle(
+                      color: Colors.brown,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
+                  ),
+                  dividerTheme: const DividerThemeData(
+                    thickness: 1,
+                    indent: 0,
+                    endIndent: 10,
+                    color: Color(0xff4CAF50),
                   ),
                 ),
                 locale: controller.currentLanguage != ''
@@ -134,16 +177,20 @@ class HomeScreen extends StatelessWidget {
               permission.whenInUseLocation.isGranted &&
               permission.bluetoothStatus.isGranted) {
             return const MyApp();
-          } else if (permission.bluetoothStatus.isDenied) {
+          }
+          else if (permission.bluetoothStatus.isDenied) {
             permission.requestBluetoothPermission();
             return const BluetoothPermission();
-          } else if (permission.whenInUseLocation.isDenied) {
+          }
+          else if (permission.whenInUseLocation.isDenied) {
             permission.requestLocationWhenInUse();
             return const LocationPermission();
-          } else if (permission.cameraStatus.isDenied) {
+          }
+          else if (permission.cameraStatus.isDenied) {
             permission.requestCameraPermission();
             return const CameraPermission();
-          } else {
+          }
+          else {
             return BleStatusScreen(status: status ?? BleStatus.unknown);
           }
         },

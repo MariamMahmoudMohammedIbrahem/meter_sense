@@ -204,8 +204,12 @@ Future<void> fetchData() async {
 
 void masterValues(List<int> data){
   clientID = convertToInt(data, 1, 4);
+  totalReadings = convertToInt(data, 5, 4);
+  pulses = convertToInt(data, 9, 2);
+  totalReadingsPulses = merge(totalReadings, pulses);
   currentBalance = convertToInt(data, 11, 4)/100;
-  currentTarrif = convertToInt(data, 16, 2);
+  currentTarrif = convertToInt(data, 15, 1);
+  currentTarrifVersion = convertToInt(data, 16, 2);
 }
 
 void showToast(String text, Color bgColor, Color txtColor) {

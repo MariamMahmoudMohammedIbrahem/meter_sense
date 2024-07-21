@@ -30,7 +30,7 @@ class SqlDb {
 
   //version changed
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    print("onUpgrade");
+    // print("onUpgrade");
   }
 
   //JUST CALLED ONCE
@@ -120,11 +120,11 @@ class SqlDb {
     print('object');
     if (title.startsWith('Ele')) {
       if (eleMeters[title] == null) {
-        eleMeters[title] = [0, 0, 0, 0];
+        eleMeters[title] = [0, 0, 0, 0, 0];
       }
       response = await mydb!.rawQuery(
         '''
-          SELECT `title` , `currentTarrif`, `totalReading`, `totalCredit`, `currentConsumption` 
+          SELECT `title` , `currentTarrif`, `totalReading`, `totalCredit`, `currentConsumption` ,`valveStatus`
           FROM Electricity 
           WHERE `title` = ?
           ORDER BY `id` DESC 
@@ -138,16 +138,17 @@ class SqlDb {
         eleMeters[title]?[1] = num.parse(map['totalReading'].toString());
         eleMeters[title]?[2] = num.parse(map['totalCredit'].toString());
         eleMeters[title]?[3] = num.parse(map['currentConsumption'].toString());
+        eleMeters[title]?[4] = num.parse(map['valveStatus'].toString());
       }
-      print("electric $title: $response");
+      // print("electric $title: $response");
     }
     else if (title.startsWith('W')) {
       if (watMeters[title] == null) {
-        watMeters[title] = [0, 0, 0, 0];
+        watMeters[title] = [0, 0, 0, 0, 0];
       }
       response = await mydb!.rawQuery(
         '''
-          SELECT `title`, `currentTarrif`, `totalReading`, `totalCredit`, `currentConsumption` 
+          SELECT `title`, `currentTarrif`, `totalReading`, `totalCredit`, `currentConsumption`, `valveStatus`
           FROM Water 
           WHERE `title` = ?
           ORDER BY `id` DESC 
@@ -161,9 +162,10 @@ class SqlDb {
         watMeters[title]?[1] = num.parse(map['totalReading'].toString());
         watMeters[title]?[2] = num.parse(map['totalCredit'].toString());
         watMeters[title]?[3] = num.parse(map['currentConsumption'].toString());
+        watMeters[title]?[4] = num.parse(map['valveStatus'].toString());
       }
 
-      print("water $title: $response");
+      // print("water $title: $response");
     }
     return response;
   }
@@ -192,7 +194,7 @@ class SqlDb {
       query,
       [name],
     );
-    print("object => $response");
+    // print("object => $response");
     return response;
   }
 
@@ -209,7 +211,7 @@ class SqlDb {
     LIMIT 1
   ''';
       final response = await mydb!.rawQuery(query,[name]);
-      print("res[]:$response");
+      // print("res[]:$response");
       if (response.isNotEmpty) {
         final map = response.first;
         eleReadings = [
@@ -236,7 +238,7 @@ class SqlDb {
       } else {
         eleReadings = [];
       }
-      print("readings$eleReadings");
+      // print("readings$eleReadings");
     }
     //water
     else{
@@ -249,7 +251,7 @@ class SqlDb {
   ''';
 
       final response = await mydb!.rawQuery(query,[name]);
-      print("res:$response");
+      // print("res:$response");
       if (response.isNotEmpty) {
         final map = response.first;
         watReadings = [
@@ -276,7 +278,7 @@ class SqlDb {
       } else {
         watReadings = [0.0];
       }
-      print("readings$watReadings");
+      // print("readings$watReadings");
     }
   }
 
@@ -311,7 +313,7 @@ class SqlDb {
         time = map['time'].toString();
       }
     }
-    print("count $count");
+    // print("count $count");
     return count == 0;
   }
 
@@ -389,7 +391,7 @@ class SqlDb {
           masterValues(myList);
           if(listType == "Electricity") {myList[0] = 0xA1;}
           else {myList[0] = 0xA0;}
-          print("myList => $myList");
+          // print("myList => $myList");
           return myList;
         }
       }
@@ -420,7 +422,7 @@ class SqlDb {
   Future<void> saveList(List<int> myList, String name, String type, String process) async {
     Database? mydb = await db;
     final jsonList = jsonEncode(myList);
-    print('saved successfully');
+    // print('saved successfully');
     final rewrite = Sqflite.firstIntValue(
       await mydb!.rawQuery(
       '''
@@ -438,7 +440,7 @@ class SqlDb {
       );
     }
     else{
-      print('update');
+      // print('update');
       await sqlDb.updateData(
           '''
               UPDATE master_table

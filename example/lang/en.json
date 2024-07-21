@@ -19,6 +19,8 @@
   "welcome": "Welcome",
   "name": "Meter Name",
   "currentTarrif": "Current Tarrif",
+  "totalReadings": "Readings",
+  "valveStatus": "Valve Status",
   "today": "Today",
   "month": "This Month",
   "balance": "Balance",

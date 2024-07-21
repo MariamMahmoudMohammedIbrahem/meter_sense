@@ -23,6 +23,8 @@ enum TKeys{
   welcome,
   name,
   currentTarrif,
+  totalReadings,
+  valveStatus,
   today,
   month,
   balance,

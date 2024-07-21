@@ -84,10 +84,10 @@ class DeviceList extends StatefulWidget {
   final BleDeviceConnector deviceConnector;
 
   @override
-  _DeviceListState createState() => _DeviceListState();
+  DeviceListState createState() => DeviceListState();
 }
 
-class _DeviceListState extends State<DeviceList>{
+class DeviceListState extends State<DeviceList> {
   @override
   void initState() {
     now = DateTime.now();
@@ -166,11 +166,11 @@ class _DeviceListState extends State<DeviceList>{
                                 },
                                 child: Text(
                                   TKeys.qr.translate(context),
-                                  style: TextStyle(
-                                    color: Colors.green.shade50,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
+                                  // style: const TextStyle(
+                                  //   color: Colors.black,
+                                  //   fontWeight: FontWeight.bold,
+                                  //   fontSize: 16,
+                                  // ),
                                 ),
                               ),
                               ElevatedButton(
@@ -184,28 +184,28 @@ class _DeviceListState extends State<DeviceList>{
                                   !widget.scannerState.scanIsInProgress
                                       ? TKeys.scan.translate(context)
                                       : TKeys.scanning.translate(context),
-                                  style: TextStyle(
-                                    color: Colors.green.shade50,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
+                                  // style: const TextStyle(
+                                  //   color: Colors.black,
+                                  //   fontWeight: FontWeight.bold,
+                                  //   fontSize: 16,
+                                  // ),
                                 ),
                               ),
                             ],
                           ),
-                          Padding(
-                            padding:
-                                EdgeInsets.symmetric(horizontal: width * .1),
-                            child: Visibility(
-                              visible: availability,
-                              child: Text(
-                                nameList.isEmpty
-                                    ? TKeys.first.translate(context)
-                                    : TKeys.hint.translate(context),
-                                style: const TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ),
+                          // Padding(
+                          //   padding:
+                          //       EdgeInsets.symmetric(horizontal: width * .1),
+                          //   child: Visibility(
+                          //     visible: availability,
+                          //     child: Text(
+                          //       nameList.isEmpty
+                          //           ? TKeys.first.translate(context)
+                          //           : TKeys.hint.translate(context),
+                          //       style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20,),
+                          //     ),
+                          //   ),
+                          // ),
                           const SizedBox(
                             height: 10,
                           ),
@@ -214,16 +214,7 @@ class _DeviceListState extends State<DeviceList>{
                             children: [
                               Text(
                                 TKeys.device.translate(context),
-                                style: TextStyle(
-                                    color: Colors.green.shade900,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 22,
-                                    shadows: const [
-                                      Shadow(
-                                          color: Colors.grey,
-                                          blurRadius: 2.0,
-                                          offset: Offset(2.0, 2.0)),
-                                    ]),
+                                style: Theme.of(context).textTheme.displayLarge,
                               ),
                             ],
                           ),
@@ -231,14 +222,9 @@ class _DeviceListState extends State<DeviceList>{
                             padding: EdgeInsets.only(
                               left: width * .07,
                               right: width * .07,
-                              top: 10,
                             ),
-                            child: Divider(
-                              height: 1,
-                              thickness: 1,
-                              indent: 0,
-                              endIndent: 10,
-                              color: Colors.grey.shade400,
+                            child: const Divider(
+                              color: Colors.grey,
                             ),
                           ),
                           ListView(
@@ -309,15 +295,6 @@ class _DeviceListState extends State<DeviceList>{
                                                 //if 0 recharged = false else recharged = true
                                                 index = nameList
                                                     .indexOf(device.name);
-                                                // there is recharge to send to the meter
-
-                                                // if (cond || cond0) {
-                                                //   setState(() {
-                                                //     recharged = true;
-                                                //   });
-                                                // } else {
-                                                //   recharged = false;
-                                                // }
                                               }
                                               print(
                                                   'connection status${widget.deviceConnector.state}');
@@ -327,9 +304,12 @@ class _DeviceListState extends State<DeviceList>{
                                                   'widget connector state${widget.deviceConnector.state}');
                                               await fetchData().then((value) {
                                                 setState(() {
-                                                  cond = balanceList[index] == 1;
-                                                  cond0 = tarrifList[index] == 1;
+                                                  balanceCond =
+                                                      balanceList[index] == 1;
+                                                  tarrifCond =
+                                                      tarrifList[index] == 1;
                                                 });
+                                                print('balance${balanceList[index]},$balanceCond - tarrif${tarrifList[index]},$tarrifCond');
                                                 Navigator.push<void>(
                                                   context,
                                                   MaterialPageRoute(
@@ -352,25 +332,17 @@ class _DeviceListState extends State<DeviceList>{
                                             }
                                           },
                                           leading: SizedBox(
-                                            width: 25,
+                                            width: 30,
                                             child: Image.asset(icon),
                                           ),
                                           title: Text(
                                             device.name,
-                                            style: TextStyle(
-                                              color: Colors.grey.shade700,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18,
-                                            ),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium,
                                           ),
                                         ),
-                                        Divider(
-                                          height: 1,
-                                          thickness: 1,
-                                          indent: 0,
-                                          endIndent: 10,
-                                          color: Colors.grey.shade400,
-                                        ),
+                                        const Divider(),
                                       ],
                                     ),
                                   );
@@ -387,7 +359,7 @@ class _DeviceListState extends State<DeviceList>{
                                   }
                                   return Padding(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: width * .1),
+                                        horizontal: width * .1,),
                                     child: Column(
                                       children: [
                                         ListTile(
@@ -397,13 +369,14 @@ class _DeviceListState extends State<DeviceList>{
                                           ),
                                           title: Text(
                                             name,
-                                            style: TextStyle(
-                                              color: Colors.grey.shade700,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18,
-                                            ),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleSmall,
                                           ),
-                                          trailing: const Icon(Icons.error),
+                                          trailing: const Icon(
+                                            Icons.error,
+                                            color: Colors.red,
+                                          ),
                                           onTap: () {
                                             sqlDb.readMeterData(
                                               name,
@@ -417,7 +390,7 @@ class _DeviceListState extends State<DeviceList>{
                                                     builder: (context) =>
                                                         WaterData(
                                                           name: name,
-                                                        )),
+                                                        ),),
                                               );
                                             } else {
                                               sqlDb.editingList(name);
@@ -427,18 +400,12 @@ class _DeviceListState extends State<DeviceList>{
                                                     builder: (context) =>
                                                         StoreData(
                                                           name: name,
-                                                        )),
+                                                        ),),
                                               );
                                             }
                                           },
                                         ),
-                                        Divider(
-                                          height: 1,
-                                          thickness: 1,
-                                          indent: 0,
-                                          endIndent: 10,
-                                          color: Colors.grey.shade400,
-                                        ),
+                                        const Divider(),
                                       ],
                                     ),
                                   );
@@ -479,12 +446,17 @@ class _LanguageToggleState extends State<LanguageToggle> {
               }
               toggle = !toggle;
             },
-            icon: const Icon(Icons.language_outlined),
+            icon: const Icon(
+              Icons.language_outlined,
+              color: Colors.black,
+              size: 30,
+            ),
           ),
           Text(
             toggle
                 ? TKeys.arabic.translate(context)
                 : TKeys.english.translate(context),
+            style: Theme.of(context).textTheme.bodyMedium,
           )
         ],
       );

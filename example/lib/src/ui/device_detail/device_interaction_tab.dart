@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart';
@@ -122,43 +123,21 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
             SizedBox(
-              height: height * .8,
+              height: height * .95,
               width: width,
               child: Column(children: [
                 Flexible(
                   child: ListView(
                     children: [
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: width*.07),
-                        child: Text(
-                          TKeys.welcome.translate(context),
-                          style: TextStyle(
-                              color: Colors.green.shade900,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: width*.07),
+                        padding: EdgeInsets.symmetric(horizontal: width * .07),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // ElevatedButton(
-                            //   onPressed: () {
-                            //     setState(() {
-                            //       visible = !visible;
-                            //     });
-                            //
-                            //     print(visible);
-                            //   },
-                            //   child: Text(
-                            //     "Show Devices",
-                            //     style: TextStyle(
-                            //         fontWeight: FontWeight.bold,
-                            //         fontSize: 16,
-                            //         color: Colors.green.shade50),
-                            //   ),
-                            // ),
+                            Text(
+                              TKeys.welcome.translate(context),
+                              style: Theme.of(context).textTheme.displayLarge,
+                            ),
                             ElevatedButton(
                               onPressed: () {
                                 if (widget.viewModel.connectionStatus ==
@@ -185,20 +164,263 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                           ? TKeys.connect.translate(context)
                                           : 'disconnecting'),
                             ),
-                            ElevatedButton(
-                              onPressed: () {
-                                widget.viewModel.disconnect();
-                                Navigator.pop(context);
-                              },
-                              child: Text(
-                                TKeys.logout.translate(context),
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                    color: Colors.green.shade50),
-                              ),
-                            ),
                           ],
+                        ),
+                      ),
+
+                      ///TODO: Remove
+                      /*Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'summing $summing',
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'echoEvent $echoEvent',
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'balanceCond $balanceCond',
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          'tarrifCond $tarrifCond',
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: ()async{
+                          await widget.writeWithoutResponse(widget.characteristic, [9,0,0,0,0x64,0xAC,0x19]);
+                          balanceTarrif = widget
+                              .subscribeToCharacteristic(widget.characteristic)
+                              .listen((event) {
+                            summing.add(event);
+                            print('event $event');
+                            print('balancehere2 $myList');
+                            setState(() {
+                              testingEvent = event;
+                              if (event.length == 1) {
+                                print('inside length 1 in balance');
+                                if (event.first == 9) {
+                                  print('inside first 9 in balance');
+                                  balanceCond = false;
+                                  // balanceMaster = 0;
+                                  balance = [];
+                                  // if (recharged) {
+                                  //last edit
+                                  sqlDb.updateData('''
+                UPDATE Meters
+                SET
+                balance = 0
+                WHERE name = '${widget.name}'
+              ''');
+                                  balanceTarrif?.cancel();
+                                  // recharged = false;
+                                  // updated = false;
+                                  Fluttertoast.showToast(
+                                    msg: 'Charged Successfully',
+                                  );
+                                  // }
+                                }
+                              }
+                              else{
+                                echoEvent = event;
+                              }
+                            });
+                          });
+                        },
+                        child: const Text('balance testing alone'),
+                      ),*/
+                      /*
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text('tarrif echo $echoEvent'),
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text('balance echo $testingEvent'),
+                      ),
+                      Align(
+                          alignment: Alignment.center,
+                          child: Text('balance $balance')),
+                      Align(
+                          alignment: Alignment.center,
+                          child: Text('tarrif $tarrif')),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            balance = [0x09, 0, 0, 0, 100];
+                            balance.add(random.nextInt(256));
+                            final int sum = balance.fold(
+                                0,
+                                (previousValue, element) =>
+                                    previousValue + element);
+                            balance.add(sum);
+                            tarrifCond = true;
+                          });
+                        },
+                        child: const Text('balance create list'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            tarrif = [0x10, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 6];
+                            tarrif.add(random.nextInt(256));
+                            int sum = tarrif.fold(
+                                0,
+                                (previousValue, element) =>
+                                    previousValue + element);
+                            tarrif.add(sum);
+                            tarrifCond = true;
+                          });
+                        },
+                        child: const Text('tarrif create list'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await widget.writeWithoutResponse(
+                              widget.characteristic, balance);
+                          subscribeStream = widget
+                              .subscribeToCharacteristic(widget.characteristic)
+                              .listen((event) {
+                            print('event echo$event');
+                            setState(() {
+                              if (event.length == 1) {
+                                testingEvent = event;
+                                if (event.first == 9) {
+                                  balance = [];
+                                }
+                              } else {
+                                echoEvent = event;
+                              }
+                            });
+                          });
+                          // await widget
+                          //     .readCharacteristic(widget.characteristic);
+                        },
+                        child: const Text('balance only'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await subscribeStream?.cancel();
+                          await balanceTarrif?.cancel();
+                          await widget.writeWithoutResponse(
+                              widget.characteristic, tarrif);
+                          print('after write');
+                          balanceTarrif = widget
+                              .subscribeToCharacteristic(widget.characteristic)
+                              .listen((event) {
+                            print('under tarrifCond $event');
+                            setState(() {
+                              summing.add(event);
+                              if (event.length == 1) {
+                                if (event.first == 0x10) {
+                                  tarrifCond = false;
+                                  tarrif = [];
+                                  widget.writeWithoutResponse(
+                                      widget.characteristic, balance);
+                                } else if (event.first == 9) {
+                                  balance = [];
+                                  print('under re-setting balance $event');
+                                  balanceTarrif?.cancel();
+                                }
+                              } else {
+                                // tarrifCond = false;
+                                echoEvent = event;
+                              }
+                            });
+                          });
+                          // print('after subscribe$tarrifCond');
+                          // await widget
+                          //     .readCharacteristic(widget.characteristic);
+                          // print('after read figuring out if read is applied before subscribe');
+                          // print('after read$tarrifCond');
+                          // await balanceTarrif?.cancel();
+                          */ /*if (!tarrifCond) {
+                            print('inside tarrif condition');
+                            await widget.writeWithoutResponse(
+                                widget.characteristic, balance);
+                            balanceTarrif = widget
+                                .subscribeToCharacteristic(
+                                    widget.characteristic)
+                                .listen((event) {
+                              setState(() {
+                                summing.add(event);
+                                if (event.length == 1) {
+                                  if (event.first == 9) {
+                                    balance = [];
+                                    print('under re-setting balance $event');
+                                  }
+                                } else {
+                                  testingEvent = event;
+                                }
+                              });
+                            });
+                            // await widget.readCharacteristic(widget.characteristic);
+                          }*/ /*
+                        },
+                        child: const Text('balance and tarrif'),
+                      ),*/
+                      /*TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Enter Hexadecimal Value',
+                          hintText: 'e.g. 1A2B',
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp('[0-9a-fA-F]')),
+                        ],
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please enter some text';
+                          }
+                          return null;
+                        },
+                        onChanged: (value) {
+                          setState(() {
+                            _hexValue = value!;
+                            _hex = int.parse(_hexValue);
+                          });
+                        },
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // if (_formKey.currentState!.validate()) {
+                            //   _formKey.currentState!.save();
+                              // Process the hexadecimal value here (e.g., send it to an API or use it in your application)
+                            _hexValue = '';
+                            _testingStream?.cancel();
+                              print('Hexadecimal Value: $_hexValue');
+                              widget.writeWithoutResponse(widget.characteristic, [_hex]);
+                              _testingStream = widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+                                setState(() {
+                                  responseAndroidLists.add(event);
+                                  responseAndroid = event;
+                                  print('event android testing $event');
+                                });
+                              });
+                              // widget.readCharacteristic(widget.characteristic);
+                            // }
+                          },
+                          child: const Text('Submit'),
+                        ),
+                      ),
+                      Text('Response : $responseAndroid'),
+                      Text('responseAndroidLists: $responseAndroidLists'),*/
+                      ///TODO: Remove
+                      Visibility(
+                        visible: isLoading,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: width*.5-20),
+                          child: const CircularProgressIndicator(
+                            color: Color(0xff4CAF50),
+                          ),
                         ),
                       ),
                       Padding(
@@ -210,27 +432,28 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                               borderRadius: BorderRadius.circular(18.0),
                               side: BorderSide(
                                   color: widget.viewModel.deviceConnected
-                                      ? Colors.green.shade400
+                                      ? const Color(0xff4CAF50)
                                       : Colors.red.shade900),
                             ),
                             backgroundColor: Colors.white,
-                            foregroundColor: Colors.white,
                           ),
                           onPressed: () {
                             sqlDb.editingList(widget.name).then((value) {
                               if (paddingType == "Electricity") {
                                 Navigator.of(context).push<void>(
                                   MaterialPageRoute<void>(
-                                      builder: (context) => StoreData(
-                                            name: widget.name,
-                                          )),
+                                    builder: (context) => StoreData(
+                                      name: widget.name,
+                                    ),
+                                  ),
                                 );
                               } else {
                                 Navigator.of(context).push<void>(
                                   MaterialPageRoute<void>(
-                                      builder: (context) => WaterData(
-                                            name: widget.name,
-                                          )),
+                                    builder: (context) => WaterData(
+                                      name: widget.name,
+                                    ),
+                                  ),
                                 );
                               }
                             });
@@ -244,18 +467,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                   children: [
                                     Text(
                                       '${TKeys.name.translate(context)}: ',
-                                      style: TextStyle(
-                                        color: Colors.green.shade900,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 19,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium,
                                     ),
                                     Text(
                                       widget.name,
-                                      style: TextStyle(
-                                        color: Colors.grey.shade800,
-                                        fontSize: 17,
-                                      ),
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
                                     ),
                                   ],
                                 ),
@@ -265,20 +484,16 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                     SizedBox(width: width * .07),
                                     Text(
                                       '${TKeys.currentTarrif.translate(context)}: ',
-                                      style: TextStyle(
-                                        color: Colors.green.shade900,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 19,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium,
                                     ),
                                     Text(
                                       paddingType == 'Electricity'
                                           ? eleMeter[4].toString()
                                           : watMeter[4].toString(),
-                                      style: TextStyle(
-                                        color: Colors.grey.shade800,
-                                        fontSize: 17,
-                                      ),
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
                                     ),
                                   ],
                                 ),
@@ -296,11 +511,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                       children: [
                                         Text(
                                           TKeys.today.translate(context),
-                                          style: TextStyle(
-                                            color: Colors.green.shade900,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 19,
-                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium,
                                         ),
                                         Row(
                                           children: [
@@ -316,10 +529,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                               paddingType == 'Electricity'
                                                   ? eleMeter[8].toString()
                                                   : watMeter[8].toString(),
-                                              style: TextStyle(
-                                                color: Colors.grey.shade800,
-                                                fontSize: 17,
-                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
                                             ),
                                           ],
                                         ),
@@ -330,11 +542,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                       children: [
                                         Text(
                                           TKeys.month.translate(context),
-                                          style: TextStyle(
-                                            color: Colors.green.shade900,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 19,
-                                          ),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium,
                                         ),
                                         Row(
                                           children: [
@@ -349,10 +559,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                               paddingType == 'Electricity'
                                                   ? eleMeter[1].toString()
                                                   : watMeter[1].toString(),
-                                              style: TextStyle(
-                                                color: Colors.grey.shade800,
-                                                fontSize: 17,
-                                              ),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
                                             ),
                                           ],
                                         ),
@@ -371,20 +580,16 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                     SizedBox(width: width * .07),
                                     Text(
                                       '${TKeys.balance.translate(context)}: ',
-                                      style: TextStyle(
-                                        color: Colors.green.shade900,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 19,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium,
                                     ),
                                     Text(
                                       paddingType == 'Electricity'
                                           ? eleMeter[3].toString()
                                           : watMeter[3].toString(),
-                                      style: TextStyle(
-                                        color: Colors.grey.shade800,
-                                        fontSize: 17,
-                                      ),
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
                                     ),
                                   ],
                                 ),
@@ -397,20 +602,12 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                   children: [
                                     //charging button
                                     ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        shape: const StadiumBorder(),
-                                        backgroundColor: (cond || cond0)
-                                            ? Colors.green.shade900
-                                            : Colors.grey.shade600,
-                                        foregroundColor: Colors.white,
-                                        disabledBackgroundColor: (cond || cond0)
-                                            ? Colors.green.shade900
-                                            : Colors.grey.shade600,
-                                      ),
-                                      onPressed: (cond || cond0)
+                                      onPressed: (balanceCond || tarrifCond)
                                           ? () async {
-                                              if (!widget
-                                                  .viewModel.deviceConnected) {
+                                              if (widget.viewModel
+                                                      .connectionStatus !=
+                                                  DeviceConnectionState
+                                                      .connected) {
                                                 widget.viewModel.connect();
                                               } else if (widget
                                                   .viewModel.deviceConnected) {
@@ -419,27 +616,23 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                             }
                                           : null,
                                       child: Text(
-                                        !(cond || cond0)
+                                        !(balanceCond || tarrifCond)
                                             ? TKeys.recharged.translate(context)
                                             : TKeys.recharge.translate(context),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
                                       ),
                                     ),
                                     //update button
                                     ElevatedButton(
                                       onPressed: () {
+                                        start = 0;
                                         subscribeOutput = [];
                                         setState(() {
                                           testingEvent = [];
                                           timer = Timer.periodic(interval,
                                               (Timer t) {
                                             if (start == 15) {
-                                              showToast('Time out',
-                                                  Colors.red, Colors.white);
+                                              showToast('Time out', Colors.red,
+                                                  Colors.white);
                                               timer.cancel();
                                               start = 0;
                                             } else {
@@ -452,6 +645,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                               } else if (subscribeOutput
                                                       .length !=
                                                   72) {
+                                                setState(() {
+                                                  isLoading = true;
+                                                });
+
                                                 subscribeCharacteristic();
                                                 widget.writeWithoutResponse(
                                                     widget.characteristic,
@@ -472,6 +669,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                   }
                                                 });
                                                 t.cancel();
+                                                setState(() {
+                                                  isLoading = false;
+                                                });
                                                 showToast(
                                                     'All Data Are UpToDate',
                                                     const Color(0xFF2196F3),
@@ -483,10 +683,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                       },
                                       child: Text(
                                         TKeys.update.translate(context),
-                                        style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16),
                                       ),
                                     ),
                                   ],
@@ -505,16 +701,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                               children: [
                                 Text(
                                   TKeys.notConnected.translate(context),
-                                  style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 22,
-                                      shadows: [
-                                        Shadow(
-                                            color: Colors.grey.shade400,
-                                            blurRadius: 2.0,
-                                            offset: const Offset(2.0, 2.0)),
-                                      ]),
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                               ],
                             ),
@@ -525,10 +712,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                 top: 10,
                               ),
                               child: Divider(
-                                height: 1,
-                                thickness: 1,
-                                indent: 0,
-                                endIndent: 10,
                                 color: Colors.grey.shade800,
                               ),
                             ),
@@ -573,30 +756,30 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                               ),
                                             ),
                                             backgroundColor: Colors.white,
-                                            foregroundColor: Colors.white,
+                                            // foregroundColor: Colors.white,
                                           ),
                                           onPressed: () {
                                             if ('${filteredItems[i]['name']}'
                                                 .startsWith('Ele')) {
                                               Navigator.of(context).push<void>(
                                                 MaterialPageRoute<void>(
-                                                    builder: (context) =>
-                                                        StoreData(
-                                                          name:
-                                                              '${filteredItems[i]['name']}',
-                                                          // count: i,
-                                                        )),
+                                                  builder: (context) =>
+                                                      StoreData(
+                                                    name:
+                                                        '${filteredItems[i]['name']}',
+                                                  ),
+                                                ),
                                               );
                                             } else {
                                               Navigator.of(context).push<void>(
                                                 MaterialPageRoute<void>(
-                                                    builder: (context) =>
-                                                        WaterData(
-                                                          name: filteredItems[i]
-                                                                  ['name']
-                                                              .toString(),
-                                                          // count: i,
-                                                        )),
+                                                  builder: (context) =>
+                                                      WaterData(
+                                                    name: filteredItems[i]
+                                                            ['name']
+                                                        .toString(),
+                                                  ),
+                                                ),
                                               );
                                             }
                                           },
@@ -611,21 +794,15 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                   children: [
                                                     Text(
                                                       '${TKeys.name.translate(context)}: ',
-                                                      style: TextStyle(
-                                                        color: Colors
-                                                            .green.shade900,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 19,
-                                                      ),
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .titleMedium,
                                                     ),
                                                     Text(
                                                       '${filteredItems[i]['name']}',
-                                                      style: TextStyle(
-                                                        color: Colors
-                                                            .grey.shade800,
-                                                        fontSize: 17,
-                                                      ),
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall,
                                                     ),
                                                   ],
                                                 ),
@@ -636,13 +813,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                         width: width * .07),
                                                     Text(
                                                       '${TKeys.currentTarrif.translate(context)}: ',
-                                                      style: TextStyle(
-                                                        color: Colors
-                                                            .green.shade900,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 19,
-                                                      ),
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .titleMedium,
                                                     ),
                                                     Text(
                                                       ('${filteredItems[i]['name']}'
@@ -650,11 +823,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                                   'Ele'))
                                                           ? ('${eleMeters['${filteredItems[i]['name']}']?[0]}')
                                                           : ('${watMeters['${filteredItems[i]['name']}']?[0]}'),
-                                                      style: TextStyle(
-                                                        color: Colors
-                                                            .grey.shade800,
-                                                        fontSize: 17,
-                                                      ),
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall,
                                                     ),
                                                   ],
                                                 ),
@@ -674,13 +845,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                         Text(
                                                           TKeys.today.translate(
                                                               context),
-                                                          style: TextStyle(
-                                                            color: Colors
-                                                                .green.shade900,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 19,
-                                                          ),
+                                                          style:
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .titleMedium,
                                                         ),
                                                         Row(
                                                           children: [
@@ -701,12 +869,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                                           'Ele'))
                                                                   ? ('${eleMeters['${filteredItems[i]['name']}']?[3]}')
                                                                   : ('${watMeters['${filteredItems[i]['name']}']?[3]}'),
-                                                              style: TextStyle(
-                                                                color: Colors
-                                                                    .grey
-                                                                    .shade800,
-                                                                fontSize: 17,
-                                                              ),
+                                                              style: Theme.of(
+                                                                      context)
+                                                                  .textTheme
+                                                                  .bodySmall,
                                                             ),
                                                           ],
                                                         ),
@@ -718,13 +884,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                         Text(
                                                           TKeys.month.translate(
                                                               context),
-                                                          style: TextStyle(
-                                                            color: Colors
-                                                                .green.shade900,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            fontSize: 19,
-                                                          ),
+                                                          style:
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .titleMedium,
                                                         ),
                                                         Row(
                                                           children: [
@@ -742,12 +905,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                                           'Ele'))
                                                                   ? ('${eleMeters['${filteredItems[i]['name']}']?[1]}')
                                                                   : ('${watMeters['${filteredItems[i]['name']}']?[1]}'),
-                                                              style: TextStyle(
-                                                                color: Colors
-                                                                    .grey
-                                                                    .shade800,
-                                                                fontSize: 17,
-                                                              ),
+                                                              style: Theme.of(
+                                                                      context)
+                                                                  .textTheme
+                                                                  .bodySmall,
                                                             ),
                                                           ],
                                                         ),
@@ -767,13 +928,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                         width: width * .07),
                                                     Text(
                                                       '${TKeys.balance.translate(context)}: ',
-                                                      style: TextStyle(
-                                                        color: Colors
-                                                            .green.shade900,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 19,
-                                                      ),
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .titleMedium,
                                                     ),
                                                     Text(
                                                       ('${filteredItems[i]['name']}'
@@ -781,13 +938,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                                   'Ele'))
                                                           ? ('${eleMeters['${filteredItems[i]['name']}']?[2]}')
                                                           : ('${watMeters['${filteredItems[i]['name']}']?[2]}'),
-                                                      style: TextStyle(
-                                                        color: Colors
-                                                            .grey.shade800,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 17,
-                                                      ),
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodySmall,
                                                     ),
                                                   ],
                                                 ),
@@ -825,6 +978,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                 if (!widget.viewModel.deviceConnected) {
                   widget.viewModel.connect();
                 } else if (subscribeOutput.length != 72) {
+                  isLoading = true;
                   subscribeCharacteristic();
                   widget.writeWithoutResponse(widget.characteristic, [0x59]);
                 } else if (subscribeOutput.length == 72) {
@@ -835,7 +989,12 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                     } else {
                       calculateWater(subscribeOutput, widget.name);
                     }
+                    isLoading = false;
                   });
+                  showToast(
+                      'All Data Are UpToDate',
+                      const Color(0xFF2196F3),
+                      Colors.black);
                   timer.cancel();
                 }
               }
@@ -846,10 +1005,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     );
   }
 
+  ///TODO: Remove
   // OverlayEntry? _overlayEntry;
   // AnimationController? _animationController;
   List testingEvent = [];
+  List echoEvent = [];
 
+  List<List> summing = [];
   /*void _showTimeoutSnackBar(String text, Color bgColor, Color txtColor) {
     _animationController = AnimationController(
       vsync: this,
@@ -912,6 +1074,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
           ),
         ),
       );*/
+  ///TODO: Remove
   @override
   void initState() {
     // discoveredServices = [];
@@ -919,7 +1082,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     setState(() {
       timer = Timer.periodic(interval, (timer) {
         if (start == 15) {
-          if(widget.viewModel.connectionStatus != DeviceConnectionState.connected) {
+          if (widget.viewModel.connectionStatus !=
+              DeviceConnectionState.connected) {
             widget.viewModel.disconnect();
             showToast('Time out', Colors.red, Colors.white);
           }
@@ -928,12 +1092,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
         } else {
           if (!widget.viewModel.deviceConnected && start == 0) {
             widget.viewModel.connect();
-          }
-          else if (subscribeOutput.length != 72 && widget.viewModel.deviceConnected) {
+          } else if (subscribeOutput.length != 72 &&
+              widget.viewModel.deviceConnected) {
+            isLoading = true;
             subscribeCharacteristic();
             widget.writeWithoutResponse(widget.characteristic, [0x59]);
-          }
-          else if (subscribeOutput.length == 72 && widget.viewModel.deviceConnected) {
+          } else if (subscribeOutput.length == 72 &&
+              widget.viewModel.deviceConnected) {
             setState(() {
               if (paddingType == "Electricity") {
                 calculateElectric(subscribeOutput, widget.name);
@@ -942,6 +1107,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
               }
             });
             timer.cancel();
+            isLoading = false;
             showToast(
                 'All Data Are UpToDate', const Color(0xFF2196F3), Colors.black);
           }
@@ -957,12 +1123,11 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
   Future<void> subscribeCharacteristic() async {
     var newEventData = <int>[];
     subscribeOutput = [];
-    subscribeStream = widget
-        .subscribeToCharacteristic(widget.characteristic)
-        .listen((event) async {
+    await balanceTarrif?.cancel();
+    subscribeStream =
+        widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
       newEventData = event;
-      testingEvent = event;
-      print('event $event');
+      print('event subscribe $event');
       if (event.first == 89 && subscribeOutput.isEmpty) {
         subscribeOutput += newEventData;
         previousEventData = newEventData;
@@ -981,120 +1146,175 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
           print('sadly equal');
           newEventData = [];
         }
+      } else if (subscribeOutput.length == 72) {
+        subscribeStream?.cancel();
       }
     });
   }
 
   Future<void> startTimer() async {
-    if (cond && !cond0) {
+    await subscribeStream?.cancel();
+    await balanceTarrif?.cancel();
+    if (balanceCond && !tarrifCond) {
       await sqlDb.getSpecifiedList(widget.name, 'balance');
       if (myList.first == 9) {
+        print('balancehere1 $myList');
         await widget.writeWithoutResponse(widget.characteristic, myList);
-        subscribeStream = widget
+        balanceTarrif = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
+          summing.add(event);
+          print('event $event');
+          print('balancehere2 $myList');
           setState(() {
-            if (event.first == 9) {
-              cond = false;
-              balanceMaster = 0;
-              balance = [];
-              // if (recharged) {
-              //last edit
-              sqlDb.updateData('''
+            testingEvent = event;
+            if (event.length == 1) {
+              print('inside length 1 in balance');
+              if (event.first == 9) {
+                print('inside first 9 in balance');
+                balanceCond = false;
+                // balanceMaster = 0;
+                // balance = [];
+                // if (recharged) {
+                //last edit
+                sqlDb.updateData('''
                 UPDATE Meters
                 SET
                 balance = 0
                 WHERE name = '${widget.name}'
               ''');
-              // recharged = false;
-              updated = false;
-              Fluttertoast.showToast(
-                msg: 'Charged Successfully',
-              );
-              // }
+                balanceTarrif?.cancel();
+                // recharged = false;
+                // updated = false;
+                Fluttertoast.showToast(
+                  msg: 'Charged Successfully',
+                );
+                // }
+              }
+            } else {
+              echoEvent = event;
             }
           });
         });
-        await widget.readCharacteristic(widget.characteristic);
+        // await widget.readCharacteristic(widget.characteristic);
       }
-    } else if (cond0 && !cond) {
+    } else if (tarrifCond && !balanceCond) {
       await sqlDb.getSpecifiedList(widget.name, 'tarrif');
       if (myList.first == 16) {
         await widget.writeWithoutResponse(widget.characteristic, myList);
-        subscribeStream = widget
+        balanceTarrif = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
+          print('event $event');
           setState(() {
-            if (event.first == 0x10) {
-              cond0 = false;
-              tarrif = [];
-              tarrifMaster = 0;
-              // if (recharged) {
-              sqlDb.updateData('''
+            testingEvent = event;
+            if (event.length == 1) {
+              if (event.first == 0x10) {
+                tarrifCond = false;
+                // tarrif = [];
+                // tarrifMaster = 0;
+                // if (recharged) {
+                sqlDb.updateData('''
                 UPDATE Meters
                 SET
                 tarrif = 0
                 WHERE name = '${widget.name}'
               ''');
-              // recharged = false;
-              updated = false;
-              Fluttertoast.showToast(
-                msg: 'Charged Successfully',
-              );
-              // }
+                // recharged = false;
+                // updated = false;
+                balanceTarrif?.cancel();
+                Fluttertoast.showToast(
+                  msg: 'Charged Successfully',
+                );
+                // }
+              }
             }
           });
         });
-        await widget.readCharacteristic(widget.characteristic);
+        // await widget.readCharacteristic(widget.characteristic);
       }
-    } else if (cond0 && cond) {
+    } else if (tarrifCond && balanceCond) {
       await sqlDb.getSpecifiedList(widget.name, 'tarrif');
       if (myList.first == 16) {
         await widget.writeWithoutResponse(widget.characteristic, myList);
-        subscribeStream = widget
+        balanceTarrif = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
+          summing.add(event);
+          print('balanceherevent $event');
           setState(() {
-            if (event.first == 0x10) {
-              cond0 = false;
-              tarrifMaster = 0;
-              tarrif = [];
+            if (event.length == 1) {
+              print('inside length 1 in tarrif');
+              if (event.first == 0x10) {
+                print('inside first 10 in tarrif');
+                tarrifCond = false;
+                sqlDb.getSpecifiedList(widget.name, 'balance').then((value) => {
+                      widget.writeWithoutResponse(widget.characteristic, myList)
+                    });
+                // tarrifMaster = 0;
+                // tarrif = [];
+              }
+              if (event.first == 9) {
+                print('inside first 9 in balance after  tarrif $myList');
+                balanceCond = false;
+                // balanceMaster = 0;
+                // balance = [];
+                sqlDb.updateData('''
+              UPDATE Meters
+              SET
+              balance = 0,
+              tarrif = 0
+              WHERE name = '${widget.name}'
+              ''');
+                balanceTarrif?.cancel();
+                Fluttertoast.showToast(
+                  msg: 'Charged Successfully',
+                );
+              }
+            } else {
+              echoEvent = event;
             }
           });
         });
-        await widget.readCharacteristic(widget.characteristic);
+        // await widget.readCharacteristic(widget.characteristic);
       }
-      await sqlDb.getSpecifiedList(widget.name, 'balance');
-      if (myList.first == 9 && !cond0) {
+      /*await sqlDb.getSpecifiedList(widget.name, 'balance');
+      if (myList.first == 9 && !tarrifCond) {
+        print('balancehere $myList');
         await widget.writeWithoutResponse(widget.characteristic, myList);
-        subscribeStream = widget
+        balanceTarrif = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
           setState(() {
-            if (event.first == 9) {
-              cond = false;
-              balanceMaster = 0;
-              balance = [];
+            testingEvent = event;
+            if (event.length == 1) {
+              if (event.first == 9) {
+                balanceCond = false;
+                balanceMaster = 0;
+                balance = [];
+                sqlDb.updateData('''
+              UPDATE Meters
+              SET
+              balance = 0,
+              tarrif = 0
+              WHERE name = '${widget.name}'
+              ''');
+              }
             }
           });
-        });
-        await widget.readCharacteristic(widget.characteristic);
-        // if (recharged && !cond) {
-        await sqlDb.updateData('''
-          UPDATE Meters
-          SET
-          balance = 0,
-          tarrif = 0
-          WHERE name = '${widget.name}'
-          ''');
-        setState(() {
-          // recharged = false;
-          updated = false;
-        });
-        // }
-      }
+        });*/
+      // await widget.readCharacteristic(widget.characteristic);
+      // if (recharged && !cond) {
+      // setState(() {
+      // recharged = false;
+      // updated = false;
+      // });
+      // }
+    } else {
+      await balanceTarrif?.cancel();
     }
-    await subscribeStream?.cancel();
+    // }
+    // await subscribeStream?.cancel();
   }
 
   @override
@@ -1103,6 +1323,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     widget.viewModel.disconnect();
     timer.cancel();
     Fluttertoast.cancel();
+    watMeter = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    eleMeter = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     super.dispose();
   }
 }
