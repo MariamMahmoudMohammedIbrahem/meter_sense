@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart'
@@ -97,7 +98,9 @@ class DeviceListState extends State<DeviceList> {
       monthList.add(formattedMonth);
     }
     setState(() {
-      print('init state call');
+      if (kDebugMode) {
+        print('init state call');
+      }
       fetchData();
     });
     if (!widget.scannerState.scanIsInProgress) {
@@ -166,11 +169,6 @@ class DeviceListState extends State<DeviceList> {
                                 },
                                 child: Text(
                                   TKeys.qr.translate(context),
-                                  // style: const TextStyle(
-                                  //   color: Colors.black,
-                                  //   fontWeight: FontWeight.bold,
-                                  //   fontSize: 16,
-                                  // ),
                                 ),
                               ),
                               ElevatedButton(
@@ -184,28 +182,10 @@ class DeviceListState extends State<DeviceList> {
                                   !widget.scannerState.scanIsInProgress
                                       ? TKeys.scan.translate(context)
                                       : TKeys.scanning.translate(context),
-                                  // style: const TextStyle(
-                                  //   color: Colors.black,
-                                  //   fontWeight: FontWeight.bold,
-                                  //   fontSize: 16,
-                                  // ),
                                 ),
                               ),
                             ],
                           ),
-                          // Padding(
-                          //   padding:
-                          //       EdgeInsets.symmetric(horizontal: width * .1),
-                          //   child: Visibility(
-                          //     visible: availability,
-                          //     child: Text(
-                          //       nameList.isEmpty
-                          //           ? TKeys.first.translate(context)
-                          //           : TKeys.hint.translate(context),
-                          //       style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20,),
-                          //     ),
-                          //   ),
-                          // ),
                           const SizedBox(
                             height: 10,
                           ),
@@ -260,7 +240,9 @@ class DeviceListState extends State<DeviceList> {
                                               paddingType = "Electricity";
                                             }
                                             meterName = device.name;
-                                            print('meterName $meterName');
+                                            if (kDebugMode) {
+                                              print('meterName $meterName');
+                                            }
                                             if (device.name ==
                                                 "MasterStation") {
                                               await Navigator.push<void>(
@@ -291,17 +273,19 @@ class DeviceListState extends State<DeviceList> {
                                                     VALUES ("${device.name}", 0, 0)
                                                     ''');
                                               } else {
-                                                //retrieve the data from the column in meters table and set it to bool recharged
-                                                //if 0 recharged = false else recharged = true
                                                 index = nameList
                                                     .indexOf(device.name);
                                               }
-                                              print(
+                                              if (kDebugMode) {
+                                                print(
                                                   'connection status${widget.deviceConnector.state}');
+                                              }
                                               await widget.deviceConnector
                                                   .connect(device.id);
-                                              print(
+                                              if (kDebugMode) {
+                                                print(
                                                   'widget connector state${widget.deviceConnector.state}');
+                                              }
                                               await fetchData().then((value) {
                                                 setState(() {
                                                   balanceCond =
@@ -309,7 +293,9 @@ class DeviceListState extends State<DeviceList> {
                                                   tarrifCond =
                                                       tarrifList[index] == 1;
                                                 });
-                                                print('balance${balanceList[index]},$balanceCond - tarrif${tarrifList[index]},$tarrifCond');
+                                                if (kDebugMode) {
+                                                  print('balance${balanceList[index]},$balanceCond - tarrif${tarrifList[index]},$tarrifCond');
+                                                }
                                                 Navigator.push<void>(
                                                   context,
                                                   MaterialPageRoute(

@@ -14,12 +14,6 @@ import '../../ble/ble_device_connector.dart';
 import '../../ble/ble_device_interactor.dart';
 import '../../ble/constants.dart';
 import '../device_detail/device_interaction_tab.dart';
-///TODO: Remove
-num electricTarrif = 0;
-num electricBalance = 0;
-num waterTarrif = 0;
-num waterBalance = 0;
-///TODO: Remove
 
 class MasterInteractionTab extends StatelessWidget {
   const MasterInteractionTab({
@@ -45,8 +39,6 @@ class MasterInteractionTab extends StatelessWidget {
                   serviceDiscoverer.discoverServices(device.id)),
           characteristic: characteristic,
           writeWithoutResponse: interactor.writeCharacteristicWithoutResponse,
-          writeWithResponse: interactor.writeCharacteristicWithResponse,
-          readCharacteristic: interactor.readCharacteristic,
           subscribeToCharacteristic: interactor.subScribeToCharacteristic,
         ),
       );
@@ -91,8 +83,6 @@ class _MasterStation extends StatefulWidget {
     required this.viewModel,
     required this.characteristic,
     required this.writeWithoutResponse,
-    required this.writeWithResponse,
-    required this.readCharacteristic,
     required this.subscribeToCharacteristic,
   });
   final MasterInteractionViewModel viewModel;
@@ -102,11 +92,6 @@ class _MasterStation extends StatefulWidget {
   final Future<void> Function(
           QualifiedCharacteristic characteristic, List<int> value)
       writeWithoutResponse;
-  final Future<void> Function(
-          QualifiedCharacteristic characteristic, List<int> value)
-      writeWithResponse;
-  final Future<List<int>> Function(QualifiedCharacteristic characteristic)
-      readCharacteristic;
 
   final Stream<List<int>> Function(QualifiedCharacteristic characteristic)
       subscribeToCharacteristic;
@@ -138,7 +123,6 @@ class _MasterStationState extends State<_MasterStation> {
                 widget.viewModel.connect();
               } else if (widget.viewModel.deviceConnected) {
                 subscribeCharacteristic();
-                // widget.readCharacteristic(widget.characteristic);
               }
             });
           }),
@@ -185,7 +169,9 @@ class _MasterStationState extends State<_MasterStation> {
                               // setState(() {
                                 start++;
                               // });
-                              print('start$start');
+                              if (kDebugMode) {
+                                print('start$start');
+                              }
                             }
                           });
                         }
@@ -201,10 +187,6 @@ class _MasterStationState extends State<_MasterStation> {
                                         DeviceConnectionState.disconnected)
                                     ? TKeys.connect.translate(context)
                                     : 'disconnecting',
-                        // style: const TextStyle(
-                        //     color: Colors.black,
-                        //     fontWeight: FontWeight.bold,
-                        //     fontSize: 18,),
                       ),
                     ),
                   ],
@@ -235,6 +217,7 @@ class _MasterStationState extends State<_MasterStation> {
                             setState(() {
                               selectedName = value;
                               sqlDb.getSpecifiedList(value, 'none');
+                              charging = false;
                             });
                           },
                           itemBuilder: (BuildContext context) {
@@ -321,16 +304,6 @@ class _MasterStationState extends State<_MasterStation> {
                               fontWeight: FontWeight.normal,
                               color: Color(0xff4CAF50),
                             ),
-                            // children: <TextSpan>[
-                            //   TextSpan(
-                            //     text:
-                            //         'before ${now.day}/${now.month}/${now.year}',
-                            //     style: const TextStyle(
-                            //         fontSize: 20,
-                            //         fontWeight: FontWeight.bold,
-                            //         color: Colors.black),
-                            //   ),
-                            // ],
                           ),
                         ),
                         SizedBox(
@@ -342,17 +315,19 @@ class _MasterStationState extends State<_MasterStation> {
                             ),
                             onPressed: () async {
                               if (!widget.viewModel.deviceConnected) {
-                                print('printing connecting');
+                                if (kDebugMode) {
+                                  print('printing connecting');
+                                }
                                 widget.viewModel.connect();
                               } else {
-                                print('printing');
+                                if (kDebugMode) {
+                                  print('printing');
+                                }
                                 await writeCharacteristicWithoutResponse();
                                 Timer(const Duration(seconds: 2), () async {
                                   await widget.writeWithoutResponse(
                                       widget.characteristic, [0xAA]);
                                   await subscribeCharacteristic();
-                                  // await widget.readCharacteristic(
-                                  //     widget.characteristic);
                                 });
                                 setState(() {
                                   charging = true;
@@ -364,11 +339,6 @@ class _MasterStationState extends State<_MasterStation> {
                             },
                             child: Text(
                               TKeys.submit.translate(context),
-                              // style: const TextStyle(
-                              //   color: Color(0xff4CAF50),
-                              //   fontWeight: FontWeight.bold,
-                              //   fontSize: 18,
-                              // ),
                             ),
                           ),
                         ),
@@ -529,15 +499,9 @@ class _MasterStationState extends State<_MasterStation> {
                                         setState(() {
                                           updatingMaster = true;
                                         });
-                                        // await widget.readCharacteristic(
-                                        //     widget.characteristic);
                                       },
                                       child: Text(
                                         TKeys.charge.translate(context),
-                                        // style: const TextStyle(
-                                        //     color: Colors.black,
-                                        //     fontWeight: FontWeight.bold,
-                                        //     fontSize: 18),
                                       ),
                                     ),
                                   ),
@@ -546,12 +510,6 @@ class _MasterStationState extends State<_MasterStation> {
                                     child: SizedBox(
                                     width: width * .4,
                                     child: ElevatedButton(
-                                      // style: ElevatedButton.styleFrom(
-                                      //   backgroundColor:
-                                      //       const Color(0xff4CAF50),
-                                      //   disabledBackgroundColor:
-                                      //       Colors.black,
-                                      // ),
                                       onPressed: !updated?() async {
                                               final myInstance = SqlDb();
                                               if (balance.isNotEmpty &&
@@ -610,9 +568,6 @@ class _MasterStationState extends State<_MasterStation> {
                                       child: Text(
                                         TKeys.update.translate(context),
                                         style: const TextStyle(
-                                          // color: updated
-                                          //     ? const Color(0xff4CAF50)
-                                          //     : Colors.black,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18,
                                         ),
@@ -650,24 +605,26 @@ class _MasterStationState extends State<_MasterStation> {
   }
 
   Future<void> subscribeCharacteristic() async {
-    if (kDebugMode) {}
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
       if (event.first == 0xA3 || event.first == 0xA5) {
         setState(() {
           tarrif = [];
-          // updated = false;
           tarrif
             ..insert(0, 0x10)
             ..addAll(event.sublist(1, 12))
             ..add(random.nextInt(255));
-          print('tarrif master : $tarrif');
+          if (kDebugMode) {
+            print('tarrif master : $tarrif');
+          }
           tarrifMaster = convertToInt(event, 1, 11);
           tarrifVersionMaster = convertToInt(event, 1, 2);
         });
       }
       if (event.first == 0xA4 || event.first == 0xA6) {
-        print('balanceMaster $event');
+        if (kDebugMode) {
+          print('balanceMaster $event');
+        }
         setState(() {
           balance = [];
           updated = false;
@@ -675,7 +632,9 @@ class _MasterStationState extends State<_MasterStation> {
             ..insert(0, 0x09)
             ..addAll(event.sublist(1, 5))
             ..add(random.nextInt(255));
-          print('objectMaster $balance');
+          if (kDebugMode) {
+            print('objectMaster $balance');
+          }
           balanceMaster = convertToInt(event, 1, 4) / 100;
         });
       }
@@ -696,8 +655,10 @@ class _MasterStationState extends State<_MasterStation> {
         timer.cancel();
         start = 0;
       } else {
-        print('start$start');
-        print('start${widget.viewModel.connectionStatus}');
+        if (kDebugMode) {
+          print('start$start');
+          print('start${widget.viewModel.connectionStatus}');
+        }
         if (widget.viewModel.connectionStatus ==
                 DeviceConnectionState.disconnected &&
             start == 0) {

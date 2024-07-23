@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
@@ -20,10 +21,10 @@ class SqlDb {
   }
 
   Future<Database> initialDb() async {
-    String password = 'eoIp28waad';
-    String databasePath = await getDatabasesPath();
-    String path = join(databasePath, 'eoip.db');
-    Database mydb = await openDatabase(
+    const password = 'eoIp28waad';
+    final databasePath = await getDatabasesPath();
+    final path = join(databasePath, 'eoip.db');
+    final mydb = await openDatabase(
         path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade, password: password);
     return mydb;
   }
@@ -107,17 +108,19 @@ class SqlDb {
   }
   //get the names of the meters
   Future<List<Map>> readData(String sql) async {
-    Database? mydb = await db;
+    final mydb = await db;
     //take returened data from database
-    List<Map> response = await mydb!.rawQuery(sql);
+    final List<Map> response = await mydb!.rawQuery(sql);
     return response;
   }
 
   //get the data of previous connected meters
   Future<List<Map>> readMeterData(String title) async {
-    Database? mydb = await db;
+    final mydb = await db;
     response =[];
-    print('object');
+    if (kDebugMode) {
+      print('object');
+    }
     if (title.startsWith('Ele')) {
       if (eleMeters[title] == null) {
         eleMeters[title] = [0, 0, 0, 0, 0];
@@ -133,14 +136,13 @@ class SqlDb {
         [title],
       );
 
-      for (Map<dynamic, dynamic> map in response) {
+      for (final map in response) {
         eleMeters[title]?[0] = num.parse(map['currentTarrif'].toString());
         eleMeters[title]?[1] = num.parse(map['totalReading'].toString());
         eleMeters[title]?[2] = num.parse(map['totalCredit'].toString());
         eleMeters[title]?[3] = num.parse(map['currentConsumption'].toString());
         eleMeters[title]?[4] = num.parse(map['valveStatus'].toString());
       }
-      // print("electric $title: $response");
     }
     else if (title.startsWith('W')) {
       if (watMeters[title] == null) {
@@ -157,23 +159,21 @@ class SqlDb {
         [title],
       );
 
-      for (Map<dynamic, dynamic> map in response) {
+      for (final map in response) {
         watMeters[title]?[0] = num.parse(map['currentTarrif'].toString());
         watMeters[title]?[1] = num.parse(map['totalReading'].toString());
         watMeters[title]?[2] = num.parse(map['totalCredit'].toString());
         watMeters[title]?[3] = num.parse(map['currentConsumption'].toString());
         watMeters[title]?[4] = num.parse(map['valveStatus'].toString());
       }
-
-      // print("water $title: $response");
     }
     return response;
   }
 
   // get the data of the last days "history data"
   Future<List<Map>> read(String name, String type) async {
-    Database? mydb = await db;
-    String query = '';
+    final mydb = await db;
+    var query = '';
     if(type == 'Electricity'){
       query = '''
         SELECT `currentConsumption`, `time` FROM Electricity
@@ -194,13 +194,12 @@ class SqlDb {
       query,
       [name],
     );
-    // print("object => $response");
     return response;
   }
 
   //graph data "months data"
   Future<void> editingList(String name) async {
-    Database? mydb = await db;
+    final mydb = await db;
     //electric
     if(name.startsWith('Ele')){
       const query = '''
@@ -211,7 +210,6 @@ class SqlDb {
     LIMIT 1
   ''';
       final response = await mydb!.rawQuery(query,[name]);
-      // print("res[]:$response");
       if (response.isNotEmpty) {
         final map = response.first;
         eleReadings = [
@@ -238,7 +236,6 @@ class SqlDb {
       } else {
         eleReadings = [];
       }
-      // print("readings$eleReadings");
     }
     //water
     else{
@@ -251,7 +248,6 @@ class SqlDb {
   ''';
 
       final response = await mydb!.rawQuery(query,[name]);
-      // print("res:$response");
       if (response.isNotEmpty) {
         final map = response.first;
         watReadings = [
@@ -278,13 +274,12 @@ class SqlDb {
       } else {
         watReadings = [0.0];
       }
-      // print("readings$watReadings");
     }
   }
 
   //check if the meter has previous stored data or not
   Future<bool> isTableEmpty(String type, String name) async {
-    Database? mydb = await db;
+    final mydb = await db;
     if(type == 'Electricity'){
       query = 'SELECT COUNT(*) FROM Electricity WHERE `title` =?';
       query2 = '''
@@ -309,17 +304,16 @@ class SqlDb {
     if(count != 0){
       final response = await mydb.rawQuery(query2,
         [name],);
-      for(var map in response){
+      for(final map in response){
         time = map['time'].toString();
       }
     }
-    // print("count $count");
     return count == 0;
   }
 
   // retrieve the last time stored in the database
   Future<List<Map>> readTime(String name, String type) async{
-    Database? mydb = await db;
+    final mydb = await db;
     if(type == 'Electricity'){
       query = '''
       SELECT `time` FROM Electricity 
@@ -338,7 +332,7 @@ class SqlDb {
     }
     final response = await mydb!.rawQuery(query,
     [name],);
-    for(var map in response){
+    for(final map in response){
       time = map['time'].toString();
     }
     return response;
@@ -346,28 +340,28 @@ class SqlDb {
 
   //INSERT
   Future<int> insertData(String sql) async {
-    Database? mydb = await db;
-    int response = await mydb!.rawInsert(sql);
+    final mydb = await db;
+    final response = await mydb!.rawInsert(sql);
     return response;
   }
 
   //UPDATE
   Future<int> updateData(String sql) async {
-    Database? mydb = await db;
-    int response = await mydb!.rawUpdate(sql);
+    final mydb = await db;
+    final response = await mydb!.rawUpdate(sql);
     return response;
   }
 
   // delete database
   Future mydeleteDatabase() async {
-    String databasepath = await getDatabasesPath();
-    String path = join(databasepath, 'eoip.db');
+    final databasepath = await getDatabasesPath();
+    final path = join(databasepath, 'eoip.db');
     await deleteDatabase(path);
   }
 
   Future<List<int>> getSpecifiedList(String? name, String process) async {
-    Database? mydb = await db;
-    String query = '';
+    final mydb = await db;
+    var query = '';
 
     if(process == 'none'){
       if(name!.startsWith('W')){
@@ -384,9 +378,9 @@ class SqlDb {
       );
       if (result.isNotEmpty) {
         final dynamic jsonListDynamic = result[0]['list'];
-        final String? jsonList = jsonListDynamic as String?;
+        final jsonList = jsonListDynamic as String?;
         if (jsonList != null) {
-          final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
+          final dynamicList = jsonDecode(jsonList) as List<dynamic>;
           myList = dynamicList.cast<int>();
           masterValues(myList);
           if(listType == "Electricity") {myList[0] = 0xA1;}
@@ -406,10 +400,10 @@ class SqlDb {
         // listType = result[0]['type'];
 
         if (jsonListDynamic != null) {
-          final String jsonList = jsonListDynamic as String;
-          final List<dynamic> dynamicList = jsonDecode(jsonList) as List<dynamic>;
+          final jsonList = jsonListDynamic as String;
+          final dynamicList = jsonDecode(jsonList) as List<dynamic>;
           myList = dynamicList.cast<int>();
-          int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+          final int sum = myList.fold(0, (previousValue, element) => previousValue + element);
           myList.add(sum);
           return myList;
         }
@@ -420,9 +414,8 @@ class SqlDb {
   }
 //save the list in the master station page tarrif or balance
   Future<void> saveList(List<int> myList, String name, String type, String process) async {
-    Database? mydb = await db;
+    final mydb = await db;
     final jsonList = jsonEncode(myList);
-    // print('saved successfully');
     final rewrite = Sqflite.firstIntValue(
       await mydb!.rawQuery(
       '''
@@ -440,7 +433,6 @@ class SqlDb {
       );
     }
     else{
-      // print('update');
       await sqlDb.updateData(
           '''
               UPDATE master_table

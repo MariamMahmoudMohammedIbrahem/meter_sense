@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
@@ -191,11 +192,12 @@ Future<void> fetchData() async {
   balanceList.clear();
   tarrifList.clear();
   final testing = await sqlDb.readData('SELECT * FROM Meters');
-  print('SELECT * FROM Meters $testing');
+  if (kDebugMode) {
+    print('SELECT * FROM Meters $testing');
+  }
   for (final map in testing) {
     if (!nameList.contains(map['name'].toString())){
       nameList.add(map['name'].toString());
-      // name.add(map['name'].toString());
     }
     balanceList.add(int.parse(map['balance'].toString()));
     tarrifList.add(int.parse(map['tarrif'].toString()));

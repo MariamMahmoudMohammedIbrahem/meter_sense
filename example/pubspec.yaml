@@ -18,8 +18,8 @@ dependencies:
 
   provider: ^6.0.1
   auto_size_text: ^3.0.0
+
 #  DataBase Storage
-#  sqflite: ^2.3.0
   curved_navigation_bar: ^1.0.3
   flutter_custom_clippers: ^2.1.0
   fl_chart: ^0.64.0

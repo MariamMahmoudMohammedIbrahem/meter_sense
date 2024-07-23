@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart';
@@ -42,9 +42,7 @@ class DeviceInteractionTab extends StatelessWidget {
               discoverServices: () =>
                   serviceDiscoverer.discoverServices(device.id)),
           characteristic: characteristic,
-          writeWithResponse: interactor.writeCharacteristicWithResponse,
           writeWithoutResponse: interactor.writeCharacteristicWithoutResponse,
-          readCharacteristic: interactor.readCharacteristic,
           subscribeToCharacteristic: interactor.subScribeToCharacteristic,
           name: device.name,
         ),
@@ -85,9 +83,7 @@ class _DeviceInteractionTab extends StatefulWidget {
   const _DeviceInteractionTab({
     required this.viewModel,
     required this.characteristic,
-    required this.writeWithResponse,
     required this.writeWithoutResponse,
-    required this.readCharacteristic,
     required this.subscribeToCharacteristic,
     required this.name,
   });
@@ -96,12 +92,7 @@ class _DeviceInteractionTab extends StatefulWidget {
   final QualifiedCharacteristic characteristic;
   final Future<void> Function(
           QualifiedCharacteristic characteristic, List<int> value)
-      writeWithResponse;
-  final Future<void> Function(
-          QualifiedCharacteristic characteristic, List<int> value)
       writeWithoutResponse;
-  final Future<List<int>> Function(QualifiedCharacteristic characteristic)
-      readCharacteristic;
   final Stream<List<int>> Function(QualifiedCharacteristic characteristic)
       subscribeToCharacteristic;
   final String name;
@@ -167,253 +158,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                           ],
                         ),
                       ),
-
-                      ///TODO: Remove
-                      /*Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          'summing $summing',
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          'echoEvent $echoEvent',
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          'balanceCond $balanceCond',
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          'tarrifCond $tarrifCond',
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: ()async{
-                          await widget.writeWithoutResponse(widget.characteristic, [9,0,0,0,0x64,0xAC,0x19]);
-                          balanceTarrif = widget
-                              .subscribeToCharacteristic(widget.characteristic)
-                              .listen((event) {
-                            summing.add(event);
-                            print('event $event');
-                            print('balancehere2 $myList');
-                            setState(() {
-                              testingEvent = event;
-                              if (event.length == 1) {
-                                print('inside length 1 in balance');
-                                if (event.first == 9) {
-                                  print('inside first 9 in balance');
-                                  balanceCond = false;
-                                  // balanceMaster = 0;
-                                  balance = [];
-                                  // if (recharged) {
-                                  //last edit
-                                  sqlDb.updateData('''
-                UPDATE Meters
-                SET
-                balance = 0
-                WHERE name = '${widget.name}'
-              ''');
-                                  balanceTarrif?.cancel();
-                                  // recharged = false;
-                                  // updated = false;
-                                  Fluttertoast.showToast(
-                                    msg: 'Charged Successfully',
-                                  );
-                                  // }
-                                }
-                              }
-                              else{
-                                echoEvent = event;
-                              }
-                            });
-                          });
-                        },
-                        child: const Text('balance testing alone'),
-                      ),*/
-                      /*
-                      Align(
-                        alignment: Alignment.center,
-                        child: Text('tarrif echo $echoEvent'),
-                      ),
-                      Align(
-                        alignment: Alignment.center,
-                        child: Text('balance echo $testingEvent'),
-                      ),
-                      Align(
-                          alignment: Alignment.center,
-                          child: Text('balance $balance')),
-                      Align(
-                          alignment: Alignment.center,
-                          child: Text('tarrif $tarrif')),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            balance = [0x09, 0, 0, 0, 100];
-                            balance.add(random.nextInt(256));
-                            final int sum = balance.fold(
-                                0,
-                                (previousValue, element) =>
-                                    previousValue + element);
-                            balance.add(sum);
-                            tarrifCond = true;
-                          });
-                        },
-                        child: const Text('balance create list'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            tarrif = [0x10, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 6];
-                            tarrif.add(random.nextInt(256));
-                            int sum = tarrif.fold(
-                                0,
-                                (previousValue, element) =>
-                                    previousValue + element);
-                            tarrif.add(sum);
-                            tarrifCond = true;
-                          });
-                        },
-                        child: const Text('tarrif create list'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await widget.writeWithoutResponse(
-                              widget.characteristic, balance);
-                          subscribeStream = widget
-                              .subscribeToCharacteristic(widget.characteristic)
-                              .listen((event) {
-                            print('event echo$event');
-                            setState(() {
-                              if (event.length == 1) {
-                                testingEvent = event;
-                                if (event.first == 9) {
-                                  balance = [];
-                                }
-                              } else {
-                                echoEvent = event;
-                              }
-                            });
-                          });
-                          // await widget
-                          //     .readCharacteristic(widget.characteristic);
-                        },
-                        child: const Text('balance only'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await subscribeStream?.cancel();
-                          await balanceTarrif?.cancel();
-                          await widget.writeWithoutResponse(
-                              widget.characteristic, tarrif);
-                          print('after write');
-                          balanceTarrif = widget
-                              .subscribeToCharacteristic(widget.characteristic)
-                              .listen((event) {
-                            print('under tarrifCond $event');
-                            setState(() {
-                              summing.add(event);
-                              if (event.length == 1) {
-                                if (event.first == 0x10) {
-                                  tarrifCond = false;
-                                  tarrif = [];
-                                  widget.writeWithoutResponse(
-                                      widget.characteristic, balance);
-                                } else if (event.first == 9) {
-                                  balance = [];
-                                  print('under re-setting balance $event');
-                                  balanceTarrif?.cancel();
-                                }
-                              } else {
-                                // tarrifCond = false;
-                                echoEvent = event;
-                              }
-                            });
-                          });
-                          // print('after subscribe$tarrifCond');
-                          // await widget
-                          //     .readCharacteristic(widget.characteristic);
-                          // print('after read figuring out if read is applied before subscribe');
-                          // print('after read$tarrifCond');
-                          // await balanceTarrif?.cancel();
-                          */ /*if (!tarrifCond) {
-                            print('inside tarrif condition');
-                            await widget.writeWithoutResponse(
-                                widget.characteristic, balance);
-                            balanceTarrif = widget
-                                .subscribeToCharacteristic(
-                                    widget.characteristic)
-                                .listen((event) {
-                              setState(() {
-                                summing.add(event);
-                                if (event.length == 1) {
-                                  if (event.first == 9) {
-                                    balance = [];
-                                    print('under re-setting balance $event');
-                                  }
-                                } else {
-                                  testingEvent = event;
-                                }
-                              });
-                            });
-                            // await widget.readCharacteristic(widget.characteristic);
-                          }*/ /*
-                        },
-                        child: const Text('balance and tarrif'),
-                      ),*/
-                      /*TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Enter Hexadecimal Value',
-                          hintText: 'e.g. 1A2B',
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp('[0-9a-fA-F]')),
-                        ],
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Please enter some text';
-                          }
-                          return null;
-                        },
-                        onChanged: (value) {
-                          setState(() {
-                            _hexValue = value!;
-                            _hex = int.parse(_hexValue);
-                          });
-                        },
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // if (_formKey.currentState!.validate()) {
-                            //   _formKey.currentState!.save();
-                              // Process the hexadecimal value here (e.g., send it to an API or use it in your application)
-                            _hexValue = '';
-                            _testingStream?.cancel();
-                              print('Hexadecimal Value: $_hexValue');
-                              widget.writeWithoutResponse(widget.characteristic, [_hex]);
-                              _testingStream = widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
-                                setState(() {
-                                  responseAndroidLists.add(event);
-                                  responseAndroid = event;
-                                  print('event android testing $event');
-                                });
-                              });
-                              // widget.readCharacteristic(widget.characteristic);
-                            // }
-                          },
-                          child: const Text('Submit'),
-                        ),
-                      ),
-                      Text('Response : $responseAndroid'),
-                      Text('responseAndroidLists: $responseAndroidLists'),*/
-                      ///TODO: Remove
                       Visibility(
                         visible: isLoading,
                         child: Padding(
@@ -596,96 +340,31 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                 const SizedBox(
                                   height: 10,
                                 ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    //charging button
-                                    ElevatedButton(
-                                      onPressed: (balanceCond || tarrifCond)
-                                          ? () async {
-                                              if (widget.viewModel
-                                                      .connectionStatus !=
-                                                  DeviceConnectionState
-                                                      .connected) {
-                                                widget.viewModel.connect();
-                                              } else if (widget
-                                                  .viewModel.deviceConnected) {
-                                                await startTimer();
-                                              }
-                                            }
-                                          : null,
-                                      child: Text(
-                                        !(balanceCond || tarrifCond)
-                                            ? TKeys.recharged.translate(context)
-                                            : TKeys.recharge.translate(context),
+                                Visibility(
+                                  visible: balanceCond || tarrifCond,
+                                  child: Column(
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: (balanceCond || tarrifCond)
+                                            ? () async {
+                                          if (widget.viewModel
+                                              .connectionStatus !=
+                                              DeviceConnectionState
+                                                  .connected) {
+                                            widget.viewModel.connect();
+                                          } else if (widget
+                                              .viewModel.deviceConnected) {
+                                            await startTimer();
+                                          }
+                                        }
+                                            : null,
+                                        child: Text(TKeys.recharge.translate(context),),
                                       ),
-                                    ),
-                                    //update button
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        start = 0;
-                                        subscribeOutput = [];
-                                        setState(() {
-                                          testingEvent = [];
-                                          timer = Timer.periodic(interval,
-                                              (Timer t) {
-                                            if (start == 15) {
-                                              showToast('Time out', Colors.red,
-                                                  Colors.white);
-                                              timer.cancel();
-                                              start = 0;
-                                            } else {
-                                              setState(() {
-                                                start++;
-                                              });
-                                              if (!widget
-                                                  .viewModel.deviceConnected) {
-                                                widget.viewModel.connect();
-                                              } else if (subscribeOutput
-                                                      .length !=
-                                                  72) {
-                                                setState(() {
-                                                  isLoading = true;
-                                                });
-
-                                                subscribeCharacteristic();
-                                                widget.writeWithoutResponse(
-                                                    widget.characteristic,
-                                                    [0x59]);
-                                              } else if (subscribeOutput
-                                                      .length ==
-                                                  72) {
-                                                setState(() {
-                                                  if (paddingType ==
-                                                      "Electricity") {
-                                                    calculateElectric(
-                                                        subscribeOutput,
-                                                        widget.name);
-                                                  } else {
-                                                    calculateWater(
-                                                        subscribeOutput,
-                                                        widget.name);
-                                                  }
-                                                });
-                                                t.cancel();
-                                                setState(() {
-                                                  isLoading = false;
-                                                });
-                                                showToast(
-                                                    'All Data Are UpToDate',
-                                                    const Color(0xFF2196F3),
-                                                    Colors.black);
-                                              }
-                                            }
-                                          });
-                                        });
-                                      },
-                                      child: Text(
-                                        TKeys.update.translate(context),
+                                      const SizedBox(
+                                        height: 10,
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -756,7 +435,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                               ),
                                             ),
                                             backgroundColor: Colors.white,
-                                            // foregroundColor: Colors.white,
                                           ),
                                           onPressed: () {
                                             if ('${filteredItems[i]['name']}'
@@ -970,7 +648,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
               if (start == 15) {
                 showToast('Time out', Colors.red, Colors.white);
                 timer.cancel();
-                start = 0;
+                setState(() {
+                  start = 0;
+                  isLoading = false;
+                });
               } else {
                 setState(() {
                   start++;
@@ -1004,80 +685,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
       ),
     );
   }
-
-  ///TODO: Remove
-  // OverlayEntry? _overlayEntry;
-  // AnimationController? _animationController;
-  List testingEvent = [];
-  List echoEvent = [];
-
-  List<List> summing = [];
-  /*void _showTimeoutSnackBar(String text, Color bgColor, Color txtColor) {
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-
-    _overlayEntry = _createOverlayEntry(text, bgColor, txtColor);
-
-    Overlay.of(context).insert(_overlayEntry!);
-    _animationController?.forward();
-
-    _animationController?.addStatusListener((status) {
-      if (status == AnimationStatus.dismissed) {
-        _overlayEntry?.remove();
-        _overlayEntry = null;
-      }
-    });
-
-    Timer(const Duration(seconds: 3), () {
-      if (_animationController != null && _animationController!.isAnimating) {
-        _animationController?.reverse().whenComplete(() {
-          _animationController?.dispose();
-          _animationController = null;
-        });
-      }
-    });
-  }
-
-  OverlayEntry _createOverlayEntry(String text, Color bgColor, Color txtColor) => OverlayEntry(
-        builder: (context) => Positioned(
-          bottom: 20.0,
-          left: MediaQuery.of(context).size.width * 0.1,
-          width: MediaQuery.of(context).size.width * 0.8,
-          child: Material(
-            color: Colors.transparent,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 1),
-                end: const Offset(0, 0),
-              ).animate(CurvedAnimation(
-                parent: _animationController!,
-                curve: Curves.easeInOut,
-              )),
-              child: FadeTransition(
-                opacity: _animationController!,
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    text,
-                    style: TextStyle(color: txtColor,fontWeight: FontWeight.bold, fontSize: 18,),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );*/
-  ///TODO: Remove
   @override
   void initState() {
-    // discoveredServices = [];
     subscribeOutput = [];
     setState(() {
       timer = Timer.periodic(interval, (timer) {
@@ -1088,7 +697,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
             showToast('Time out', Colors.red, Colors.white);
           }
           timer.cancel();
-          start = 0;
+          setState(() {
+            start = 0;
+            isLoading = false;
+          });
         } else {
           if (!widget.viewModel.deviceConnected && start == 0) {
             widget.viewModel.connect();
@@ -1127,23 +739,16 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
       newEventData = event;
-      print('event subscribe $event');
       if (event.first == 89 && subscribeOutput.isEmpty) {
         subscribeOutput += newEventData;
         previousEventData = newEventData;
-        print('here 89 $newEventData');
-        // write = false;
       } else if (subscribeOutput.length < 72 && subscribeOutput.isNotEmpty) {
         final equal = (previousEventData.length == newEventData.length) &&
             const ListEquality<int>().equals(previousEventData, newEventData);
-        print('equal $equal');
         if (!equal) {
           subscribeOutput += newEventData;
           previousEventData = newEventData;
-          print('inside equal new $newEventData');
-          print('inside equal old $previousEventData');
         } else {
-          print('sadly equal');
           newEventData = [];
         }
       } else if (subscribeOutput.length == 72) {
@@ -1158,25 +763,20 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     if (balanceCond && !tarrifCond) {
       await sqlDb.getSpecifiedList(widget.name, 'balance');
       if (myList.first == 9) {
-        print('balancehere1 $myList');
+        if (kDebugMode) {
+          print('balancehere1 $myList');
+        }
         await widget.writeWithoutResponse(widget.characteristic, myList);
         balanceTarrif = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
-          summing.add(event);
-          print('event $event');
-          print('balancehere2 $myList');
+          if (kDebugMode) {
+            print('event $event');
+          }
           setState(() {
-            testingEvent = event;
             if (event.length == 1) {
-              print('inside length 1 in balance');
               if (event.first == 9) {
-                print('inside first 9 in balance');
                 balanceCond = false;
-                // balanceMaster = 0;
-                // balance = [];
-                // if (recharged) {
-                //last edit
                 sqlDb.updateData('''
                 UPDATE Meters
                 SET
@@ -1184,19 +784,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                 WHERE name = '${widget.name}'
               ''');
                 balanceTarrif?.cancel();
-                // recharged = false;
-                // updated = false;
                 Fluttertoast.showToast(
                   msg: 'Charged Successfully',
                 );
-                // }
               }
-            } else {
-              echoEvent = event;
             }
           });
         });
-        // await widget.readCharacteristic(widget.characteristic);
       }
     } else if (tarrifCond && !balanceCond) {
       await sqlDb.getSpecifiedList(widget.name, 'tarrif');
@@ -1205,33 +799,27 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
         balanceTarrif = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
-          print('event $event');
+          if (kDebugMode) {
+            print('event $event');
+          }
           setState(() {
-            testingEvent = event;
             if (event.length == 1) {
               if (event.first == 0x10) {
                 tarrifCond = false;
-                // tarrif = [];
-                // tarrifMaster = 0;
-                // if (recharged) {
                 sqlDb.updateData('''
                 UPDATE Meters
                 SET
                 tarrif = 0
                 WHERE name = '${widget.name}'
               ''');
-                // recharged = false;
-                // updated = false;
                 balanceTarrif?.cancel();
                 Fluttertoast.showToast(
                   msg: 'Charged Successfully',
                 );
-                // }
               }
             }
           });
         });
-        // await widget.readCharacteristic(widget.characteristic);
       }
     } else if (tarrifCond && balanceCond) {
       await sqlDb.getSpecifiedList(widget.name, 'tarrif');
@@ -1240,25 +828,19 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
         balanceTarrif = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
-          summing.add(event);
-          print('balanceherevent $event');
+          if (kDebugMode) {
+            print('balanceherevent $event');
+          }
           setState(() {
             if (event.length == 1) {
-              print('inside length 1 in tarrif');
               if (event.first == 0x10) {
-                print('inside first 10 in tarrif');
                 tarrifCond = false;
                 sqlDb.getSpecifiedList(widget.name, 'balance').then((value) => {
                       widget.writeWithoutResponse(widget.characteristic, myList)
                     });
-                // tarrifMaster = 0;
-                // tarrif = [];
               }
               if (event.first == 9) {
-                print('inside first 9 in balance after  tarrif $myList');
                 balanceCond = false;
-                // balanceMaster = 0;
-                // balance = [];
                 sqlDb.updateData('''
               UPDATE Meters
               SET
@@ -1271,50 +853,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                   msg: 'Charged Successfully',
                 );
               }
-            } else {
-              echoEvent = event;
             }
           });
         });
-        // await widget.readCharacteristic(widget.characteristic);
       }
-      /*await sqlDb.getSpecifiedList(widget.name, 'balance');
-      if (myList.first == 9 && !tarrifCond) {
-        print('balancehere $myList');
-        await widget.writeWithoutResponse(widget.characteristic, myList);
-        balanceTarrif = widget
-            .subscribeToCharacteristic(widget.characteristic)
-            .listen((event) {
-          setState(() {
-            testingEvent = event;
-            if (event.length == 1) {
-              if (event.first == 9) {
-                balanceCond = false;
-                balanceMaster = 0;
-                balance = [];
-                sqlDb.updateData('''
-              UPDATE Meters
-              SET
-              balance = 0,
-              tarrif = 0
-              WHERE name = '${widget.name}'
-              ''');
-              }
-            }
-          });
-        });*/
-      // await widget.readCharacteristic(widget.characteristic);
-      // if (recharged && !cond) {
-      // setState(() {
-      // recharged = false;
-      // updated = false;
-      // });
-      // }
     } else {
       await balanceTarrif?.cancel();
     }
-    // }
-    // await subscribeStream?.cancel();
   }
 
   @override
