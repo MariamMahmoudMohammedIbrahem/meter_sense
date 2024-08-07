@@ -36,7 +36,7 @@ class _BluetoothPermissionState extends State<BluetoothPermission> {
               ),
             ),
             ElevatedButton(
-              onPressed: _requestPermission,
+              onPressed: _requestBluetoothPermission,
               style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.brown,
                   backgroundColor: Colors.brown.shade600,
@@ -54,12 +54,10 @@ class _BluetoothPermissionState extends State<BluetoothPermission> {
     );
   }
 
-  Future<void> _requestPermission() async {
+  Future<void> _requestBluetoothPermission() async {
     if (statusBluetoothConnect.isDenied) {
       statusBluetoothConnect = await Permission.bluetoothConnect.request();
       if (statusBluetoothConnect.isGranted) {
-        statusBluetoothConnect = PermissionStatus.granted;
-        await Permission.bluetoothScan.request();
         await Fluttertoast.showToast(msg: 'bluetooth granted');
       }
     }

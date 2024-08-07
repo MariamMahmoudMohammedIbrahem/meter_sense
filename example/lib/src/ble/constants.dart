@@ -6,8 +6,8 @@ import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
 import 'package:permission_handler/permission_handler.dart';
 SqlDb sqlDb = SqlDb();
 bool isFunctionCalled = false;
-List<num> eleMeter = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
-List<num> watMeter = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+List<num> eleMeter = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];///edited
+List<num> watMeter = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];///edited
 late DateTime now;
 late String time;
 late String meterName;
@@ -16,8 +16,8 @@ List<String> nameList = [];
 List<int> balanceList = [];
 List<int> tarrifList = [];
 dynamic paddingType;
-List<double> eleReadings =[];
-List<double> watReadings =[];
+List<double> eleReadings =[0,0,0,0,0,0];
+List<double> watReadings =[0,0,0,0,0,0];
 List<Color> gradientColors = [
   const Color(0xff4CAF50),
   Colors.grey.shade500,
@@ -42,6 +42,7 @@ List<int> previousEventData = [];
 late Timer timer;
 StreamSubscription<List<int>>? subscribeStream;
 bool isLoading = false;
+StreamSubscription<List<int>>? balanceTarrif;
 
 ///*MASTER-STATION**
 num clientID = 0;
@@ -80,6 +81,7 @@ final conversionIndices = [
   58,  // month4
   62,  // month5
   66,  // month6
+  27,  // total debit
 ];
 
 final conversionSizes = [
@@ -98,6 +100,7 @@ final conversionSizes = [
   4,   // month4
   4,   // month5
   4,   // month6
+  4,   // total debit
 ];
 
 ///*DEVICE-LIST**
@@ -111,8 +114,3 @@ String barcodeScanRes = '';
 List<Map> response = [];
 String query = '';
 String query2='';
-
-///*testing**
-int countBefore = 0;
-int countAfter = 0;
-StreamSubscription<List<int>>? balanceTarrif;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../t_key.dart';
@@ -25,7 +26,7 @@ class _LocationPermissionState extends State<LocationPermission> {
               child: Image.asset('images/location.jpg'),
             ),
             ElevatedButton(
-              onPressed: _requestPermission,
+              onPressed: _requestLocationPermission,
               style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.brown,
                   backgroundColor: Colors.brown.shade500, //replace with 855A2D
@@ -38,9 +39,12 @@ class _LocationPermissionState extends State<LocationPermission> {
       ),
     );
   }
-  Future<void> _requestPermission() async {
+  Future<void> _requestLocationPermission() async {
     if (locationWhenInUse.isDenied) {
-      await Permission.locationWhenInUse.request();
+      locationWhenInUse = await Permission.locationWhenInUse.request();
+      if(locationWhenInUse.isGranted){
+        await Fluttertoast.showToast(msg:'location granted');
+      }
     }
   }
 }

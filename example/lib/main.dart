@@ -94,7 +94,7 @@ Future<void> main() async {
                       shape: const StadiumBorder(),
                       textStyle: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 20,
+                        // fontSize: 20,
                       ),
                       foregroundColor: Colors.black, // Add this line to set text color
                       disabledForegroundColor: const Color(0xff4CAF50),
@@ -112,12 +112,12 @@ Future<void> main() async {
                       color: Color(0xff4CAF50),
                     ),
                     displaySmall: const TextStyle(
-                      fontSize: 20,
+                      // fontSize: 20,
                       fontWeight: FontWeight.w900,
                       color: Color(0xff4CAF50),
                     ),
                     titleMedium: const TextStyle(
-                      fontSize: 22,
+                      // fontSize: 22,
                       fontWeight: FontWeight.w500,
                       color: Colors.black,
                     ),
@@ -127,7 +127,7 @@ Future<void> main() async {
                       color: Colors.black,
                     ),
                     bodyMedium: const TextStyle(
-                      fontSize: 20,
+                      // fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),

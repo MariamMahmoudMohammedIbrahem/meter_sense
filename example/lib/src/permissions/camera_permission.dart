@@ -27,7 +27,7 @@ class _BluetoothPermissionState extends State<CameraPermission> {
               child: Image.asset('images/bluetooth.jpg'),///ToDo: edit image to be camera not bluetooth
             ),
             ElevatedButton(
-              onPressed: _requestPermission,
+              onPressed: _requestCameraPermission,
               style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.brown,
                   backgroundColor: Colors.brown.shade600,
@@ -40,12 +40,11 @@ class _BluetoothPermissionState extends State<CameraPermission> {
       ),
     );
   }
-  Future<void> _requestPermission() async {
-
+  Future<void> _requestCameraPermission() async {
     if(statusCamera.isDenied){
       statusCamera = await Permission.camera.request();
       if(statusCamera.isGranted){
-        statusCamera = PermissionStatus.granted;
+        // statusCamera = PermissionStatus.granted;
         await Fluttertoast.showToast(msg: 'camera granted');
       }
     }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,7 @@ import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/data_page.dart';
+import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/electric_data.dart';
 import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/water_data.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:functional_data/functional_data.dart';
@@ -271,8 +272,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                             ),
                                             Text(
                                               paddingType == 'Electricity'
-                                                  ? eleMeter[8].toString()
-                                                  : watMeter[8].toString(),
+                                                  ? eleMeter[1].toString()
+                                                  : watMeter[1].toString(),
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .bodySmall,
@@ -301,8 +302,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                             ),
                                             Text(
                                               paddingType == 'Electricity'
-                                                  ? eleMeter[1].toString()
-                                                  : watMeter[1].toString(),
+                                                  ? eleMeter[8].toString()
+                                                  : watMeter[8].toString(),
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .bodySmall,
@@ -378,9 +379,11 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Text(
+                                AutoSizeText(
                                   TKeys.notConnected.translate(context),
                                   style: Theme.of(context).textTheme.bodyMedium,
+                                  maxFontSize: 20,
+                                  minFontSize: 18,
                                 ),
                               ],
                             ),
@@ -868,8 +871,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     widget.viewModel.disconnect();
     timer.cancel();
     Fluttertoast.cancel();
-    watMeter = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    eleMeter = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    watMeter = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    eleMeter = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     super.dispose();
   }
 }
