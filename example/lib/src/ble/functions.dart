@@ -92,7 +92,8 @@ void callFunctionOnce(String name) {
 }
 
 double merge (num value1, num value2){
-  final  addition = '$value1.$value2';
+
+  final  addition = '$value1.${value2.toString().padLeft(3,'0')}';
   final trial = double.parse(addition);
   return trial;
 }
@@ -102,7 +103,7 @@ void masterValues(List<int> data){
   totalReadings = convertToInt(data, 5, 4);
   pulses = convertToInt(data, 9, 2);
   totalReadingsPulses = merge(totalReadings, pulses);
-  currentBalance = convertToInt(data, 11, 4)/100;
+  currentBalance = (convertToInt(data, 11, 4)-convertToInt(data, 27, 4))/100;
   currentTarrif = convertToInt(data, 15, 1);
   currentTarrifVersion = convertToInt(data, 16, 2);
 }
@@ -113,4 +114,32 @@ void showToast(String text, Color bgColor, Color txtColor) {
     backgroundColor: bgColor,
     textColor: txtColor,
   );
+}
+
+List<int> composeDateTimePacket() {
+  final now = DateTime.now();
+
+  final hh = now.hour;
+  final mm = now.minute;
+  final dw = (now.weekday + 1) % 7;
+  print('$dw');
+  final dM = now.day;
+  final MM = now.month;
+  final yyyy = now.year;
+
+  dateTime = [
+    0x0D,
+    hh,
+    mm,
+    dw,
+    dM,
+    MM,
+    (yyyy >> 8) & 0xFF,
+    yyyy & 0xFF,
+  ];
+
+  final checksum = dateTime.reduce((value, element) => value + element) & 0xFF;
+  dateTime.add(checksum);
+
+  return dateTime;
 }

@@ -55,7 +55,8 @@ class _BluetoothPermissionState extends State<BluetoothPermission> {
   }
 
   Future<void> _requestBluetoothPermission() async {
-    if (statusBluetoothConnect.isDenied) {
+    if (statusBluetoothConnect.isDenied||statusBluetoothConnect.isPermanentlyDenied) {
+      statusBluetoothConnect = await Permission.bluetoothScan.request();
       statusBluetoothConnect = await Permission.bluetoothConnect.request();
       if (statusBluetoothConnect.isGranted) {
         await Fluttertoast.showToast(msg: 'bluetooth granted');

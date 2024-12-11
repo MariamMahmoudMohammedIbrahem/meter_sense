@@ -252,19 +252,19 @@ class SqlDb {
       if (response.isNotEmpty) {
         final map = response.first;
         watReadings = [
-          map['month1'],
-          map['month2'],
-          map['month3'],
-          map['month4'],
-          map['month5'],
           map['month6'],
+          map['month5'],
+          map['month4'],
+          map['month3'],
+          map['month2'],
+          map['month1'],
         ].map((value) {
           if (value is double) {
-            return value;
+            return value/100;
           } else if (value is String) {
             final parsedValue = double.tryParse(value);
             if (parsedValue != null) {
-              return parsedValue;
+              return parsedValue/100;
             } else {
               return 0.0;
             }

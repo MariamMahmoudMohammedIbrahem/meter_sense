@@ -43,6 +43,7 @@ late Timer timer;
 StreamSubscription<List<int>>? subscribeStream;
 bool isLoading = false;
 StreamSubscription<List<int>>? balanceTarrif;
+List<int> dateTime = [];
 
 ///*MASTER-STATION**
 num clientID = 0;

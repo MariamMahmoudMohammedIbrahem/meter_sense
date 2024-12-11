@@ -110,6 +110,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     return Scaffold(
       backgroundColor: Colors.white,
       body: RefreshIndicator(
+        color: const Color(0xff4CAF50),
         child: ListView(
           shrinkWrap: true,
           physics: const AlwaysScrollableScrollPhysics(),
@@ -149,12 +150,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                   ? TKeys.disconnect.translate(context)
                                   : (widget.viewModel.connectionStatus ==
                                           DeviceConnectionState.connecting)
-                                      ? 'connecting'
+                                      ? TKeys.connecting.translate(context)
                                       : (widget.viewModel.connectionStatus ==
                                               DeviceConnectionState
                                                   .disconnected)
                                           ? TKeys.connect.translate(context)
-                                          : 'disconnecting'),
+                                          : TKeys.disconnecting
+                                              .translate(context)),
                             ),
                           ],
                         ),
@@ -162,7 +164,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                       Visibility(
                         visible: isLoading,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: width*.5-20),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: width * .5 - 20),
                           child: const CircularProgressIndicator(
                             color: Color(0xff4CAF50),
                           ),
@@ -255,7 +258,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                     Column(
                                       children: [
                                         Text(
-                                          TKeys.today.translate(context),
+                                          TKeys.totalReadings
+                                              .translate(context),
                                           style: Theme.of(context)
                                               .textTheme
                                               .titleMedium,
@@ -278,6 +282,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                   .textTheme
                                                   .bodySmall,
                                             ),
+                                            Text(
+                                              paddingType == 'Electricity'
+                                                  ? ' kw'
+                                                  : ' m³',
+                                              style: const TextStyle(
+                                                  color: Colors.grey,
+                                                  fontStyle: FontStyle.italic),
+                                            ),
                                           ],
                                         ),
                                       ],
@@ -286,7 +298,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                     Column(
                                       children: [
                                         Text(
-                                          TKeys.month.translate(context),
+                                          TKeys.consumption.translate(context),
                                           style: Theme.of(context)
                                               .textTheme
                                               .titleMedium,
@@ -307,6 +319,14 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .bodySmall,
+                                            ),
+                                            Text(
+                                              paddingType == 'Electricity'
+                                                  ? ' kw'
+                                                  : ' m³',
+                                              style: const TextStyle(
+                                                  color: Colors.grey,
+                                                  fontStyle: FontStyle.italic),
                                             ),
                                           ],
                                         ),
@@ -336,6 +356,12 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                       style:
                                           Theme.of(context).textTheme.bodySmall,
                                     ),
+                                    const Text(
+                                      ' L.E.',
+                                      style: TextStyle(
+                                          color: Colors.grey,
+                                          fontStyle: FontStyle.italic),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(
@@ -348,18 +374,20 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                       ElevatedButton(
                                         onPressed: (balanceCond || tarrifCond)
                                             ? () async {
-                                          if (widget.viewModel
-                                              .connectionStatus !=
-                                              DeviceConnectionState
-                                                  .connected) {
-                                            widget.viewModel.connect();
-                                          } else if (widget
-                                              .viewModel.deviceConnected) {
-                                            await startTimer();
-                                          }
-                                        }
+                                                if (widget.viewModel
+                                                        .connectionStatus !=
+                                                    DeviceConnectionState
+                                                        .connected) {
+                                                  widget.viewModel.connect();
+                                                } else if (widget.viewModel
+                                                    .deviceConnected) {
+                                                  await startTimer();
+                                                }
+                                              }
                                             : null,
-                                        child: Text(TKeys.recharge.translate(context),),
+                                        child: Text(
+                                          TKeys.recharge.translate(context),
+                                        ),
                                       ),
                                       const SizedBox(
                                         height: 10,
@@ -524,8 +552,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                     Column(
                                                       children: [
                                                         Text(
-                                                          TKeys.today.translate(
-                                                              context),
+                                                          TKeys.totalReadings
+                                                              .translate(
+                                                                  context),
                                                           style:
                                                               Theme.of(context)
                                                                   .textTheme
@@ -548,12 +577,25 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                               ('${filteredItems[i]['name']}'
                                                                       .startsWith(
                                                                           'Ele'))
-                                                                  ? ('${eleMeters['${filteredItems[i]['name']}']?[3]}')
-                                                                  : ('${watMeters['${filteredItems[i]['name']}']?[3]}'),
+                                                                  ? ('${eleMeters['${filteredItems[i]['name']}']?[1]}')
+                                                                  : ('${watMeters['${filteredItems[i]['name']}']?[1]}'),
                                                               style: Theme.of(
                                                                       context)
                                                                   .textTheme
                                                                   .bodySmall,
+                                                            ),
+                                                            Text(
+                                                              ('${filteredItems[i]['name']}'
+                                                                      .startsWith(
+                                                                          'Ele'))
+                                                                  ? ' kw'
+                                                                  : ' m³',
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .grey,
+                                                                  fontStyle:
+                                                                      FontStyle
+                                                                          .italic),
                                                             ),
                                                           ],
                                                         ),
@@ -563,8 +605,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                     Column(
                                                       children: [
                                                         Text(
-                                                          TKeys.month.translate(
-                                                              context),
+                                                          TKeys.consumption
+                                                              .translate(
+                                                                  context),
                                                           style:
                                                               Theme.of(context)
                                                                   .textTheme
@@ -584,12 +627,25 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                               ('${filteredItems[i]['name']}'
                                                                       .startsWith(
                                                                           'Ele'))
-                                                                  ? ('${eleMeters['${filteredItems[i]['name']}']?[1]}')
-                                                                  : ('${watMeters['${filteredItems[i]['name']}']?[1]}'),
+                                                                  ? ('${eleMeters['${filteredItems[i]['name']}']?[3]}')
+                                                                  : ('${watMeters['${filteredItems[i]['name']}']?[3]}'),
                                                               style: Theme.of(
                                                                       context)
                                                                   .textTheme
                                                                   .bodySmall,
+                                                            ),
+                                                            Text(
+                                                              ('${filteredItems[i]['name']}'
+                                                                      .startsWith(
+                                                                          'Ele'))
+                                                                  ? ' kw'
+                                                                  : ' m³',
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .grey,
+                                                                  fontStyle:
+                                                                      FontStyle
+                                                                          .italic),
                                                             ),
                                                           ],
                                                         ),
@@ -622,6 +678,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .bodySmall,
+                                                    ),
+                                                    const Text(
+                                                      ' L.E.',
+                                                      style: TextStyle(
+                                                          color: Colors.grey,
+                                                          fontStyle:
+                                                              FontStyle.italic),
                                                     ),
                                                   ],
                                                 ),
@@ -675,10 +738,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                     }
                     isLoading = false;
                   });
-                  showToast(
-                      'All Data Are UpToDate',
-                      const Color(0xFF2196F3),
-                      Colors.black);
+                  showToast(TKeys.upToDate.translate(context),
+                      const Color(0xff4CAF50), Colors.black);
                   timer.cancel();
                 }
               }
@@ -688,6 +749,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
       ),
     );
   }
+
   @override
   void initState() {
     subscribeOutput = [];
@@ -697,7 +759,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
           if (widget.viewModel.connectionStatus !=
               DeviceConnectionState.connected) {
             widget.viewModel.disconnect();
-            showToast('Time out', Colors.red, Colors.white);
+            showToast(
+                TKeys.timeOut.translate(context), Colors.red, Colors.white);
           }
           timer.cancel();
           setState(() {
@@ -723,8 +786,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
             });
             timer.cancel();
             isLoading = false;
-            showToast(
-                'All Data Are UpToDate', const Color(0xFF2196F3), Colors.black);
+            showToast(TKeys.upToDate.translate(context),
+                const Color(0xff4CAF50), Colors.black);
           }
           setState(() {
             start++;
@@ -741,6 +804,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     await balanceTarrif?.cancel();
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+      print(event);
       newEventData = event;
       if (event.first == 89 && subscribeOutput.isEmpty) {
         subscribeOutput += newEventData;
@@ -863,6 +927,9 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     } else {
       await balanceTarrif?.cancel();
     }
+    await widget.writeWithoutResponse(
+        widget.characteristic, composeDateTimePacket());
+    widget.subscribeToCharacteristic(widget.characteristic);
   }
 
   @override

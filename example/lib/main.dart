@@ -172,21 +172,24 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) =>
       Consumer2<BleStatus?, PermissionProvider>(
         builder: (_, status, permission, __) {
+          print('camera: ${permission.cameraStatus}');
+          print('location: ${permission.whenInUseLocation}');
+          print('bluetooth: ${permission.bluetoothStatus}');
           if (status == BleStatus.ready &&
               permission.cameraStatus.isGranted &&
               permission.whenInUseLocation.isGranted &&
               permission.bluetoothStatus.isGranted) {
             return const MyApp();
           }
-          else if (permission.bluetoothStatus.isDenied) {
+          else if (permission.bluetoothStatus.isDenied || permission.bluetoothStatus.isPermanentlyDenied) {
             permission.requestBluetoothPermission();
             return const BluetoothPermission();
           }
-          else if (permission.whenInUseLocation.isDenied) {
+          else if (permission.whenInUseLocation.isDenied || permission.whenInUseLocation.isPermanentlyDenied) {
             permission.requestLocationWhenInUse();
             return const LocationPermission();
           }
-          else if (permission.cameraStatus.isDenied) {
+          else if (permission.cameraStatus.isDenied || permission.cameraStatus.isPermanentlyDenied) {
             permission.requestCameraPermission();
             return const CameraPermission();
           }

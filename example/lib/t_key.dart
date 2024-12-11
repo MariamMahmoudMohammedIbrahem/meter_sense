@@ -25,14 +25,14 @@ enum TKeys{
   currentTarrif,
   totalReadings,
   valveStatus,
-  today,
-  month,
   balance,
   consumption,
   recharge,
   recharged,
   history,
-  logout,
+  timeOut,
+  upToDate,
+  // logout,
   january,
   february,
   march,
@@ -55,9 +55,18 @@ enum TKeys{
   balanceStation,
   submit,
   connect,
+  connecting,
   disconnect,
+  disconnecting,
+  selectDevice,
   welcomeMaster,
-  id
+  id,
+  uploadData,
+  dataSent,
+  meterData,
+  tarrifVersion,
+  chargingData,
+
 }
 
 //Tkeys.device

@@ -103,7 +103,7 @@ class MeterButton extends StatelessWidget {
                 Column(
                   children: [
                     Text(
-                      TKeys.today.translate(context),
+                      TKeys.totalReadings.translate(context),
                       style: const TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
@@ -132,7 +132,7 @@ class MeterButton extends StatelessWidget {
                 Column(
                   children: [
                     Text(
-                      TKeys.month.translate(context),
+                      TKeys.totalReadings.translate(context),
                       style: const TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,

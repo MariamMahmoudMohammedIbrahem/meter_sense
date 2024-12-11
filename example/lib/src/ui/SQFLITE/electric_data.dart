@@ -142,6 +142,7 @@ class _StoreDataState extends State<StoreData> {
                                                                   .bodySmall,
                                                           minFontSize: 18,
                                                         ),
+                                                        const Text(' kw', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
                                                       ],
                                                     ),
                                                   ],
@@ -175,6 +176,7 @@ class _StoreDataState extends State<StoreData> {
                                                                   .bodySmall,
                                                           minFontSize: 18,
                                                         ),
+                                                        const Text(' L.E.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
                                                       ],
                                                     ),
                                                     const SizedBox(
@@ -247,6 +249,7 @@ class _StoreDataState extends State<StoreData> {
                                                     .bodySmall,
                                                 minFontSize: 18,
                                               ),
+                                              const Text(' kw', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
                                             ],
                                           ),
                                           const SizedBox(

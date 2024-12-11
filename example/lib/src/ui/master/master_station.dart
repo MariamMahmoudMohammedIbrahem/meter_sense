@@ -160,7 +160,7 @@ class _MasterStationState extends State<_MasterStation> {
                               if (widget.viewModel.connectionStatus !=
                                   DeviceConnectionState.connected) {
                                 widget.viewModel.disconnect();
-                                showToast('Time out', Colors.red, Colors.white);
+                                showToast(TKeys.timeOut.translate(context), Colors.red, Colors.white);
                               }
                               timer.cancel();
                               start = 0;
@@ -182,11 +182,11 @@ class _MasterStationState extends State<_MasterStation> {
                             ? TKeys.disconnect.translate(context)
                             : (widget.viewModel.connectionStatus ==
                                     DeviceConnectionState.connecting)
-                                ? 'connecting'
+                                ? TKeys.connecting.translate(context)
                                 : (widget.viewModel.connectionStatus ==
                                         DeviceConnectionState.disconnected)
                                     ? TKeys.connect.translate(context)
-                                    : 'disconnecting',
+                                    : TKeys.disconnecting.translate(context),
                       ),
                     ),
                   ],
@@ -245,7 +245,7 @@ class _MasterStationState extends State<_MasterStation> {
                             return items;
                           },
                           offset: const Offset(0, 50),
-                          tooltip: 'Select a device',
+                          tooltip: TKeys.selectDevice.translate(context),
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20.0),
@@ -297,9 +297,9 @@ class _MasterStationState extends State<_MasterStation> {
                       children: [
                         RichText(
                           textAlign: TextAlign.center,
-                          text: const TextSpan(
-                            text: 'Upload Your Meter Readings\n',
-                            style: TextStyle(
+                          text: TextSpan(
+                            text: TKeys.uploadData.translate(context),
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.normal,
                               color: Color(0xff4CAF50),
@@ -315,14 +315,8 @@ class _MasterStationState extends State<_MasterStation> {
                             ),
                             onPressed: () async {
                               if (!widget.viewModel.deviceConnected) {
-                                if (kDebugMode) {
-                                  print('printing connecting');
-                                }
                                 widget.viewModel.connect();
                               } else {
-                                if (kDebugMode) {
-                                  print('printing');
-                                }
                                 await writeCharacteristicWithoutResponse();
                                 Timer(const Duration(seconds: 2), () async {
                                   await widget.writeWithoutResponse(
@@ -333,7 +327,7 @@ class _MasterStationState extends State<_MasterStation> {
                                   charging = true;
                                 });
                                 await Fluttertoast.showToast(
-                                  msg: 'Data Sent Successfully',
+                                  msg: TKeys.dataSent.translate(context),
                                 );
                               }
                             },
@@ -357,13 +351,13 @@ class _MasterStationState extends State<_MasterStation> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Meter Data:', style: Theme.of(context).textTheme.displayMedium,),
+                              Text(TKeys.meterData.translate(context), style: Theme.of(context).textTheme.displayMedium,),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Client ID:',
+                                    '${TKeys.id.translate(context)}: ',
                                     style: nameLabelStyle,
                                   ),
                                   Text(
@@ -378,7 +372,7 @@ class _MasterStationState extends State<_MasterStation> {
                                 MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Total Readings: ',
+                                    '${TKeys.totalReadings.translate(context)}: ',
                                     style: nameLabelStyle,
                                   ),
                                   Text(
@@ -423,7 +417,7 @@ class _MasterStationState extends State<_MasterStation> {
                                 MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Tarrif Version: ',
+                                    TKeys.tarrifVersion.translate(context),
                                     style: nameLabelStyle,
                                   ),
                                   Text(
@@ -434,7 +428,7 @@ class _MasterStationState extends State<_MasterStation> {
                               ),
                               const SizedBox(height: 10),
                               const Divider(),
-                              Text('Charging Data:', style: Theme.of(context).textTheme.displayMedium,),
+                              Text(TKeys.chargingData.translate(context), style: Theme.of(context).textTheme.displayMedium,),
                               const SizedBox(height: 10),
                               Row(
                                 mainAxisAlignment:
@@ -456,7 +450,7 @@ class _MasterStationState extends State<_MasterStation> {
                                 MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Tarrif Value: ',
+                                    TKeys.tarrifVersion.translate(context),
                                     style: nameLabelStyle,
                                   ),
                                   Text(
@@ -471,7 +465,7 @@ class _MasterStationState extends State<_MasterStation> {
                                 MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Tarrif Version: ',
+                                    TKeys.tarrifVersion.translate(context),
                                     style: nameLabelStyle,
                                   ),
                                   Text(
@@ -650,7 +644,7 @@ class _MasterStationState extends State<_MasterStation> {
         if (widget.viewModel.connectionStatus !=
             DeviceConnectionState.connected) {
           widget.viewModel.disconnect();
-          showToast('Time out', Colors.red, Colors.white);
+          showToast(TKeys.timeOut.translate(context), Colors.red, Colors.white);
         }
         timer.cancel();
         start = 0;

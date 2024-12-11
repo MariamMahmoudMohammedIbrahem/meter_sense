@@ -41,7 +41,7 @@ class _BluetoothPermissionState extends State<CameraPermission> {
     );
   }
   Future<void> _requestCameraPermission() async {
-    if(statusCamera.isDenied){
+    if(statusCamera.isDenied||statusCamera.isPermanentlyDenied){
       statusCamera = await Permission.camera.request();
       if(statusCamera.isGranted){
         // statusCamera = PermissionStatus.granted;

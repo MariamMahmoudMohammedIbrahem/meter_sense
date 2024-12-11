@@ -40,7 +40,7 @@ class _LocationPermissionState extends State<LocationPermission> {
     );
   }
   Future<void> _requestLocationPermission() async {
-    if (locationWhenInUse.isDenied) {
+    if (locationWhenInUse.isDenied||locationWhenInUse.isPermanentlyDenied) {
       locationWhenInUse = await Permission.locationWhenInUse.request();
       if(locationWhenInUse.isGranted){
         await Fluttertoast.showToast(msg:'location granted');

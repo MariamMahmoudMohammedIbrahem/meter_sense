@@ -122,6 +122,7 @@ class _WaterDataState extends State<WaterData> {
                                                       .bodySmall,
                                                   minFontSize: 18,
                                                 ),
+                                                const Text(' m³', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
                                               ],
                                             ),
                                           ],
@@ -150,6 +151,7 @@ class _WaterDataState extends State<WaterData> {
                                                       .bodySmall,
                                                   minFontSize: 18,
                                                 ),
+                                                const Text(' L.E.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
                                               ],
                                             ),
                                             const SizedBox(
@@ -199,6 +201,7 @@ class _WaterDataState extends State<WaterData> {
                                         style: Theme.of(context).textTheme.bodySmall,
                                         minFontSize: 18,
                                       ),
+                                      const Text(' m³', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
                                     ],
                                   ),
                                   const SizedBox(
