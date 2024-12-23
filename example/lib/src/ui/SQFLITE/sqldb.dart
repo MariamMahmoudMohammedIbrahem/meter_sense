@@ -399,7 +399,6 @@ class SqlDb {
       if (result.isNotEmpty) {
         final dynamic jsonListDynamic = result[0]['list'];
         // listType = result[0]['type'];
-
         if (jsonListDynamic != null) {
           final jsonList = jsonListDynamic as String;
           final dynamicList = jsonDecode(jsonList) as List<dynamic>;

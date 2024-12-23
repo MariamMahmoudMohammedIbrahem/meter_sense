@@ -608,6 +608,7 @@ class _MasterStationState extends State<_MasterStation> {
             ..insert(0, 0x10)
             ..addAll(event.sublist(1, 12))
             ..add(random.nextInt(255));
+          ///TODO: update the random by adding the random number but not equal to the previous
           if (kDebugMode) {
             print('tarrif master : $tarrif');
           }

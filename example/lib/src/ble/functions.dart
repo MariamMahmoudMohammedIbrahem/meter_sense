@@ -87,6 +87,7 @@ void calculateWater(List<int> subscribeOutput, String name) {
 void callFunctionOnce(String name) {
   if (!isFunctionCalled) {
     isFunctionCalled = true;
+    counter++;
     addData(name);
   }
 }

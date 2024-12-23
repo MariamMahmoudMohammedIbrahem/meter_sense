@@ -115,3 +115,13 @@ String barcodeScanRes = '';
 List<Map> response = [];
 String query = '';
 String query2='';
+
+List<int> zeroing = [0x17, 03, 0xE5, 0xff];
+// num tempCredit = 0.0;
+num eleMeterOld = -1000000;
+num watMeterOld = -1000000;
+int counter = 0;
+bool recharge = false;
+/*
+final GlobalKey<RefreshIndicatorState> refreshIndicatorKey =
+GlobalKey<RefreshIndicatorState>();*/

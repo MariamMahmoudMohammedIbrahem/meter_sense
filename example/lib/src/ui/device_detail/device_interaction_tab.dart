@@ -111,6 +111,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
       backgroundColor: Colors.white,
       body: RefreshIndicator(
         color: const Color(0xff4CAF50),
+        onRefresh: refreshing,
         child: ListView(
           shrinkWrap: true,
           physics: const AlwaysScrollableScrollPhysics(),
@@ -171,6 +172,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                           ),
                         ),
                       ),
+                      // ElevatedButton(onPressed:(){widget.subscribeToCharacteristic(widget.characteristic);widget.writeWithoutResponse(widget.characteristic,[0x12,0x00,0x00,0x00,0x72,0x84]);},child:const Text('elemeter486',),),
                       Padding(
                         padding: EdgeInsets.symmetric(
                             horizontal: width * .07, vertical: 10.0),
@@ -368,7 +370,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                   height: 10,
                                 ),
                                 Visibility(
-                                  visible: balanceCond || tarrifCond,
+                                  visible: (balanceCond || tarrifCond) && counter>0,
                                   child: Column(
                                     children: [
                                       ElevatedButton(
@@ -706,53 +708,93 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
               ]),
             ),
           ],
-        ),
-        onRefresh: () => Future.delayed(const Duration(seconds: 1), () {
-          subscribeOutput = [];
-          setState(() {
-            timer = Timer.periodic(interval, (timer) {
-              if (start == 15) {
-                showToast('Time out', Colors.red, Colors.white);
-                timer.cancel();
-                setState(() {
-                  start = 0;
-                  isLoading = false;
-                });
-              } else {
-                setState(() {
-                  start++;
-                });
-                if (!widget.viewModel.deviceConnected) {
-                  widget.viewModel.connect();
-                } else if (subscribeOutput.length != 72) {
-                  isLoading = true;
-                  subscribeCharacteristic();
-                  widget.writeWithoutResponse(widget.characteristic, [0x59]);
-                } else if (subscribeOutput.length == 72) {
-                  setState(() {
-                    if (paddingType == "Electricity") {
-                      isFunctionCalled = false;
-                      calculateElectric(subscribeOutput, widget.name);
-                    } else {
-                      calculateWater(subscribeOutput, widget.name);
-                    }
-                    isLoading = false;
-                  });
-                  showToast(TKeys.upToDate.translate(context),
-                      const Color(0xff4CAF50), Colors.black);
-                  timer.cancel();
-                }
-              }
-            });
-          });
-        }),
+        )
       ),
     );
   }
 
+  Future<void> refreshing () async{
+    Future.delayed(const Duration(seconds: 1), () {
+      subscribeOutput = [];
+      setState(() {
+        timer = Timer.periodic(interval, (timer) {
+          if (start == 15) {
+            showToast('Time out', Colors.red, Colors.white);
+            timer.cancel();
+            setState(() {
+              start = 0;
+              isLoading = false;
+            });
+          } else {
+            setState(() {
+              start++;
+            });
+            if (!widget.viewModel.deviceConnected) {
+              widget.viewModel.connect();
+            } else if (subscribeOutput.length != 72) {
+              isLoading = true;
+              subscribeCharacteristic();
+              widget.writeWithoutResponse(widget.characteristic, [0x59]);
+            } else if (subscribeOutput.length == 72) {
+              setState(() {
+                if (paddingType == "Electricity") {
+                  isFunctionCalled = false;
+                  calculateElectric(subscribeOutput, widget.name);
+                } else {
+                  calculateWater(subscribeOutput, widget.name);
+                }
+                ///TODO: check over the random number if it is the same in myList
+                /*sqlDb.getSpecifiedList(widget.name, 'balance').then((value)
+                {
+                print('$tempCredit, ${watMeter[3]}');
+                    if((paddingType == 'Electricity' && tempCredit >= eleMeter[3
+                    ]) ||
+                    (paddingType == 'Water' && tempCredit >= watMeter[3])){
+                balanceCond = false;
+                sqlDb.updateData('''
+                UPDATE Meters
+                SET
+                balance = 0
+                WHERE name = '${widget.name}'
+              ''');
+                Fluttertoast.showToast(
+                msg: 'Charged Successfully',
+                );
+                }
+              }
+                );*/
+                print('water meter data before if $watMeterOld, ${watMeter[3]}');
+                if(((paddingType == 'Electricity' && eleMeter[3] > eleMeterOld && counter > 1) || (paddingType == 'Water' && watMeter[3] > watMeterOld && counter > 1))&&recharge){
+                print('water meter data after if $watMeterOld, ${watMeter[3]}');
+                  balanceCond = false;
+                  sqlDb.updateData('''
+                UPDATE Meters
+                SET
+                balance = 0
+                WHERE name = '${widget.name}'
+              ''');
+                   Fluttertoast.showToast(
+                    msg: 'Charged Successfully',
+                  );
+                }
+              });
+              isLoading = false;
+              showToast(TKeys.upToDate.translate(context),
+                  const Color(0xff4CAF50), Colors.black);
+              timer.cancel();
+            }
+          }
+        });
+      });
+    });
+  }
   @override
   void initState() {
     subscribeOutput = [];
+    counter = 0;
+    eleMeterOld = -1000000;
+    watMeterOld = -1000000;
+    recharge = false;
     setState(() {
       timer = Timer.periodic(interval, (timer) {
         if (start == 15) {
@@ -830,16 +872,17 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     if (balanceCond && !tarrifCond) {
       await sqlDb.getSpecifiedList(widget.name, 'balance');
       if (myList.first == 9) {
-        if (kDebugMode) {
-          print('balancehere1 $myList');
+        print('myList is => $myList');
+        if(watMeterOld == -1000000 && paddingType=='Water') {
+          watMeterOld = watMeter[3];
+        } else if(eleMeterOld == -1000000) {
+          eleMeterOld = eleMeter[3];
         }
         await widget.writeWithoutResponse(widget.characteristic, myList);
         balanceTarrif = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
-          if (kDebugMode) {
-            print('event $event');
-          }
+          print('event $event');
           setState(() {
             if (event.length == 1) {
               if (event.first == 9) {
@@ -902,8 +945,15 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
             if (event.length == 1) {
               if (event.first == 0x10) {
                 tarrifCond = false;
+                print('water meter data before $watMeterOld, ${watMeter[3]}');
                 sqlDb.getSpecifiedList(widget.name, 'balance').then((value) => {
-                      widget.writeWithoutResponse(widget.characteristic, myList)
+                if(watMeterOld == -1000000 && paddingType=='Water') {
+                    watMeterOld = watMeter[3],
+                    print('water meter data after $watMeterOld, ${watMeter[3]}'),
+                    } else if(eleMeterOld == -1000000) {
+                  eleMeterOld = eleMeter[3],
+                },
+                      widget.writeWithoutResponse(widget.characteristic, myList),
                     });
               }
               if (event.first == 9) {
@@ -930,6 +980,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     await widget.writeWithoutResponse(
         widget.characteristic, composeDateTimePacket());
     widget.subscribeToCharacteristic(widget.characteristic);
+    recharge = true;
+    await refreshing();
   }
 
   @override
