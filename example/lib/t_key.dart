@@ -65,6 +65,7 @@ enum TKeys{
   dataSent,
   meterData,
   tarrifVersion,
+  tarrifPrice,
   chargingData,
 
 }

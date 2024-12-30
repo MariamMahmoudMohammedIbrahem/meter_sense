@@ -123,6 +123,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                 Flexible(
                   child: ListView(
                     children: [
+                      // ElevatedButton(onPressed: (){sqlDb.getSpecifiedList(widget.name, 'balance');},child: const Text(''),),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: width * .07),
                         child: Row(
@@ -383,7 +384,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                   widget.viewModel.connect();
                                                 } else if (widget.viewModel
                                                     .deviceConnected) {
-                                                  await startTimer();
+                                                  await setDateAndTime();
                                                 }
                                               }
                                             : null,
@@ -866,6 +867,18 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     });
   }
 
+  Future<void> setDateAndTime() async{
+    await widget.writeWithoutResponse(
+        widget.characteristic, composeDateTimePacket());
+    dateTimeListener =widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
+      if(event.first == 13){
+        dateTimeListener?.cancel();
+        startTimer();
+      } else{
+        setDateAndTime();
+      }
+    });
+}
   Future<void> startTimer() async {
     await subscribeStream?.cancel();
     await balanceTarrif?.cancel();
@@ -902,7 +915,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
           });
         });
       }
-    } else if (tarrifCond && !balanceCond) {
+    }
+    else if (tarrifCond && !balanceCond) {
       await sqlDb.getSpecifiedList(widget.name, 'tarrif');
       if (myList.first == 16) {
         await widget.writeWithoutResponse(widget.characteristic, myList);
@@ -931,22 +945,26 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
           });
         });
       }
-    } else if (tarrifCond && balanceCond) {
+    }
+    else if (tarrifCond && balanceCond) {
       await sqlDb.getSpecifiedList(widget.name, 'tarrif');
       if (myList.first == 16) {
         await widget.writeWithoutResponse(widget.characteristic, myList);
         balanceTarrif = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
-          if (kDebugMode) {
+          // if (kDebugMode) {
             print('balanceherevent $event');
-          }
+          // }
           setState(() {
             if (event.length == 1) {
+              print("event.length == 1");
               if (event.first == 0x10) {
+                print("event.first == 0x10");
                 tarrifCond = false;
                 print('water meter data before $watMeterOld, ${watMeter[3]}');
                 sqlDb.getSpecifiedList(widget.name, 'balance').then((value) => {
+                  print('after sending the tarrif checking over the list'),
                 if(watMeterOld == -1000000 && paddingType=='Water') {
                     watMeterOld = watMeter[3],
                     print('water meter data after $watMeterOld, ${watMeter[3]}'),
@@ -977,9 +995,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     } else {
       await balanceTarrif?.cancel();
     }
-    await widget.writeWithoutResponse(
-        widget.characteristic, composeDateTimePacket());
-    widget.subscribeToCharacteristic(widget.characteristic);
+    // widget.subscribeToCharacteristic(widget.characteristic);
     recharge = true;
     await refreshing();
   }

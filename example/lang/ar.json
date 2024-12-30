@@ -59,7 +59,8 @@
   "uploadData": "قم برفع قراءات العداد الخاص بك\n",
   "dataSent": "تم إرسال البيانات بنجاح",
   "meterData": "بيانات العداد: ",
-  "tarrifVersion": "إصدار التعريفة: ",
-  "tarrifValue": "قيمة التعريفة: ",
+  "tarrifVersion": "إصدار الشريحه: ",
+  "tarrifValue": "قيمة الشريحه: ",
+  "tarrifPrice": "سعر الشريحه",
   "chargingData": "بيانات الشحن: "
 }

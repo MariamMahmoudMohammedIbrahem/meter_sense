@@ -352,7 +352,7 @@ class _StoreDataState extends State<StoreData> {
                                                     Expanded(
                                                       flex: 3,
                                                       child: AutoSizeText(
-                                                        TKeys.consumption
+                                                        TKeys.totalReadings
                                                             .translate(context),
                                                         style: Theme.of(context)
                                                             .textTheme
@@ -364,7 +364,7 @@ class _StoreDataState extends State<StoreData> {
                                                     Expanded(
                                                       flex: 1,
                                                       child: AutoSizeText(
-                                                        "${snapshot.data![i]['currentConsumption']}",
+                                                        "${snapshot.data![i]['totalReading']}",
                                                         textAlign:
                                                             TextAlign.center,
                                                         minFontSize: 18,

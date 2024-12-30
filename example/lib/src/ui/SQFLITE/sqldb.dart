@@ -172,12 +172,13 @@ class SqlDb {
   }
 
   // get the data of the last days "history data"
+  ///TODO: edit currentConsumption to
   Future<List<Map>> read(String name, String type) async {
     final mydb = await db;
     var query = '';
     if(type == 'Electricity'){
       query = '''
-        SELECT `currentConsumption`, `time` FROM Electricity
+        SELECT `totalReading`, `time` FROM Electricity
         WHERE `title` =?
         ORDER BY id DESC
         LIMIT 10
@@ -185,7 +186,7 @@ class SqlDb {
     }
     else{
       query = '''
-        SELECT `currentConsumption`, `time` FROM Water
+        SELECT `totalReading`, `time` FROM Water
         WHERE `title` =?
         ORDER BY id DESC
         LIMIT 10
@@ -405,6 +406,7 @@ class SqlDb {
           myList = dynamicList.cast<int>();
           final int sum = myList.fold(0, (previousValue, element) => previousValue + element);
           myList.add(sum);
+          print('myList inside get specified list is $myList');
           return myList;
         }
       }

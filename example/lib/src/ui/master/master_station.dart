@@ -450,7 +450,7 @@ class _MasterStationState extends State<_MasterStation> {
                                 MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    TKeys.tarrifVersion.translate(context),
+                                    TKeys.tarrifPrice.translate(context),
                                     style: nameLabelStyle,
                                   ),
                                   Text(
@@ -606,9 +606,8 @@ class _MasterStationState extends State<_MasterStation> {
           tarrif = [];
           tarrif
             ..insert(0, 0x10)
-            ..addAll(event.sublist(1, 12))
-            ..add(random.nextInt(255));
-          ///TODO: update the random by adding the random number but not equal to the previous
+            ..addAll(event.sublist(1, 13));
+            // ..add(random.nextInt(255));
           if (kDebugMode) {
             print('tarrif master : $tarrif');
           }
@@ -625,8 +624,8 @@ class _MasterStationState extends State<_MasterStation> {
           updated = false;
           balance
             ..insert(0, 0x09)
-            ..addAll(event.sublist(1, 5))
-            ..add(random.nextInt(255));
+            ..addAll(event.sublist(1, 6));
+            // ..add(random.nextInt(255));
           if (kDebugMode) {
             print('objectMaster $balance');
           }
