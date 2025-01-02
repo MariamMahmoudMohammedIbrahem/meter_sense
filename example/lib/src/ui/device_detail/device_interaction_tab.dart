@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
@@ -718,7 +717,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     Future.delayed(const Duration(seconds: 1), () {
       subscribeOutput = [];
       setState(() {
-        timer = Timer.periodic(interval, (timer) {
+        timer = Timer.periodic(timerInterval, (timer) {
           if (start == 15) {
             showToast('Time out', Colors.red, Colors.white);
             timer.cancel();
@@ -744,29 +743,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                 } else {
                   calculateWater(subscribeOutput, widget.name);
                 }
-                ///TODO: check over the random number if it is the same in myList
-                /*sqlDb.getSpecifiedList(widget.name, 'balance').then((value)
-                {
-                print('$tempCredit, ${watMeter[3]}');
-                    if((paddingType == 'Electricity' && tempCredit >= eleMeter[3
-                    ]) ||
-                    (paddingType == 'Water' && tempCredit >= watMeter[3])){
-                balanceCond = false;
-                sqlDb.updateData('''
-                UPDATE Meters
-                SET
-                balance = 0
-                WHERE name = '${widget.name}'
-              ''');
-                Fluttertoast.showToast(
-                msg: 'Charged Successfully',
-                );
-                }
-              }
-                );*/
-                print('water meter data before if $watMeterOld, ${watMeter[3]}');
                 if(((paddingType == 'Electricity' && eleMeter[3] > eleMeterOld && counter > 1) || (paddingType == 'Water' && watMeter[3] > watMeterOld && counter > 1))&&recharge){
-                print('water meter data after if $watMeterOld, ${watMeter[3]}');
                   balanceCond = false;
                   sqlDb.updateData('''
                 UPDATE Meters
@@ -797,13 +774,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     watMeterOld = -1000000;
     recharge = false;
     setState(() {
-      timer = Timer.periodic(interval, (timer) {
+      timer = Timer.periodic(timerInterval, (timer) {
         if (start == 15) {
           if (widget.viewModel.connectionStatus !=
               DeviceConnectionState.connected) {
             widget.viewModel.disconnect();
-            showToast(
-                TKeys.timeOut.translate(context), Colors.red, Colors.white);
+              showToast(
+                  TKeys.timeOut.translate(context), Colors.red, Colors.white);
           }
           timer.cancel();
           setState(() {
@@ -923,9 +900,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
         balanceTarrif = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
-          if (kDebugMode) {
-            print('event $event');
-          }
           setState(() {
             if (event.length == 1) {
               if (event.first == 0x10) {
@@ -995,7 +969,6 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
     } else {
       await balanceTarrif?.cancel();
     }
-    // widget.subscribeToCharacteristic(widget.characteristic);
     recharge = true;
     await refreshing();
   }

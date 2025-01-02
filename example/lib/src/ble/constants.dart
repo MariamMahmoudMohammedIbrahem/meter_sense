@@ -11,7 +11,7 @@ List<num> watMeter = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];///edited
 late DateTime now;
 late String time;
 late String meterName;
-const interval = Duration(seconds: 1);
+const timerInterval = Duration(seconds: 1);
 List<String> nameList = [];
 List<int> balanceList = [];
 List<int> tarrifList = [];

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
@@ -153,7 +152,7 @@ class _MasterStationState extends State<_MasterStation> {
                                 DeviceConnectionState.disconnecting ||
                             widget.viewModel.connectionStatus ==
                                 DeviceConnectionState.disconnected) {
-                          timer = Timer.periodic(interval, (timer) {
+                          timer = Timer.periodic(timerInterval, (timer) {
                             if (start == 15 ||
                                 widget.viewModel.connectionStatus ==
                                     DeviceConnectionState.connected) {
@@ -166,12 +165,7 @@ class _MasterStationState extends State<_MasterStation> {
                               start = 0;
                             } else {
                               widget.viewModel.connect();
-                              // setState(() {
                                 start++;
-                              // });
-                              if (kDebugMode) {
-                                print('start$start');
-                              }
                             }
                           });
                         }
@@ -608,27 +602,17 @@ class _MasterStationState extends State<_MasterStation> {
             ..insert(0, 0x10)
             ..addAll(event.sublist(1, 13));
             // ..add(random.nextInt(255));
-          if (kDebugMode) {
-            print('tarrif master : $tarrif');
-          }
           tarrifMaster = convertToInt(event, 1, 11);
           tarrifVersionMaster = convertToInt(event, 1, 2);
         });
       }
       if (event.first == 0xA4 || event.first == 0xA6) {
-        if (kDebugMode) {
-          print('balanceMaster $event');
-        }
         setState(() {
           balance = [];
           updated = false;
           balance
             ..insert(0, 0x09)
             ..addAll(event.sublist(1, 6));
-            // ..add(random.nextInt(255));
-          if (kDebugMode) {
-            print('objectMaster $balance');
-          }
           balanceMaster = convertToInt(event, 1, 4) / 100;
         });
       }
@@ -637,7 +621,7 @@ class _MasterStationState extends State<_MasterStation> {
 
   @override
   void initState() {
-    timer = Timer.periodic(interval, (timer) {
+    timer = Timer.periodic(timerInterval, (timer) {
       if (start == 15 ||
           widget.viewModel.connectionStatus ==
               DeviceConnectionState.connected) {
@@ -649,10 +633,6 @@ class _MasterStationState extends State<_MasterStation> {
         timer.cancel();
         start = 0;
       } else {
-        if (kDebugMode) {
-          print('start$start');
-          print('start${widget.viewModel.connectionStatus}');
-        }
         if (widget.viewModel.connectionStatus ==
                 DeviceConnectionState.disconnected &&
             start == 0) {

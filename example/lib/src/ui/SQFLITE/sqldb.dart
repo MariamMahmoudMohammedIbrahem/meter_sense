@@ -406,7 +406,6 @@ class SqlDb {
           myList = dynamicList.cast<int>();
           final int sum = myList.fold(0, (previousValue, element) => previousValue + element);
           myList.add(sum);
-          print('myList inside get specified list is $myList');
           return myList;
         }
       }

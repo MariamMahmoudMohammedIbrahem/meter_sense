@@ -172,9 +172,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) =>
       Consumer2<BleStatus?, PermissionProvider>(
         builder: (_, status, permission, __) {
-          print('camera: ${permission.cameraStatus}');
-          print('location: ${permission.whenInUseLocation}');
-          print('bluetooth: ${permission.bluetoothStatus}');
           if (status == BleStatus.ready &&
               permission.cameraStatus.isGranted &&
               permission.whenInUseLocation.isGranted &&

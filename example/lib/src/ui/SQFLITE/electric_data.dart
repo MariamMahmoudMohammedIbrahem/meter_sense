@@ -521,20 +521,20 @@ Widget bottomTitleWidgets(double value, TitleMeta meta) {
 //   }
 // }
 LineChartData mainDataEle(BuildContext context) {
-  double minY = eleReadings.reduce((a, b) => a < b ? a : b);
-  double maxY = eleReadings.reduce((a, b) => a > b ? a : b);
+  final minY = eleReadings.reduce((a, b) => a < b ? a : b);
+  final maxY = eleReadings.reduce((a, b) => a > b ? a : b);
 
   // Determine interval and ensure we cover the maximum value
-  double interval = (maxY - minY) / 6;
+  var interval = (maxY - minY) / 6;
   interval = interval.roundToDouble();
   if (interval < 1.0) {
     interval = 1.0;
   }
-  double adjustedMaxY =
+  final adjustedMaxY =
       (maxY % interval == 0) ? maxY : (maxY + interval - (maxY % interval));
 
-  List<int> yValues = [];
-  for (int value = minY.toInt();
+  final yValues = <int>[];
+  for (var value = minY.toInt();
       value <= adjustedMaxY.toInt();
       value += interval.toInt()) {
     yValues.add(value);
@@ -547,13 +547,13 @@ LineChartData mainDataEle(BuildContext context) {
     ),
     titlesData: FlTitlesData(
       show: true,
-      rightTitles: AxisTitles(
+      rightTitles: const AxisTitles(
         sideTitles: SideTitles(showTitles: false),
       ),
-      topTitles: AxisTitles(
+      topTitles: const AxisTitles(
         sideTitles: SideTitles(showTitles: false),
       ),
-      bottomTitles: AxisTitles(
+      bottomTitles: const AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 30,
@@ -565,9 +565,7 @@ LineChartData mainDataEle(BuildContext context) {
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 42,
-          getTitlesWidget: (value, meta) {
-            return leftTitleWidgets(value, meta, yValues);
-          },
+          getTitlesWidget: (value, meta) => leftTitleWidgets(value, meta, yValues),
         ),
       ),
     ),

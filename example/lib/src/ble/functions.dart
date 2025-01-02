@@ -123,9 +123,8 @@ List<int> composeDateTimePacket() {
   final hh = now.hour;
   final mm = now.minute;
   final dw = (now.weekday + 1) % 7;
-  print('$dw');
   final dM = now.day;
-  final MM = now.month;
+  final mM = now.month;
   final yyyy = now.year;
 
   dateTime = [
@@ -134,7 +133,7 @@ List<int> composeDateTimePacket() {
     mm,
     dw,
     dM,
-    MM,
+    mM,
     (yyyy >> 8) & 0xFF,
     yyyy & 0xFF,
   ];

@@ -1,12 +1,10 @@
 import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart'
-    as qr_scan;
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart' hide ScanMode;
 import 'package:flutter_reactive_ble_example/localization_service.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
 import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
@@ -23,7 +21,6 @@ import '../SQFLITE/sqldb.dart';
 import '../SQFLITE/water_data.dart';
 import 'device_interaction_tab.dart';
 
-part 'device_list.g.dart';
 //ignore_for_file: annotate_overrides
 
 class DeviceListScreen extends StatelessWidget {
@@ -46,10 +43,10 @@ class DeviceListScreen extends StatelessWidget {
       );
 }
 
-@immutable
+// @immutable
 @FunctionalData()
-class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
-  const DeviceInteractionViewModel({
+class DeviceViewModel extends $DeviceInteractionViewModel {
+  const DeviceViewModel({
     required this.deviceId,
     required this.deviceConnector,
     required this.discoverServices,
@@ -58,7 +55,7 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
   final String deviceId;
   final BleDeviceConnector deviceConnector;
   @CustomEquality(Ignore())
-  final Future<List<DiscoveredService>> Function() discoverServices;
+  final Future<List<Service>> Function() discoverServices;
 
   void connect() {
     deviceConnector.connect(deviceId);
@@ -67,6 +64,12 @@ class DeviceInteractionViewModel extends $DeviceInteractionViewModel {
   void disconnect() {
     deviceConnector.disconnect(deviceId);
   }
+
+  @override
+  Connectable get connectableStatus => throw UnimplementedError();
+
+  @override
+  DeviceConnectionState get connectionStatus => throw UnimplementedError();
 }
 
 class DeviceList extends StatefulWidget {
@@ -96,12 +99,9 @@ class DeviceListState extends State<DeviceList> {
       final formattedMonth = DateFormat.MMM().format(previousMonth);
       monthList.add(formattedMonth);
     }
-    setState(() {
-      if (kDebugMode) {
-        print('init state call');
-      }
+    // setState(() {
       fetchData();
-    });
+    // });
     if (!widget.scannerState.scanIsInProgress) {
       _startScanning();
       Timer(const Duration(seconds: 5), () {
@@ -124,8 +124,8 @@ class DeviceListState extends State<DeviceList> {
 
   Future<void> scanQR() async {
     try {
-      barcodeScanRes = await qr_scan.FlutterBarcodeScanner.scanBarcode(
-          '#ff6666', 'Cancel', true, qr_scan.ScanMode.QR);
+      barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+          '#ff6666', 'Cancel', true, ScanMode.QR);
     } on PlatformException {
       barcodeScanRes = TKeys.failed.translate(context);
     }
@@ -230,9 +230,6 @@ class DeviceListState extends State<DeviceList> {
                                   paddingType = "Electricity";
                                 }
                                 meterName = device.name;
-                                if (kDebugMode) {
-                                  print('meterName $meterName');
-                                }
                                 if (device.name ==
                                     "MasterStation") {
                                   await Navigator.push<void>(
@@ -266,16 +263,8 @@ class DeviceListState extends State<DeviceList> {
                                     index = nameList
                                         .indexOf(device.name);
                                   }
-                                  if (kDebugMode) {
-                                    print(
-                                        'connection status${widget.deviceConnector.state}');
-                                  }
                                   await widget.deviceConnector
                                       .connect(device.id);
-                                  if (kDebugMode) {
-                                    print(
-                                        'widget connector state${widget.deviceConnector.state}');
-                                  }
                                   await fetchData().then((value) {
                                     setState(() {
                                       balanceCond =
@@ -283,10 +272,6 @@ class DeviceListState extends State<DeviceList> {
                                       tarrifCond =
                                           tarrifList[index] == 1;
                                     });
-                                    if (kDebugMode) {
-                                      print(
-                                          'balance${balanceList[index]},$balanceCond - tarrif${tarrifList[index]},$tarrifCond');
-                                    }
                                     Navigator.push<void>(
                                       context,
                                       MaterialPageRoute(
