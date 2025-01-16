@@ -228,12 +228,12 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 10),
+                                /*const SizedBox(height: 10),
                                 Row(
                                   children: [
                                     SizedBox(width: width * .07),
                                     Text(
-                                      '${TKeys.currentTarrif.translate(context)}: ',
+                                      '${TKeys.currentTariff.translate(context)}: ',
                                       style: Theme.of(context)
                                           .textTheme
                                           .titleMedium,
@@ -246,7 +246,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                           Theme.of(context).textTheme.bodySmall,
                                     ),
                                   ],
-                                ),
+                                ),*/
                                 const SizedBox(
                                   height: 10,
                                 ),
@@ -370,11 +370,11 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                   height: 10,
                                 ),
                                 Visibility(
-                                  visible: (balanceCond || tarrifCond) && counter>0,
+                                  visible: (balanceCond || tariffCond) && counter>0,
                                   child: Column(
                                     children: [
                                       ElevatedButton(
-                                        onPressed: (balanceCond || tarrifCond)
+                                        onPressed: (balanceCond || tariffCond)
                                             ? () async {
                                                 if (widget.viewModel
                                                         .connectionStatus !=
@@ -517,13 +517,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                     ),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 10),
+                                                /*const SizedBox(height: 10),
                                                 Row(
                                                   children: [
                                                     SizedBox(
                                                         width: width * .07),
                                                     Text(
-                                                      '${TKeys.currentTarrif.translate(context)}: ',
+                                                      '${TKeys.currentTariff.translate(context)}: ',
                                                       style: Theme.of(context)
                                                           .textTheme
                                                           .titleMedium,
@@ -539,7 +539,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                           .bodySmall,
                                                     ),
                                                   ],
-                                                ),
+                                                ),*/
                                                 const SizedBox(
                                                   height: 10,
                                                 ),
@@ -821,7 +821,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
   Future<void> subscribeCharacteristic() async {
     var newEventData = <int>[];
     subscribeOutput = [];
-    await balanceTarrif?.cancel();
+    await balanceTariff?.cancel();
     subscribeStream =
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
       print(event);
@@ -858,8 +858,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
 }
   Future<void> startTimer() async {
     await subscribeStream?.cancel();
-    await balanceTarrif?.cancel();
-    if (balanceCond && !tarrifCond) {
+    await balanceTariff?.cancel();
+    if (balanceCond && !tariffCond) {
       await sqlDb.getSpecifiedList(widget.name, 'balance');
       if (myList.first == 9) {
         print('myList is => $myList');
@@ -869,7 +869,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
           eleMeterOld = eleMeter[3];
         }
         await widget.writeWithoutResponse(widget.characteristic, myList);
-        balanceTarrif = widget
+        balanceTariff = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
           print('event $event');
@@ -883,7 +883,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                 balance = 0
                 WHERE name = '${widget.name}'
               ''');
-                balanceTarrif?.cancel();
+                balanceTariff?.cancel();
                 Fluttertoast.showToast(
                   msg: 'Charged Successfully',
                 );
@@ -893,24 +893,24 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
         });
       }
     }
-    else if (tarrifCond && !balanceCond) {
-      await sqlDb.getSpecifiedList(widget.name, 'tarrif');
+    else if (tariffCond && !balanceCond) {
+      await sqlDb.getSpecifiedList(widget.name, 'tariff');
       if (myList.first == 16) {
         await widget.writeWithoutResponse(widget.characteristic, myList);
-        balanceTarrif = widget
+        balanceTariff = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
           setState(() {
             if (event.length == 1) {
               if (event.first == 0x10) {
-                tarrifCond = false;
+                tariffCond = false;
                 sqlDb.updateData('''
                 UPDATE Meters
                 SET
-                tarrif = 0
+                tariff = 0
                 WHERE name = '${widget.name}'
               ''');
-                balanceTarrif?.cancel();
+                balanceTariff?.cancel();
                 Fluttertoast.showToast(
                   msg: 'Charged Successfully',
                 );
@@ -920,11 +920,11 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
         });
       }
     }
-    else if (tarrifCond && balanceCond) {
-      await sqlDb.getSpecifiedList(widget.name, 'tarrif');
+    else if (tariffCond && balanceCond) {
+      await sqlDb.getSpecifiedList(widget.name, 'tariff');
       if (myList.first == 16) {
         await widget.writeWithoutResponse(widget.characteristic, myList);
-        balanceTarrif = widget
+        balanceTariff = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
           // if (kDebugMode) {
@@ -935,10 +935,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
               print("event.length == 1");
               if (event.first == 0x10) {
                 print("event.first == 0x10");
-                tarrifCond = false;
+                tariffCond = false;
                 print('water meter data before $watMeterOld, ${watMeter[3]}');
                 sqlDb.getSpecifiedList(widget.name, 'balance').then((value) => {
-                  print('after sending the tarrif checking over the list'),
+                  print('after sending the tariff checking over the list'),
                 if(watMeterOld == -1000000 && paddingType=='Water') {
                     watMeterOld = watMeter[3],
                     print('water meter data after $watMeterOld, ${watMeter[3]}'),
@@ -954,10 +954,10 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
               UPDATE Meters
               SET
               balance = 0,
-              tarrif = 0
+              tariff = 0
               WHERE name = '${widget.name}'
               ''');
-                balanceTarrif?.cancel();
+                balanceTariff?.cancel();
                 Fluttertoast.showToast(
                   msg: 'Charged Successfully',
                 );
@@ -967,7 +967,7 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
         });
       }
     } else {
-      await balanceTarrif?.cancel();
+      await balanceTariff?.cancel();
     }
     recharge = true;
     await refreshing();

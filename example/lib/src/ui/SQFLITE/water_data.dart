@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 
 import '../../../t_key.dart';
+import '../../ble/functions.dart';
 import 'electric_data.dart';
 
 class WaterData extends StatefulWidget {
@@ -40,7 +41,21 @@ class _WaterDataState extends State<WaterData> {
                 return const Center(
                   child: CircularProgressIndicator(color: Color(0xff4CAF50),),
                 );
-              }else{
+              } /*else if(myList.isEmpty){
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width*.07),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline_rounded, color: Colors.green.shade900,size: 100,),
+                        const Text('This Meter doesn\'t have any data yet', style: TextStyle(fontSize: 22,),textAlign: TextAlign.center,),
+                        const Text('Please try to connect to it', style: TextStyle(color: Colors.grey, fontSize: 17),),
+                      ],
+                    ),
+                  ),
+                );
+              } */else{
                 return Column(
                   children: [
                     Expanded(
@@ -62,9 +77,25 @@ class _WaterDataState extends State<WaterData> {
                                   const SizedBox(
                                     height: 10,
                                   ),
-                                  AutoSizeText(
-                                    widget.name,
-                                    style: Theme.of(context).textTheme.displayMedium,
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      AutoSizeText(
+                                        widget.name,
+                                        style: Theme.of(context).textTheme.displayMedium,
+                                      ),
+                                      Icon(
+                                        widget.name == meterName
+                                            ? watMeter[5].toString() == '1'
+                                            ? Icons.lock_open
+                                            : Icons.lock
+                                            : ('${watMeters[widget.name]?[4]}') ==
+                                            '1'
+                                            ? Icons.lock_open
+                                            : Icons.lock,
+                                        color: Colors.green.shade900,
+                                      ),
+                                    ],
                                   ),
                                   const Padding(
                                     padding: EdgeInsets.symmetric(
@@ -72,116 +103,89 @@ class _WaterDataState extends State<WaterData> {
                                     ),
                                     child: Divider(),
                                   ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  /*Row(
                                     children: [
-                                      SizedBox(
-                                        width: width * .39,
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                // SizedBox(width: width * .07),
-                                                AutoSizeText(
-                                                  '${TKeys.tarrif.translate(context)}: ',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleMedium,
-                                                  minFontSize: 20,
-                                                ),
-                                                AutoSizeText(
-                                                  widget.name == meterName
-                                                      ? watMeter[4].toString()
-                                                      : ('${watMeters[widget.name]?[0]}'),
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall,
-                                                  minFontSize: 18,
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(
-                                              height: 5,
-                                            ),
-                                            Row(
-                                              children: [
-                                                AutoSizeText(
-                                                  '${TKeys.totalReadings.translate(context)}: ',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleMedium,
-                                                  minFontSize: 20,
-                                                ),
-                                                AutoSizeText(
-                                                  widget.name == meterName
-                                                      ? watMeter[1].toString()
-                                                      : ('${watMeters[widget.name]?[1]}'),
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall,
-                                                  minFontSize: 18,
-                                                ),
-                                                const Text(' m³', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
+                                      // SizedBox(width: width * .07),
+                                      AutoSizeText(
+                                        '${TKeys.tariff.translate(context)}: ',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium,
+                                        minFontSize: 20,
                                       ),
-                                      SizedBox(
-                                        width: width * .39,
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                AutoSizeText(
-                                                  '${TKeys.balance.translate(context)}: ',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleMedium,
-                                                  minFontSize: 20,
-                                                ),
-                                                AutoSizeText(
-                                                  widget.name == meterName
-                                                      ? watMeter[3].toString()
-                                                      : ('${watMeters[widget.name]?[2]}'),
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall,
-                                                  minFontSize: 18,
-                                                ),
-                                                const Text(' L.E.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
-                                              ],
-                                            ),
-                                            const SizedBox(
-                                              height: 5,
-                                            ),
-                                            Row(
-                                              children: [
-                                                AutoSizeText(
-                                                  '${TKeys.valveStatus.translate(context)}: ',
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleMedium,
-                                                  minFontSize: 20,
-                                                ),
-                                                Icon(
-                                                  widget.name == meterName
-                                                      ? watMeter[5].toString() == '1'
-                                                      ? Icons.lock_open
-                                                      : Icons.lock
-                                                      : ('${watMeters[widget.name]?[4]}') ==
-                                                      '1'
-                                                      ? Icons.lock_open
-                                                      : Icons.lock,
-                                                  color: Colors.green.shade900,
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
+                                      AutoSizeText(
+                                        widget.name == meterName
+                                            ? watMeter[4].toString()
+                                            : ('${watMeters[widget.name]?[0]}'),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                        minFontSize: 18,
                                       ),
+                                    ],
+                                  ),*/
+                                  Row(
+                                    children: [
+                                      AutoSizeText(
+                                        TKeys.tariffPrice.translate(context),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium,
+                                        minFontSize: 20,
+                                      ),
+                                      AutoSizeText(
+                                        myList.isEmpty?'0':'${convertToInt(myList, 1, 11)/100}',
+                                        style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                        minFontSize: 18,
+                                      ),
+                                      const Text(' L.E.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 5,
+                                  ),
+                                  Row(
+                                    children: [
+                                      AutoSizeText(
+                                        '${TKeys.balance.translate(context)}: ',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium,
+                                        minFontSize: 20,
+                                      ),
+                                      AutoSizeText(
+                                        widget.name == meterName
+                                            ? watMeter[3].toString()
+                                            : ('${watMeters[widget.name]?[2]}'),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                        minFontSize: 18,
+                                      ),
+                                      const Text(' L.E.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5,),
+                                  Row(
+                                    children: [
+                                      AutoSizeText(
+                                        '${TKeys.totalReadings.translate(context)}: ',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium,
+                                        minFontSize: 20,
+                                      ),
+                                      AutoSizeText(
+                                        widget.name == meterName
+                                            ? watMeter[1].toString()
+                                            : ('${watMeters[widget.name]?[1]}'),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                        minFontSize: 18,
+                                      ),
+                                      const Text(' m³', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
                                     ],
                                   ),
                                   const SizedBox(
@@ -251,7 +255,7 @@ class _WaterDataState extends State<WaterData> {
                             height: 5,
                           ),
                           AutoSizeText(
-                            TKeys.history.translate(context),
+                            TKeys.totalReadings.translate(context),
                             style: Theme.of(context).textTheme.displayMedium,
                             textAlign: TextAlign.center,
                           ),
@@ -284,14 +288,14 @@ class _WaterDataState extends State<WaterData> {
                                         ),
                                         child: Row(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.spaceEvenly,
+                                          MainAxisAlignment.start,
                                           children: [
                                             Expanded(
-                                              flex: 3,
+                                              flex: 5,
                                               child: AutoSizeText(
                                                 "${snapshot.data![i]['time']}",
-                                                textAlign: TextAlign.center,minFontSize: 18,),),
-                                            Expanded(
+                                                textAlign: TextAlign.center,minFontSize: 22,style: const TextStyle(color: Color(0xff4CAF50)),),),
+                                            /*Expanded(
                                               flex: 3,
                                               child: AutoSizeText(
                                                 '${TKeys.totalReadings.translate(context)}: ',
@@ -300,11 +304,11 @@ class _WaterDataState extends State<WaterData> {
                                                     .displaySmall,
                                                 textAlign: TextAlign.center,
                                               ),
-                                            ),
+                                            ),*/
                                             Expanded(
-                                              flex: 1,
+                                              flex: 3,
                                               child: AutoSizeText(
-                                                "${snapshot.data![i]['totalReading']}",
+                                                "${snapshot.data![i]['totalReading']} m³",
                                                 textAlign: TextAlign.center,minFontSize: 18,),
                                             ),
                                           ],

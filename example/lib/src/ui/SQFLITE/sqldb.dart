@@ -24,7 +24,7 @@ class SqlDb {
   Future<Database> initialDb() async {
     const password = 'eoIp28waad';
     final databasePath = await getDatabasesPath();
-    final path = join(databasePath, 'eoip.db');
+    final path = join(databasePath, 'meterSense.db');
     final mydb = await openDatabase(
         path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade, password: password);
     return mydb;
@@ -43,7 +43,7 @@ class SqlDb {
     CREATE TABLE "Meters"(
       'name' TEXT NOT NULL UNIQUE,
       'balance' INTEGER NOT NULL,
-      'tarrif' INTEGER NOT NULL,
+      'tariff' INTEGER NOT NULL,
       PRIMARY KEY ('name')
     )
     ''');
@@ -55,7 +55,7 @@ class SqlDb {
       'clientId' INTEGER NOT NULL,
       'totalReading' TEXT NOT NULL,
       'totalCredit' TEXT NOT NULL,
-      'currentTarrif' TEXT NOT NULL,
+      'currentTariff' TEXT NOT NULL,
       'valveStatus' TEXT NOT NULL,
       'leackageFlag' TEXT NOT NULL,
       'fraudFlag' TEXT NOT NULL,
@@ -79,7 +79,7 @@ class SqlDb {
       'clientId' INTEGER NOT NULL,
       'totalReading' TEXT NOT NULL,
       'totalCredit' TEXT NOT NULL,
-      'currentTarrif' TEXT NOT NULL,
+      'currentTariff' TEXT NOT NULL,
       'valveStatus' TEXT NOT NULL,
       'leackageFlag' TEXT NOT NULL,
       'fraudFlag' TEXT NOT NULL,
@@ -96,7 +96,7 @@ class SqlDb {
     )
     ''');
     //create master table
-    //process is balance or tarrif or none
+    //process is balance or tariff or none
     await db.execute('''
     CREATE TABLE "master_table" (
     'id' INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -128,7 +128,7 @@ class SqlDb {
       }
       response = await mydb!.rawQuery(
         '''
-          SELECT `title` , `currentTarrif`, `totalReading`, `totalCredit`, `currentConsumption` ,`valveStatus`
+          SELECT `title` , `currentTariff`, `totalReading`, `totalCredit`, `currentConsumption` ,`valveStatus`
           FROM Electricity 
           WHERE `title` = ?
           ORDER BY `id` DESC 
@@ -138,7 +138,7 @@ class SqlDb {
       );
 
       for (final map in response) {
-        eleMeters[title]?[0] = num.parse(map['currentTarrif'].toString());
+        eleMeters[title]?[0] = num.parse(map['currentTariff'].toString());
         eleMeters[title]?[1] = num.parse(map['totalReading'].toString());
         eleMeters[title]?[2] = num.parse(map['totalCredit'].toString());
         eleMeters[title]?[3] = num.parse(map['currentConsumption'].toString());
@@ -151,7 +151,7 @@ class SqlDb {
       }
       response = await mydb!.rawQuery(
         '''
-          SELECT `title`, `currentTarrif`, `totalReading`, `totalCredit`, `currentConsumption`, `valveStatus`
+          SELECT `title`, `currentTariff`, `totalReading`, `totalCredit`, `currentConsumption`, `valveStatus`
           FROM Water 
           WHERE `title` = ?
           ORDER BY `id` DESC 
@@ -161,7 +161,7 @@ class SqlDb {
       );
 
       for (final map in response) {
-        watMeters[title]?[0] = num.parse(map['currentTarrif'].toString());
+        watMeters[title]?[0] = num.parse(map['currentTariff'].toString());
         watMeters[title]?[1] = num.parse(map['totalReading'].toString());
         watMeters[title]?[2] = num.parse(map['totalCredit'].toString());
         watMeters[title]?[3] = num.parse(map['currentConsumption'].toString());
@@ -238,6 +238,7 @@ class SqlDb {
       } else {
         eleReadings = [0,0,0,0,0,0];
       }
+      await sqlDb.getSpecifiedList(name, 'tariff');
     }
     //water
     else{
@@ -413,7 +414,7 @@ class SqlDb {
 
     return myList;
   }
-//save the list in the master station page tarrif or balance
+//save the list in the master station page tariff or balance
   Future<void> saveList(List<int> myList, String name, String type, String process) async {
     final mydb = await db;
     final jsonList = jsonEncode(myList);
@@ -453,7 +454,7 @@ Future<void> addData(String name) async {
     if(count){
       await sqlDb.insertData(
           '''
-                              INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTarrif`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
+                              INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTariff`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
                               VALUES ("${eleMeter[0]}","$name","${eleMeter[1].toString()}","${eleMeter[3].toString()}","${eleMeter[4].toString()}","${eleMeter[5].toString()}","${eleMeter[6].toString()}","${eleMeter[7].toString()}","${eleMeter[8].toString()}","${eleMeter[9].toString()}","${eleMeter[10].toString()}","${eleMeter[11].toString()}","${eleMeter[12].toString()}","${eleMeter[13].toString()}","${eleMeter[14].toString()}","$subscribeOutput","none","$currentTime")
         '''
       );
@@ -467,7 +468,7 @@ Future<void> addData(String name) async {
               SET 
                 totalReading = ${eleMeter[1]},
                 totalCredit = ${eleMeter[3]},
-                currentTarrif = ${eleMeter[4]},
+                currentTariff = ${eleMeter[4]},
                 valveStatus = ${eleMeter[5]},
                 leackageFlag = ${eleMeter[6]},
                 fraudFlag = ${eleMeter[7]},
@@ -487,7 +488,7 @@ Future<void> addData(String name) async {
       else {
         await sqlDb.insertData(
             '''
-                              INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTarrif`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
+                              INSERT INTO Electricity (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTariff`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
                               VALUES ("${eleMeter[0]}","$name","${eleMeter[1].toString()}","${eleMeter[3].toString()}","${eleMeter[4].toString()}","${eleMeter[5].toString()}","${eleMeter[6].toString()}","${eleMeter[7].toString()}","${eleMeter[8].toString()}","${eleMeter[9].toString()}","${eleMeter[10].toString()}","${eleMeter[11].toString()}","${eleMeter[12].toString()}","${eleMeter[13].toString()}","${eleMeter[14].toString()}","$subscribeOutput","none","$currentTime")
         '''
         );
@@ -501,7 +502,7 @@ Future<void> addData(String name) async {
     if(count){
       await sqlDb.insertData(
           '''
-                              INSERT INTO Water (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTarrif`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
+                              INSERT INTO Water (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTariff`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
                               VALUES ("${watMeter[0]}","$name","${watMeter[1].toString()}","${watMeter[3].toString()}","${watMeter[4].toString()}","${watMeter[5].toString()}","${watMeter[6].toString()}","${watMeter[7].toString()}","${watMeter[8].toString()}","${watMeter[9].toString()}","${watMeter[10].toString()}","${watMeter[11].toString()}","${watMeter[12].toString()}","${watMeter[13].toString()}","${watMeter[14].toString()}","$subscribeOutput","none","$currentTime")
         '''
       );
@@ -517,7 +518,7 @@ Future<void> addData(String name) async {
               SET 
                 totalReading = ${watMeter[1]},
                 totalCredit = ${watMeter[3]},
-                currentTarrif = ${watMeter[4]},
+                currentTariff = ${watMeter[4]},
                 valveStatus = ${watMeter[5]},
                 leackageFlag = ${watMeter[6]},
                 fraudFlag = ${watMeter[7]},
@@ -537,7 +538,7 @@ Future<void> addData(String name) async {
       else {
         await sqlDb.insertData(
             '''
-                              INSERT INTO Water (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTarrif`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
+                              INSERT INTO Water (`clientId`,`title`,`totalReading`,`totalCredit`,`currentTariff`,`valveStatus`,`leackageFlag`,`fraudFlag`,`currentConsumption`,`month1`,`month2`,`month3`,`month4`,`month5`,`month6`,`list`,`process`,`time`)
                               VALUES ("${watMeter[1]}","$name","${watMeter[1].toString()}","${watMeter[3].toString()}","${watMeter[4].toString()}","${watMeter[5].toString()}","${watMeter[6].toString()}","${watMeter[7].toString()}","${watMeter[8].toString()}","${watMeter[9].toString()}","${watMeter[10].toString()}","${watMeter[11].toString()}","${watMeter[12].toString()}","${watMeter[13].toString()}","${watMeter[14].toString()}","$subscribeOutput","none","$currentTime")
         '''
         );
@@ -549,7 +550,7 @@ Future<void> addData(String name) async {
 
 Future<void> fetchData() async {
   balanceList.clear();
-  tarrifList.clear();
+  tariffList.clear();
   final testing = await sqlDb.readData('SELECT * FROM Meters');
   if (kDebugMode) {
     print('SELECT * FROM Meters $testing');
@@ -559,6 +560,6 @@ Future<void> fetchData() async {
       nameList.add(map['name'].toString());
     }
     balanceList.add(int.parse(map['balance'].toString()));
-    tarrifList.add(int.parse(map['tarrif'].toString()));
+    tariffList.add(int.parse(map['tariff'].toString()));
   }
 }

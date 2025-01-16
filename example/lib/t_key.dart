@@ -51,7 +51,7 @@ enum TKeys{
   request,
   choose,
   meter,
-  tarrif,
+  tariff,
   balanceStation,
   submit,
   connect,
@@ -64,8 +64,8 @@ enum TKeys{
   uploadData,
   dataSent,
   meterData,
-  tarrifVersion,
-  tarrifPrice,
+  tariffVersion,
+  tariffPrice,
   chargingData,
 
 }

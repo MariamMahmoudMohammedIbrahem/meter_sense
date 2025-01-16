@@ -105,8 +105,8 @@ void masterValues(List<int> data){
   pulses = convertToInt(data, 9, 2);
   totalReadingsPulses = merge(totalReadings, pulses);
   currentBalance = (convertToInt(data, 11, 4)-convertToInt(data, 27, 4))/100;
-  currentTarrif = convertToInt(data, 15, 1);
-  currentTarrifVersion = convertToInt(data, 16, 2);
+  currentTariff = convertToInt(data, 15, 1);
+  currentTariffVersion = convertToInt(data, 16, 2);
 }
 
 void showToast(String text, Color bgColor, Color txtColor) {

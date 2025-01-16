@@ -145,13 +145,19 @@ class DeviceListState extends State<DeviceList> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  scanQR().then((value) {
+                  scanQR().then((value) async {
+                    if(barcodeScanRes.startsWith('EleMeter')||barcodeScanRes.startsWith('WMeter')){
+                      await sqlDb.insertData('''
+                                          INSERT OR IGNORE INTO Meters (`name`, `balance`, `tariff`)
+                                          VALUES ("$barcodeScanRes", 0, 0)
+                                          ''');
+                    }
                     _startScanning();
                     Timer(const Duration(seconds: 5), () {
                       widget.stopScan();
+                      fetchData();
                     });
                   });
-                  fetchData();
                 },
                 child: AutoSizeText(
                   TKeys.qr.translate(context),
@@ -164,6 +170,7 @@ class DeviceListState extends State<DeviceList> {
                   _startScanning();
                   Timer(const Duration(seconds: 5), () {
                     widget.stopScan();
+                    fetchData();
                   });
                 },
                 child: AutoSizeText(
@@ -252,25 +259,25 @@ class DeviceListState extends State<DeviceList> {
                                       .deviceConnector
                                       .connect(device.id));
                                 } else {
-                                  if (nameList
-                                          .contains(device.name) ==
-                                      false) {
-                                    await sqlDb.insertData('''
-                                        INSERT OR IGNORE INTO Meters (`name`, `balance`, `tarrif`)
-                                        VALUES ("${device.name}", 0, 0)
-                                        ''');
-                                  } else {
+                                  // if (nameList
+                                  //         .contains(device.name) ==
+                                  //     false) {
+                                  //   await sqlDb.insertData('''
+                                  //       INSERT OR IGNORE INTO Meters (`name`, `balance`, `tarrif`)
+                                  //       VALUES ("${device.name}", 0, 0)
+                                  //       ''');
+                                  // } else {
                                     index = nameList
                                         .indexOf(device.name);
-                                  }
+                                  // }
                                   await widget.deviceConnector
                                       .connect(device.id);
                                   await fetchData().then((value) {
                                     setState(() {
                                       balanceCond =
                                           balanceList[index] == 1;
-                                      tarrifCond =
-                                          tarrifList[index] == 1;
+                                      tariffCond =
+                                          tariffList[index] == 1;
                                     });
                                     Navigator.push<void>(
                                       context,

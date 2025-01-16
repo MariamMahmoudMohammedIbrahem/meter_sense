@@ -351,7 +351,7 @@ class _MasterStationState extends State<_MasterStation> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '${TKeys.id.translate(context)}: ',
+                                    '${TKeys.id.translate(context)}:',
                                     style: nameLabelStyle,
                                   ),
                                   Text(
@@ -381,7 +381,7 @@ class _MasterStationState extends State<_MasterStation> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '${TKeys.balance.translate(context)}: ',
+                                    TKeys.balance.translate(context),
                                     style: nameLabelStyle,
                                   ),
                                   Text(
@@ -391,31 +391,31 @@ class _MasterStationState extends State<_MasterStation> {
                                 ],
                               ),
                               const SizedBox(height: 10),
-                              Row(
+                              /*Row(
                                 mainAxisAlignment:
                                 MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '${TKeys.currentTarrif.translate(context)}: ',
+                                    TKeys.currentTariff.translate(context),
                                     style: nameLabelStyle,
                                   ),
                                   Text(
-                                    '$currentTarrif',
+                                    '$currentTariff',
                                     style: nameValueStyle,
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 10),*/
                               Row(
                                 mainAxisAlignment:
                                 MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    TKeys.tarrifVersion.translate(context),
+                                    TKeys.tariffVersion.translate(context),
                                     style: nameLabelStyle,
                                   ),
                                   Text(
-                                    currentTarrifVersion.toString(),
+                                    currentTariffVersion.toString(),
                                     style: nameValueStyle,
                                   ),
                                 ],
@@ -444,11 +444,11 @@ class _MasterStationState extends State<_MasterStation> {
                                 MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    TKeys.tarrifPrice.translate(context),
+                                    TKeys.tariffPrice.translate(context),
                                     style: nameLabelStyle,
                                   ),
                                   Text(
-                                    tarrifMaster.toString(),
+                                    (tariffMaster/100).toString(),
                                     style: nameValueStyle,
                                   ),
                                 ],
@@ -459,41 +459,43 @@ class _MasterStationState extends State<_MasterStation> {
                                 MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    TKeys.tarrifVersion.translate(context),
+                                    TKeys.tariffVersion.translate(context),
                                     style: nameLabelStyle,
                                   ),
                                   Text(
-                                    tarrifVersionMaster.toString(),
+                                    tariffVersionMaster.toString(),
                                     style: nameValueStyle,
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 20),
-                              Row(
-                                mainAxisAlignment:
-                                (updatingMaster && !updated)?MainAxisAlignment.spaceBetween:MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: (updatingMaster && !updated)?width * .4:width * .6,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xff4CAF50),
-                                      ),
-                                      onPressed: () async {
-                                        await widget.writeWithoutResponse(
-                                            widget.characteristic, [0xAA]);
-                                        await subscribeCharacteristic();
-                                        setState(() {
-                                          updatingMaster = true;
-                                        });
-                                      },
-                                      child: Text(
-                                        TKeys.charge.translate(context),
+                              // Row(
+                              //   mainAxisAlignment:
+                              //   (updatingMaster && !updated)?MainAxisAlignment.spaceBetween:MainAxisAlignment.center,
+                              //   children: [
+                                  Center(
+                                    child: SizedBox(
+                                      width: /*(updatingMaster && !updated)?width * .4:*/width * .6,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xff4CAF50),
+                                        ),
+                                        onPressed: () async {
+                                          await widget.writeWithoutResponse(
+                                              widget.characteristic, [0xAA]);
+                                          await subscribeCharacteristic();
+                                          setState(() {
+                                            updatingMaster = true;
+                                          });
+                                        },
+                                        child: Text(
+                                          TKeys.charge.translate(context),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  Visibility(
+                                  /*Visibility(
                                     visible: updatingMaster && !updated,
                                     child: SizedBox(
                                     width: width * .4,
@@ -501,7 +503,7 @@ class _MasterStationState extends State<_MasterStation> {
                                       onPressed: !updated?() async {
                                               final myInstance = SqlDb();
                                               if (balance.isNotEmpty &&
-                                                  tarrif.isEmpty) {
+                                                  tariff.isEmpty) {
                                                 await myInstance.saveList(
                                                     balance,
                                                     '$selectedName',
@@ -515,16 +517,16 @@ class _MasterStationState extends State<_MasterStation> {
                                                 setState(() {
                                                   updated = true;
                                                 });
-                                              } else if (tarrif.isNotEmpty &&
+                                              } else if (tariff.isNotEmpty &&
                                                   balance.isEmpty) {
                                                 await myInstance.saveList(
-                                                    tarrif,
+                                                    tariff,
                                                     '$selectedName',
                                                     '$listType',
-                                                    'tarrif');
+                                                    'tariff');
                                                 await myInstance.updateData('''
                                               UPDATE Meters
-                                              SET tarrif = 1
+                                              SET tariff = 1
                                               WHERE name = '$selectedName'
                                               ''');
                                                 setState(() {
@@ -537,15 +539,15 @@ class _MasterStationState extends State<_MasterStation> {
                                                     '$listType',
                                                     'balance');
                                                 await myInstance.saveList(
-                                                    tarrif,
+                                                    tariff,
                                                     '$selectedName',
                                                     '$listType',
-                                                    'tarrif');
+                                                    'tariff');
                                                 await myInstance.updateData('''
                                               UPDATE Meters
                                               SET 
                                               balance = 1,
-                                              tarrif = 1
+                                              tariff = 1
                                               WHERE name = '$selectedName'
                                               ''');
                                                 setState(() {
@@ -562,9 +564,9 @@ class _MasterStationState extends State<_MasterStation> {
                                       ),
                                     ),
                                   ),
-                                  ),
-                                ],
-                              ),
+                                  ),*/
+                                // ],
+                              // ),
                             ],
                           ),
                         ),
@@ -597,24 +599,72 @@ class _MasterStationState extends State<_MasterStation> {
         widget.subscribeToCharacteristic(widget.characteristic).listen((event) {
       if (event.first == 0xA3 || event.first == 0xA5) {
         setState(() {
-          tarrif = [];
-          tarrif
+          tariff = [];
+          tariff
             ..insert(0, 0x10)
             ..addAll(event.sublist(1, 13));
             // ..add(random.nextInt(255));
-          tarrifMaster = convertToInt(event, 1, 11);
-          tarrifVersionMaster = convertToInt(event, 1, 2);
+          tariffMaster = convertToInt(event, 1, 11);
+          tariffVersionMaster = convertToInt(event, 1, 2);
         });
       }
       if (event.first == 0xA4 || event.first == 0xA6) {
-        setState(() {
+        // setState(() {
           balance = [];
-          updated = false;
+          // updated = false;
           balance
             ..insert(0, 0x09)
             ..addAll(event.sublist(1, 6));
           balanceMaster = convertToInt(event, 1, 4) / 100;
-        });
+          // });
+            final myInstance = SqlDb();
+            if (balance.isNotEmpty &&
+                tariff.isEmpty) {
+              myInstance.saveList(
+                  balance,
+                  '$selectedName',
+                  '$listType',
+                  'balance').then((value) =>
+                    myInstance.updateData('''
+                      UPDATE Meters
+                      SET balance = 1
+                      WHERE name = '$selectedName'
+                      '''),
+              );
+            } else if (tariff.isNotEmpty &&
+                balance.isEmpty) {
+              myInstance.saveList(
+                  tariff,
+                  '$selectedName',
+                  '$listType',
+                  'tariff').then((value) =>
+              myInstance.updateData('''
+                                              UPDATE Meters
+                                              SET tariff = 1
+                                              WHERE name = '$selectedName'
+                                              '''));
+            } else {
+              myInstance.saveList(
+                  balance,
+                  '$selectedName',
+                  '$listType',
+                  'balance').then((value) =>
+              myInstance.saveList(
+                  tariff,
+                  '$selectedName',
+                  '$listType',
+                  'tariff').then((value) =>
+              myInstance.updateData('''
+                                              UPDATE Meters
+                                              SET 
+                                              balance = 1,
+                                              tariff = 1
+                                              WHERE name = '$selectedName'
+                                              '''),),
+          );
+            }
+
+
       }
     });
   }
@@ -655,11 +705,11 @@ class _MasterStationState extends State<_MasterStation> {
     selectedName = null;
     charging = false;
     clientID = 0;
-    currentTarrif = 0;
+    currentTariff = 0;
     currentBalance = 0;
-    tarrifMaster = 0;
+    tariffMaster = 0;
     balanceMaster = 0;
-    tarrif = [];
+    tariff = [];
     super.dispose();
   }
 }

@@ -1,7 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
+import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
 
 import '../../../t_key.dart';
 
@@ -23,6 +25,7 @@ class _StoreDataState extends State<StoreData> {
     return SafeArea(
       child: Scaffold(
         body: RefreshIndicator(
+          color: const Color(0xFF4CAF50),
           onRefresh: () => Future.delayed(const Duration(seconds: 1), () {
             setState(() {
               Navigator.of(context).pushReplacement(
@@ -44,7 +47,23 @@ class _StoreDataState extends State<StoreData> {
                         return const Center(
                             child:
                                 CircularProgressIndicator(color: Color(0xff4CAF50),)); // Show a loading indicator while waiting
-                      } else {
+                      }
+                      /*else if(myList.isEmpty){
+                        return Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width*.07),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.error_outline_rounded, color: Colors.green.shade900,size: 100,),
+                                const Text('This Meter doesn\'t have any data yet', style: TextStyle(fontSize: 22,),textAlign: TextAlign.center,),
+                                const Text('Please try to connect to it', style: TextStyle(color: Colors.grey, fontSize: 17),),
+                              ],
+                            ),
+                          ),
+                        );
+                      }*/
+                      else {
                         return Column(
                           children: [
                             Expanded(
@@ -70,11 +89,33 @@ class _StoreDataState extends State<StoreData> {
                                           const SizedBox(
                                             height: 10,
                                           ),
-                                          AutoSizeText(
-                                            widget.name,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .displayMedium,
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              AutoSizeText(
+                                                widget.name,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .displayMedium,
+                                              ),
+                                              Icon(
+                                                widget.name ==
+                                                    meterName
+                                                    ? eleMeter[5]
+                                                    .toString() ==
+                                                    '1'
+                                                    ? Icons
+                                                    .lock_open
+                                                    : Icons.lock
+                                                    : ('${eleMeters[widget.name]?[4]}') ==
+                                                    '1'
+                                                    ? Icons
+                                                    .lock_open
+                                                    : Icons.lock,
+                                                color: Colors
+                                                    .green.shade900,
+                                              ),
+                                            ],
                                           ),
                                           const Padding(
                                             padding: EdgeInsets.symmetric(
@@ -83,149 +124,78 @@ class _StoreDataState extends State<StoreData> {
                                             child: Divider(),
                                           ),
                                           Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
                                             children: [
-                                              SizedBox(
-                                                width: width * .39,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        // SizedBox(width: width * .07),
-                                                        AutoSizeText(
-                                                          '${TKeys.tarrif.translate(context)}: ',
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .titleMedium,
-                                                          minFontSize: 20,
-                                                        ),
-                                                        AutoSizeText(
-                                                          widget.name ==
-                                                                  meterName
-                                                              ? eleMeter[4]
-                                                                  .toString()
-                                                              : ('${eleMeters[widget.name]?[0]}'),
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodySmall,
-                                                          minFontSize: 18,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 5,
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        AutoSizeText(
-                                                          '${TKeys.totalReadings.translate(context)}: ',
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .titleMedium,
-                                                          minFontSize: 20,
-                                                        ),
-                                                        AutoSizeText(
-                                                          widget.name ==
-                                                                  meterName
-                                                              ? eleMeter[1]
-                                                                  .toString()
-                                                              : ('${eleMeters[widget.name]?[1]}'),
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodySmall,
-                                                          minFontSize: 18,
-                                                        ),
-                                                        const Text(' kw', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
+                                              AutoSizeText(
+                                                '${TKeys.tariffPrice.translate(context)}: ',
+                                                style:
+                                                    Theme.of(context)
+                                                        .textTheme
+                                                        .titleMedium,
+                                                minFontSize: 20,
                                               ),
-                                              SizedBox(
-                                                width: width * .39,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Row(
-                                                      children: [
-                                                        AutoSizeText(
-                                                          '${TKeys.balance.translate(context)}: ',
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .titleMedium,
-                                                          minFontSize: 20,
-                                                        ),
-                                                        AutoSizeText(
-                                                          widget.name ==
-                                                                  meterName
-                                                              ? eleMeter[3]
-                                                                  .toString()
-                                                              : ('${eleMeters[widget.name]?[2]}'),
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodySmall,
-                                                          minFontSize: 18,
-                                                        ),
-                                                        const Text(' L.E.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 5,
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        // SizedBox(width: width * .07),
-                                                        AutoSizeText(
-                                                          '${TKeys.valveStatus.translate(context)}: ',
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .titleMedium,
-                                                          softWrap: true,
-                                                          minFontSize: 20,
-                                                          // maxFontSize: 22,
-                                                        ),
-                                                        // AutoSizeText(
-                                                        //   widget.name == meterName
-                                                        //       ? eleMeter[5].toString()
-                                                        //       : ('${eleMeters[widget.name]?[4]}'),
-                                                        //   style: Theme.of(context)
-                                                        //       .textTheme
-                                                        //       .bodySmall,
-                                                        //   minFontSize: 18,
-                                                        // ),
-                                                        Icon(
-                                                          widget.name ==
-                                                                  meterName
-                                                              ? eleMeter[5]
-                                                                          .toString() ==
-                                                                      '1'
-                                                                  ? Icons
-                                                                      .lock_open
-                                                                  : Icons.lock
-                                                              : ('${eleMeters[widget.name]?[4]}') ==
-                                                                      '1'
-                                                                  ? Icons
-                                                                      .lock_open
-                                                                  : Icons.lock,
-                                                          color: Colors
-                                                              .green.shade900,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
+                                              AutoSizeText(
+                                                myList.isEmpty?'0':'${convertToInt(myList, 1, 11)/100??''}',
+                                                style:
+                                                    Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall,
+                                                minFontSize: 18,
                                               ),
+                                              const Text(' L.E.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 5,
+                                          ),
+                                          Row(
+                                            children: [
+                                              AutoSizeText(
+                                                '${TKeys.balance.translate(context)}: ',
+                                                style:
+                                                Theme.of(context)
+                                                    .textTheme
+                                                    .titleMedium,
+                                                minFontSize: 20,
+                                              ),
+                                              AutoSizeText(
+                                                widget.name ==
+                                                    meterName
+                                                    ? eleMeter[3]
+                                                    .toString()
+                                                    : ('${eleMeters[widget.name]?[2]}'),
+                                                style:
+                                                Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall,
+                                                minFontSize: 18,
+                                              ),
+                                              const Text(' L.E.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 5,),
+                                          Row(
+                                            children: [
+                                              AutoSizeText(
+                                                '${TKeys.totalReadings.translate(context)}: ',
+                                                style:
+                                                    Theme.of(context)
+                                                        .textTheme
+                                                        .titleMedium,
+                                                minFontSize: 20,
+                                              ),
+                                              AutoSizeText(
+                                                widget.name ==
+                                                        meterName
+                                                    ? eleMeter[1]
+                                                        .toString()
+                                                    : ('${eleMeters[widget.name]?[1]}'),
+                                                style:
+                                                    Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall,
+                                                minFontSize: 18,
+                                              ),
+                                              const Text(' kw', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),),
                                             ],
                                           ),
                                           const SizedBox(
@@ -299,7 +269,7 @@ class _StoreDataState extends State<StoreData> {
                                     height: 5,
                                   ),
                                   AutoSizeText(
-                                    TKeys.history.translate(context),
+                                    TKeys.totalReadings.translate(context),
                                     style: Theme.of(context)
                                         .textTheme
                                         .displayMedium,
@@ -342,29 +312,18 @@ class _StoreDataState extends State<StoreData> {
                                                           .spaceEvenly,
                                                   children: [
                                                     Expanded(
-                                                        flex: 3,
+                                                        flex: 5,
                                                         child: AutoSizeText(
                                                           "${snapshot.data![i]['time']}",
                                                           textAlign:
                                                               TextAlign.center,
-                                                          minFontSize: 18,
+                                                          minFontSize: 22,
+                                                          style: const TextStyle(color: Color(0xff4CAF50)),
                                                         )),
                                                     Expanded(
                                                       flex: 3,
                                                       child: AutoSizeText(
-                                                        TKeys.totalReadings
-                                                            .translate(context),
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .displaySmall,
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    ),
-                                                    Expanded(
-                                                      flex: 1,
-                                                      child: AutoSizeText(
-                                                        "${snapshot.data![i]['totalReading']}",
+                                                        "${snapshot.data![i]['totalReading']} kw",
                                                         textAlign:
                                                             TextAlign.center,
                                                         minFontSize: 18,

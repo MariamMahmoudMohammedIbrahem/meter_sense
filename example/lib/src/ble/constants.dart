@@ -14,7 +14,7 @@ late String meterName;
 const timerInterval = Duration(seconds: 1);
 List<String> nameList = [];
 List<int> balanceList = [];
-List<int> tarrifList = [];
+List<int> tariffList = [];
 dynamic paddingType;
 List<double> eleReadings =[0,0,0,0,0,0];
 List<double> watReadings =[0,0,0,0,0,0];
@@ -26,7 +26,7 @@ List<int> myList = [];
 dynamic listType = "";
 var monthList = <String>[];
 bool balanceCond = false;
-bool tarrifCond = false;
+bool tariffCond = false;
 late List<int> subscribeOutput;
 Map<String, List<num>> eleMeters = {};
 Map<String, List<num>> watMeters = {};
@@ -42,7 +42,7 @@ List<int> previousEventData = [];
 late Timer timer;
 StreamSubscription<List<int>>? subscribeStream;
 bool isLoading = false;
-StreamSubscription<List<int>>? balanceTarrif;
+StreamSubscription<List<int>>? balanceTariff;
 StreamSubscription<List<int>>? dateTimeListener;
 List<int> dateTime = [];
 
@@ -52,18 +52,18 @@ num totalReadings = 0;
 num pulses = 0;
 num totalReadingsPulses = 0;
 num currentBalance = 0;
-num currentTarrif = 0;
-num currentTarrifVersion = 0;
+num currentTariff = 0;
+num currentTariffVersion = 0;
 String? selectedName ;
 final random = Random();
 bool charging = false;
-bool updated = true;
+// bool updated = true;
 bool updatingMaster = false;
-num tarrifMaster = 0;
-num tarrifVersionMaster = 0;
+num tariffMaster = 0;
+num tariffVersionMaster = 0;
 List<int> balance = [];
 num balanceMaster = 0;
-List<int> tarrif = [];
+List<int> tariff = [];
 
 ///*FUNCTIONS**
 late String currentTime;
@@ -72,7 +72,7 @@ final conversionIndices = [
   5,   //total reading
   9,   // pulses
   11,  // totalCredit
-  15,  // currentTarrif
+  15,  // currentTariff
   18,  // valveStatus
   19,  // leackageFlag
   20,  // fraudFlag
@@ -91,7 +91,7 @@ final conversionSizes = [
   4,   //totalReading
   2,   // pulses
   4,   // totalCredit
-  1,   // currentTarrif
+  1,   // currentTariff
   1,   // valveStatus
   1,   // leackageFlag
   1,   // fraudFlag
