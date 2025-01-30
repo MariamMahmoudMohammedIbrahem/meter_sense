@@ -1,18 +1,5 @@
-import 'dart:async';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:functional_data/functional_data.dart';
-import 'package:provider/provider.dart';
-
-import '../../../t_key.dart';
-import '../../ble/ble_device_connector.dart';
-import '../../ble/ble_device_interactor.dart';
-import '../../ble/constants.dart';
-import '../device_detail/device_interaction_tab.dart';
+import '../../../commons.dart';
 
 class MasterInteractionTab extends StatelessWidget {
   const MasterInteractionTab({

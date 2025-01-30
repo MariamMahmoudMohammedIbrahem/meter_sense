@@ -1,12 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
+import '../../../commons.dart';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
-import 'package:intl/intl.dart';
-import 'package:path/path.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
-import '../../ble/constants.dart';
 class SqlDb {
 
   static Database? _db;
@@ -405,7 +398,7 @@ class SqlDb {
           final jsonList = jsonListDynamic as String;
           final dynamicList = jsonDecode(jsonList) as List<dynamic>;
           myList = dynamicList.cast<int>();
-          final int sum = myList.fold(0, (previousValue, element) => previousValue + element);
+          int sum = myList.fold(0, (previousValue, element) => previousValue + element);
           myList.add(sum);
           return myList;
         }

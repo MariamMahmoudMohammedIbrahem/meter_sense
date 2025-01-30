@@ -1,9 +1,5 @@
-import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:get/get.dart';
+import '../commons.dart';
 
 class LocalizationService {
 
@@ -19,7 +15,7 @@ class LocalizationService {
   late Map<String, String> _localizedString;
 
   Future<void> load() async {
-    final jsonString = await rootBundle.loadString('lang/${locale.languageCode}.json');
+    final jsonString = await rootBundle.loadString('assets/lang/${locale.languageCode}.json');
 
     final jsonMap = jsonDecode(jsonString) as Map<String, dynamic>;
 
@@ -69,18 +65,4 @@ class _LocalizationServiceDelegate extends LocalizationsDelegate<LocalizationSer
 
   @override
   bool shouldReload(covariant LocalizationsDelegate<LocalizationService> old) => false;
-}
-
-class LocalizationController extends GetxController{
-  String currentLanguage = ''.obs.toString();
-
-  void toggleLanguage(String lang) {
-    if(lang == 'ara'){
-      currentLanguage ='ar';
-    }else{
-      currentLanguage = 'en';
-    }
-    // currentLanguage = LocalizationService.currentLocale.languageCode == 'ar' ? 'en' : 'ar';
-    update();
-  }
 }

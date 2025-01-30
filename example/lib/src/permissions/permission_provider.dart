@@ -1,8 +1,6 @@
 
-import 'package:flutter/cupertino.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-import '../ble/constants.dart';
+import '../../commons.dart';
 
 class PermissionProvider extends ChangeNotifier {
   // Define the permissions you want to manage

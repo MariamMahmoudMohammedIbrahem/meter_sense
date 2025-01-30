@@ -19,7 +19,7 @@ class BleStatusScreen extends StatelessWidget {
       case BleStatus.ready:
         return "Bluetooth is up and running";
       default:
-        return "Waiting to fetch Bluetooth status $status";
+        return "Waiting to fetch Bluetooth status";
     }
   }
   @override
@@ -59,32 +59,32 @@ class _AnimatedImageState extends State<AnimatedImage> with SingleTickerProvider
       case BleStatus.unsupported:
         return SizedBox(
           width: .8*width,
-          child: SlideTransition(position:_animation,child: Image.asset('images/off.jpg')),
+          child: SlideTransition(position:_animation,child: Image.asset('assets/images/off.jpg')),
         );
       case BleStatus.unauthorized:
         return SizedBox(
           width: .8*width,
-          child: SlideTransition(position:_animation,child: Image.asset('images/authorize.jpg')),
+          child: SlideTransition(position:_animation,child: Image.asset('assets/images/authorize.jpg')),
         );
       case BleStatus.poweredOff:
         return SizedBox(
           width: .8*width,
-          child: SlideTransition(position:_animation,child: Image.asset('images/off.jpg')),
+          child: SlideTransition(position:_animation,child: Image.asset('assets/images/off.jpg')),
         );
       case BleStatus.locationServicesDisabled:
         return SizedBox(
           width: .8*width,
-          child: SlideTransition(position: _animation,child: Image.asset('images/location.jpg'),),
+          child: SlideTransition(position: _animation,child: Image.asset('assets/images/location.jpg'),),
         );
       case BleStatus.ready:
         return SizedBox(
           width: .8*width,
-          child: SlideTransition(position:_animation,child: Image.asset('images/off.jpg')),
+          child: SlideTransition(position:_animation,child: Image.asset('assets/images/off.jpg')),
         );
       default:
         return SizedBox(
           width: .8*width,
-          child: SlideTransition(position:_animation,child: Image.asset('images/off.jpg')),
+          child: SlideTransition(position:_animation,child: Image.asset('assets/images/off.jpg')),
         );
     }
   }

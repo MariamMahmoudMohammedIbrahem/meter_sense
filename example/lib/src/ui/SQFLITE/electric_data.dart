@@ -1,11 +1,4 @@
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
-import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
-
-import '../../../t_key.dart';
+import '../../../commons.dart';
 
 class StoreData extends StatefulWidget {
   const StoreData({

@@ -1,11 +1,6 @@
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
 
-import '../../../t_key.dart';
-import '../../ble/functions.dart';
-import 'electric_data.dart';
+
+import '../../../commons.dart';
 
 class WaterData extends StatefulWidget {
   const WaterData({
@@ -341,19 +336,19 @@ class _WaterDataState extends State<WaterData> {
 }
 
 LineChartData mainDataWater(BuildContext context) {
-  double minY = watReadings.reduce((a, b) => a < b ? a : b);
-  double maxY = watReadings.reduce((a, b) => a > b ? a : b);
+  final minY = watReadings.reduce((a, b) => a < b ? a : b);
+  final maxY = watReadings.reduce((a, b) => a > b ? a : b);
 
   // Determine interval and ensure we cover the maximum value
-  double interval = (maxY - minY) / 6;
+  var interval = (maxY - minY) / 6;
   interval = interval.roundToDouble();
   if (interval < 1.0) {
     interval = 1.0;
   }
-  double adjustedMaxY = (maxY % interval == 0) ? maxY : (maxY + interval - (maxY % interval));
+  final adjustedMaxY = (maxY % interval == 0) ? maxY : (maxY + interval - (maxY % interval));
 
-  List<int> yValues = [];
-  for (int value = minY.toInt(); value <= adjustedMaxY.toInt(); value += interval.toInt()) {
+  final yValues = <int>[];
+  for (var value = minY.toInt(); value <= adjustedMaxY.toInt(); value += interval.toInt()) {
     yValues.add(value);
   }
 
@@ -364,13 +359,13 @@ LineChartData mainDataWater(BuildContext context) {
     ),
     titlesData: FlTitlesData(
       show: true,
-      rightTitles: AxisTitles(
+      rightTitles: const AxisTitles(
         sideTitles: SideTitles(showTitles: false),
       ),
-      topTitles: AxisTitles(
+      topTitles: const AxisTitles(
         sideTitles: SideTitles(showTitles: false),
       ),
-      bottomTitles: AxisTitles(
+      bottomTitles: const AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 30,
@@ -382,9 +377,7 @@ LineChartData mainDataWater(BuildContext context) {
         sideTitles: SideTitles(
           showTitles: true,
           reservedSize: 42,
-          getTitlesWidget: (value, meta) {
-            return leftTitleWidgets(value, meta, yValues);
-          },
+          getTitlesWidget: (value, meta) => leftTitleWidgets(value, meta, yValues),
         ),
       ),
     ),

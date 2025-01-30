@@ -1,20 +1,6 @@
-import 'dart:async';
 
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
-import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
-import 'package:flutter_reactive_ble_example/src/ble/ble_device_interactor.dart';
-import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
-import 'package:flutter_reactive_ble_example/src/ble/functions.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/electric_data.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/water_data.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:functional_data/functional_data.dart';
-import 'package:provider/provider.dart';
 
-import '../../../t_key.dart';
+import '../../../commons.dart';
 
 part 'device_interaction_tab.g.dart';
 //ignore_for_file: annotate_overrides
@@ -272,8 +258,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                               width: 25,
                                               child: Image.asset(
                                                 paddingType == 'Electricity'
-                                                    ? 'icons/electricityToday.png'
-                                                    : 'icons/waterToday.png',
+                                                    ? 'assets/icons/electricityToday.png'
+                                                    : 'assets/icons/waterToday.png',
                                               ),
                                             ),
                                             Text(
@@ -311,8 +297,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                               width: 25,
                                               child: Image.asset(paddingType ==
                                                       'Electricity'
-                                                  ? 'icons/electricityMonth.png'
-                                                  : 'icons/waterMonth.png'),
+                                                  ? 'assets/icons/electricityMonth.png'
+                                                  : 'assets/icons/waterMonth.png'),
                                             ),
                                             Text(
                                               paddingType == 'Electricity'
@@ -571,8 +557,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                                 ('${filteredItems[i]['name']}'
                                                                         .startsWith(
                                                                             'Ele'))
-                                                                    ? 'icons/electricityToday.png'
-                                                                    : 'icons/waterToday.png',
+                                                                    ? 'assets/icons/electricityToday.png'
+                                                                    : 'assets/icons/waterToday.png',
                                                               ),
                                                             ),
                                                             Text(
@@ -622,8 +608,8 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
                                                               child: Image.asset('${filteredItems[i]['name']}'
                                                                       .startsWith(
                                                                           'Ele')
-                                                                  ? 'icons/electricityMonth.png'
-                                                                  : 'icons/waterMonth.png'),
+                                                                  ? 'assets/icons/electricityMonth.png'
+                                                                  : 'assets/icons/waterMonth.png'),
                                                             ),
                                                             Text(
                                                               ('${filteredItems[i]['name']}'
@@ -927,21 +913,13 @@ class _DeviceInteractionTabState extends State<_DeviceInteractionTab>
         balanceTariff = widget
             .subscribeToCharacteristic(widget.characteristic)
             .listen((event) {
-          // if (kDebugMode) {
-            print('balanceherevent $event');
-          // }
           setState(() {
             if (event.length == 1) {
-              print("event.length == 1");
               if (event.first == 0x10) {
-                print("event.first == 0x10");
                 tariffCond = false;
-                print('water meter data before $watMeterOld, ${watMeter[3]}');
                 sqlDb.getSpecifiedList(widget.name, 'balance').then((value) => {
-                  print('after sending the tariff checking over the list'),
                 if(watMeterOld == -1000000 && paddingType=='Water') {
                     watMeterOld = watMeter[3],
-                    print('water meter data after $watMeterOld, ${watMeter[3]}'),
                     } else if(eleMeterOld == -1000000) {
                   eleMeterOld = eleMeter[3],
                 },

@@ -1,9 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-import '../../t_key.dart';
-import '../ble/constants.dart';
+import '../../commons.dart';
+
 class LocationPermission extends StatefulWidget {
   const LocationPermission({super.key});
 
@@ -23,7 +20,7 @@ class _LocationPermissionState extends State<LocationPermission> {
           children: [
             SizedBox(
               width: width,
-              child: Image.asset('images/location.jpg'),
+              child: Image.asset('assets/images/location.jpg'),
             ),
             ElevatedButton(
               onPressed: _requestLocationPermission,

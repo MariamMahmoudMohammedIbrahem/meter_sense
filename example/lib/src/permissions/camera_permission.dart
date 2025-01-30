@@ -1,9 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-import '../../t_key.dart';
-import '../ble/constants.dart';
+
+import '../../commons.dart';
 
 class CameraPermission extends StatefulWidget {
   const CameraPermission({super.key});
@@ -24,7 +21,7 @@ class _BluetoothPermissionState extends State<CameraPermission> {
           children: [
             SizedBox(
               width: width,
-              child: Image.asset('images/bluetooth.jpg'),///ToDo: edit image to be camera not bluetooth
+              child: Image.asset('assets/images/bluetooth.jpg'),///ToDo: edit image to be camera not bluetooth
             ),
             ElevatedButton(
               onPressed: _requestCameraPermission,

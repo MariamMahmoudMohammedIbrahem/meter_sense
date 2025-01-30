@@ -1,27 +1,6 @@
-import 'dart:async';
-
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart' hide ScanMode;
-import 'package:flutter_reactive_ble_example/localization_service.dart';
-import 'package:flutter_reactive_ble_example/src/ble/ble_device_connector.dart';
-import 'package:flutter_reactive_ble_example/src/ble/ble_scanner.dart';
-import 'package:flutter_reactive_ble_example/src/ble/constants.dart';
-import 'package:flutter_reactive_ble_example/src/ui/master/master_station.dart';
-import 'package:flutter_reactive_ble_example/t_key.dart';
-import 'package:functional_data/functional_data.dart';
-import 'package:get/get.dart';
-import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-
-import '../SQFLITE/electric_data.dart';
-import '../SQFLITE/sqldb.dart';
-import '../SQFLITE/water_data.dart';
-import 'device_interaction_tab.dart';
-
 //ignore_for_file: annotate_overrides
+
+import '../../../commons.dart';
 
 class DeviceListScreen extends StatelessWidget {
   const DeviceListScreen({super.key});
@@ -122,7 +101,7 @@ class DeviceListState extends State<DeviceList> {
     widget.startScan([]);
   }
 
-  Future<void> scanQR() async {
+  Future<void> scanQR(BuildContext context) async {
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.QR);
@@ -145,7 +124,7 @@ class DeviceListState extends State<DeviceList> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  scanQR().then((value) async {
+                  scanQR(context).then((value) async {
                     if(barcodeScanRes.startsWith('EleMeter')||barcodeScanRes.startsWith('WMeter')){
                       await sqlDb.insertData('''
                                           INSERT OR IGNORE INTO Meters (`name`, `balance`, `tariff`)
@@ -218,11 +197,11 @@ class DeviceListState extends State<DeviceList> {
                     )
                         .map((device) {
                       if (device.name.startsWith('W')) {
-                        icon = 'icons/waterMonth.png';
+                        icon = 'assets/icons/waterMonth.png';
                       } else if (device.name.startsWith('Ele')) {
-                        icon = 'icons/electricityMonth.png';
+                        icon = 'assets/icons/electricityMonth.png';
                       } else {
-                        icon = 'icons/masterStation.png';
+                        icon = 'assets/icons/masterStation.png';
                       }
                       return Padding(
                         padding: EdgeInsets.symmetric(
@@ -323,9 +302,9 @@ class DeviceListState extends State<DeviceList> {
                             .any((device) => device.name == name))
                         .map((name) {
                       if (name.startsWith('W')) {
-                        icon = 'icons/waterMonth.png';
+                        icon = 'assets/icons/waterMonth.png';
                       } else if (name.startsWith('Ele')) {
-                        icon = 'icons/electricityMonth.png';
+                        icon = 'assets/icons/electricityMonth.png';
                       }
                       return Padding(
                         padding: EdgeInsets.symmetric(
@@ -451,7 +430,7 @@ class MyApp extends StatelessWidget {
               SizedBox(
                 width: width * .6,
                 height: height*.35,
-                child: Image.asset('images/authorize.jpg'),
+                child: Image.asset('assets/images/authorize.jpg'),
               ),
               const Expanded(child: DeviceListScreen()),
             ],

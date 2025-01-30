@@ -1,9 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-import '../../t_key.dart';
-import '../ble/constants.dart';
+import '../../commons.dart';
+
 class BluetoothPermission extends StatefulWidget {
   const BluetoothPermission({super.key});
 
@@ -22,7 +19,7 @@ class _BluetoothPermissionState extends State<BluetoothPermission> {
           children: [
             SizedBox(
               width: width,
-              child: Image.asset('images/bluetooth.jpg'),
+              child: Image.asset('assets/images/bluetooth.jpg'),
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: width * 0.12),
