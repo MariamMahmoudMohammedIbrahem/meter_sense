@@ -1,11 +1,11 @@
 import '../../commons.dart';
 
 class BleDeviceConnector extends ReactiveState<ConnectionStateUpdate> {
-  BleDeviceConnector({
-    required FlutterReactiveBle ble,
-  })  : _ble = ble;
+  // BleDeviceConnector({
+  //   required FlutterReactiveBle ble,
+  // })  : _ble = ble;
 
-  final FlutterReactiveBle _ble;
+  final FlutterReactiveBle _ble = FlutterReactiveBle();
 
   @override
   Stream<ConnectionStateUpdate> get state => _deviceConnectionController.stream;

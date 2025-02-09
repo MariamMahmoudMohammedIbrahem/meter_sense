@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import '../commons.dart';
 
 class BleStatusScreen extends StatelessWidget {
   const BleStatusScreen({required this.status, super.key});

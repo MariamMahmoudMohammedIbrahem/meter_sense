@@ -11,3 +11,8 @@ class MyColors{
   static Color brown600 = Colors.brown.shade600;
   static Color white = Colors.white;
 }
+
+List<Color> gradientColors = [
+  MyColors.lightGreen,
+  Colors.grey.shade500,
+];

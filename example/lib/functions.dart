@@ -22,25 +22,25 @@ void calculateElectric(List<int> subscribeOutput,String name) {
     final value = convertToInt(subscribeOutput, startIndex, size);
 
     switch (i) {
-      case 0: eleMeter[0] = value; break;
-      case 1: eleMeter[1] = value; break;
-      case 2: {eleMeter[2] = value; eleMeter[1] = merge(eleMeter[1], eleMeter[2]); break;}
-      case 3: eleMeter[3] = value; break;
-      case 4: eleMeter[4] = value; break;
-      case 5: eleMeter[5] = value; break;
-      case 6: eleMeter[6] = value; break;
-      case 7: eleMeter[7] = value; break;
-      case 8: eleMeter[8] = value; break;
-      case 9: eleMeter[9] = value; break;
-      case 10: eleMeter[10] = value; break;
-      case 11: eleMeter[11] = value; break;
-      case 12: eleMeter[12] = value; break;
-      case 13: eleMeter[13] = value; break;
-      case 14: eleMeter[14] = value; break;
+      case 0: meterData[0] = value; break;
+      case 1: meterData[1] = value; break;
+      case 2: {meterData[2] = value; meterData[1] = merge(meterData[1], meterData[2]); break;}
+      case 3: meterData[3] = value; break;
+      case 4: meterData[4] = value; break;
+      case 5: meterData[5] = value; break;
+      case 6: meterData[6] = value; break;
+      case 7: meterData[7] = value; break;
+      case 8: meterData[8] = value; break;
+      case 9: meterData[9] = value; break;
+      case 10: meterData[10] = value; break;
+      case 11: meterData[11] = value; break;
+      case 12: meterData[12] = value; break;
+      case 13: meterData[13] = value; break;
+      case 14: meterData[14] = value; break;
       case 15:
         {
-          eleMeter[15] = value;
-          eleMeter[3] = (eleMeter[3] - eleMeter[15]) / 100;
+          meterData[15] = value;
+          meterData[3] = (meterData[3] - meterData[15]) / 100;
           break;
         }
     }
@@ -48,38 +48,38 @@ void calculateElectric(List<int> subscribeOutput,String name) {
   callFunctionOnce(name);
 }
 
-void calculateWater(List<int> subscribeOutput, String name) {
-  for (var i = 0; i < conversionIndices.length; i++) {
-    final startIndex = conversionIndices[i];
-    final size = conversionSizes[i];
-    final value = convertToInt(subscribeOutput, startIndex, size);
-
-    switch (i) {
-      case 0: watMeter[0] = value; break;
-      case 1: watMeter[1] = value; break;
-      case 2: {watMeter[2] = value; watMeter[1] = merge(watMeter[1], watMeter[2]); break;}
-      case 3: watMeter[3] = value; break;
-      case 4: watMeter[4] = value; break;
-      case 5: watMeter[5] = value; break;
-      case 6: watMeter[6] = value; break;
-      case 7: watMeter[7] = value; break;
-      case 8: watMeter[8] = value; break;
-      case 9: watMeter[9] = value; break;
-      case 10: watMeter[10] = value; break;
-      case 11: watMeter[11] = value; break;
-      case 12: watMeter[12] = value; break;
-      case 13: watMeter[13] = value; break;
-      case 14: watMeter[14] = value; break;
-      case 15:
-        {
-          watMeter[15] = value;
-          watMeter[3] = (watMeter[3] - watMeter[15]) / 100;
-          break;
-        }
-    }
-  }
-  callFunctionOnce(name);
-}
+// void calculateWater(List<int> subscribeOutput, String name) {
+//   for (var i = 0; i < conversionIndices.length; i++) {
+//     final startIndex = conversionIndices[i];
+//     final size = conversionSizes[i];
+//     final value = convertToInt(subscribeOutput, startIndex, size);
+//
+//     switch (i) {
+//       case 0: watMeter[0] = value; break;
+//       case 1: watMeter[1] = value; break;
+//       case 2: {watMeter[2] = value; watMeter[1] = merge(watMeter[1], watMeter[2]); break;}
+//       case 3: watMeter[3] = value; break;
+//       case 4: watMeter[4] = value; break;
+//       case 5: watMeter[5] = value; break;
+//       case 6: watMeter[6] = value; break;
+//       case 7: watMeter[7] = value; break;
+//       case 8: watMeter[8] = value; break;
+//       case 9: watMeter[9] = value; break;
+//       case 10: watMeter[10] = value; break;
+//       case 11: watMeter[11] = value; break;
+//       case 12: watMeter[12] = value; break;
+//       case 13: watMeter[13] = value; break;
+//       case 14: watMeter[14] = value; break;
+//       case 15:
+//         {
+//           watMeter[15] = value;
+//           watMeter[3] = (watMeter[3] - watMeter[15]) / 100;
+//           break;
+//         }
+//     }
+//   }
+//   callFunctionOnce(name);
+// }
 void callFunctionOnce(String name) {
   if (!isFunctionCalled) {
     isFunctionCalled = true;

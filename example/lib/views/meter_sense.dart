@@ -8,7 +8,7 @@ class MeterSense extends StatelessWidget {
   Widget build(BuildContext context) => Consumer2<BleStatus?, PermissionProvider>(
     builder: (_, status, permission, __) {
       if (_hasAllPermissionsGranted(status, permission)) {
-        return const MyApp();
+        return const DeviceScanner();
       }
 
       return _handlePermissionScreen(permission);

@@ -1,11 +1,8 @@
 import '../../commons.dart';
 
 class BleScanner implements ReactiveState<BleScannerState> {
-  BleScanner({
-    required FlutterReactiveBle ble,
-  })  : _ble = ble;
 
-  final FlutterReactiveBle _ble;
+  final FlutterReactiveBle _ble = FlutterReactiveBle();
 
   final StreamController<BleScannerState> _stateStreamController =
       StreamController();

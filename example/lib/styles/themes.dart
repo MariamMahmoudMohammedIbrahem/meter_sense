@@ -51,7 +51,7 @@ ThemeData lightTheme = ThemeData(
     bodySmall: TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w600,
-      color: MyColors.green900,
+      color: Colors.green.shade900,
     ),
     bodyLarge: const TextStyle(
       color: Colors.brown,

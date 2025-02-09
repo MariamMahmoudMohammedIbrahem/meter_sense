@@ -20,7 +20,9 @@
             android:usesPermissionFlags="neverForLocation" />
     <application
         android:label="MeterSense"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false">
         <activity
             android:name="com.signify.hue.reactivebleexample.MainActivity"
             android:launchMode="singleTop"

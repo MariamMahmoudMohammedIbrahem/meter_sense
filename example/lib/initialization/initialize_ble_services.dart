@@ -4,9 +4,9 @@ import '../commons.dart';
 Map<String, dynamic> initializeBleServices() {
   final ble = FlutterReactiveBle();
   return {
-    'scanner': BleScanner(ble: ble),
-    'monitor': BleStatusMonitor(ble),
-    'connector': BleDeviceConnector(ble: ble),
+    'scanner': BleScanner(),
+    'monitor': BleStatusMonitor(),
+    'connector': BleDeviceConnector(),
     'serviceDiscoverer': initializeBleInteractor(ble),
   };
 }

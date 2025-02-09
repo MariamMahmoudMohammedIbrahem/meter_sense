@@ -1,14 +1,8 @@
-import 'dart:async';
-import 'dart:math';
+import 'commons.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble_example/src/ui/SQFLITE/sqldb.dart';
-import 'package:permission_handler/permission_handler.dart';
 SqlDb sqlDb = SqlDb();
 bool isFunctionCalled = false;
-List<num> eleMeter = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];///edited
-List<num> watMeter = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];///edited
-late DateTime now;
+List<num> meterData = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];///edited
 late String time;
 late String meterName;
 const timerInterval = Duration(seconds: 1);
@@ -16,12 +10,10 @@ List<String> nameList = [];
 List<int> balanceList = [];
 List<int> tariffList = [];
 dynamic paddingType;
-List<double> eleReadings =[0,0,0,0,0,0];
-List<double> watReadings =[0,0,0,0,0,0];
-List<Color> gradientColors = [
-  const Color(0xff4CAF50),
-  Colors.grey.shade500,
-];
+// List<double> eleReadings =[0,0,0,0,0,0];
+// List<double> watReadings =[0,0,0,0,0,0];
+List<double> meterReadings =[0,0,0,0,0,0];
+
 List<int> myList = [];
 dynamic listType = "";
 var monthList = <String>[];
@@ -38,12 +30,8 @@ PermissionStatus statusBluetoothConnect = PermissionStatus.denied;
 
 ///*DEVICE-INTERACTION-TAB**
 var start = 0;
-List<int> previousEventData = [];
 late Timer timer;
 StreamSubscription<List<int>>? subscribeStream;
-bool isLoading = false;
-StreamSubscription<List<int>>? balanceTariff;
-StreamSubscription<List<int>>? dateTimeListener;
 List<int> dateTime = [];
 
 ///*MASTER-STATION**
@@ -54,16 +42,6 @@ num totalReadingsPulses = 0;
 num currentBalance = 0;
 num currentTariff = 0;
 num currentTariffVersion = 0;
-String? selectedName ;
-final random = Random();
-bool charging = false;
-// bool updated = true;
-bool updatingMaster = false;
-num tariffMaster = 0;
-num tariffVersionMaster = 0;
-List<int> balance = [];
-num balanceMaster = 0;
-List<int> tariff = [];
 
 ///*FUNCTIONS**
 late String currentTime;
@@ -105,24 +83,11 @@ final conversionSizes = [
   4,   // total debit
 ];
 
-///*DEVICE-LIST**
-int index = 0;
-bool availability = false;
-bool toggle = false; //english
-String icon = 'icons/masterStation.png';
-String barcodeScanRes = '';
-
 ///*SQLDB**
 List<Map> response = [];
 String query = '';
 String query2='';
 
-List<int> zeroing = [0x17, 03, 0xE5, 0xff];
-// num tempCredit = 0.0;
-num eleMeterOld = -1000000;
-num watMeterOld = -1000000;
+List<int> zeroingBalance = [0x0B, 0X00, 0x00, 0X00, 0x00, 0x0B];
+List<int> zeroingChargeNumber = [0x09, 0X00, 0x00, 0X00, 0x00, 0x09];
 int counter = 0;
-bool recharge = false;
-/*
-final GlobalKey<RefreshIndicatorState> refreshIndicatorKey =
-GlobalKey<RefreshIndicatorState>();*/
