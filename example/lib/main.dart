@@ -5,6 +5,9 @@ import 'commons.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize GetStorage
+  await GetStorage.init();
+
   // Initialize Localization Controller
   final localizationController = Get.put(LocalizationController());
 
@@ -31,11 +34,11 @@ Future<void> main() async {
 /// Builds the main application widget
 Widget _buildApp(LocalizationController controller) => MaterialApp(
   debugShowCheckedModeBanner: false,
-  title: 'MeterSense',
+  title: 'Meter Sense',
   color: Colors.black,
   theme: lightTheme,
   locale: controller.currentLanguage.isNotEmpty
-      ? Locale(controller.currentLanguage, '')
+      ? Locale(controller.currentLanguage.string, '')
       : null,
   localeResolutionCallback: LocalizationService.localeResolutionCallBack,
   supportedLocales: LocalizationService.supportedLocales,

@@ -9,9 +9,6 @@ const timerInterval = Duration(seconds: 1);
 List<String> nameList = [];
 List<int> balanceList = [];
 List<int> tariffList = [];
-dynamic paddingType;
-// List<double> eleReadings =[0,0,0,0,0,0];
-// List<double> watReadings =[0,0,0,0,0,0];
 List<double> meterReadings =[0,0,0,0,0,0];
 
 List<int> myList = [];
@@ -28,11 +25,10 @@ PermissionStatus locationWhenInUse = PermissionStatus.denied;
 PermissionStatus statusCamera = PermissionStatus.denied;
 PermissionStatus statusBluetoothConnect = PermissionStatus.denied;
 
-///*DEVICE-INTERACTION-TAB**
+///*DEVICE-INTERACTION-TAB & CHARGE-STATION**
 var start = 0;
 late Timer timer;
 StreamSubscription<List<int>>? subscribeStream;
-List<int> dateTime = [];
 
 ///*MASTER-STATION**
 num clientID = 0;
@@ -40,7 +36,6 @@ num totalReadings = 0;
 num pulses = 0;
 num totalReadingsPulses = 0;
 num currentBalance = 0;
-num currentTariff = 0;
 num currentTariffVersion = 0;
 
 ///*FUNCTIONS**
@@ -88,6 +83,8 @@ List<Map> response = [];
 String query = '';
 String query2='';
 
-List<int> zeroingBalance = [0x0B, 0X00, 0x00, 0X00, 0x00, 0x0B];
-List<int> zeroingChargeNumber = [0x09, 0X00, 0x00, 0X00, 0x00, 0x09];
+// counter for confirming data is retrieved successfully
+// so the charge button doesn't appear till there is data
 int counter = 0;
+
+RegExp regExp = RegExp(r'\d+');

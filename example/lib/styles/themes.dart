@@ -65,4 +65,5 @@ ThemeData lightTheme = ThemeData(
     endIndent: 10,
     color: MyColors.lightGreen,
   ),
+  progressIndicatorTheme: const ProgressIndicatorThemeData(color: MyColors.lightGreen,),
 );

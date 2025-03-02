@@ -10,6 +10,8 @@ enum TKeys {
   scanning,
   device,
   notConnected,
+  connectionFailed,
+  reconnect,
   hint,
   first,
   electricity,

@@ -19,7 +19,7 @@
             android:name="android.permission.BLUETOOTH_SCAN"
             android:usesPermissionFlags="neverForLocation" />
     <application
-        android:label="MeterSense"
+        android:label="Meter Sense"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:fullBackupContent="false">

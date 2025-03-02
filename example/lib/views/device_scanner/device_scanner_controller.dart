@@ -23,18 +23,13 @@ abstract class DeviceScannerController extends State<DeviceScannerScreen> {
       final formattedMonth = DateFormat.MMM().format(previousMonth);
       monthList.add(formattedMonth);
     }
-    fetchData();
     if (!widget.scannerState.scanIsInProgress) {
       _startScanning();
     }
   }
 
   void toggleLanguage(){
-    if (!toggle) {
-      localizationController.toggleLanguage("ara");
-    } else {
-      localizationController.toggleLanguage("eng");
-    }
+    localizationController.toggleLanguage();
     toggle = !toggle;
   }
 
@@ -42,11 +37,13 @@ abstract class DeviceScannerController extends State<DeviceScannerScreen> {
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           "#ff6666", "Cancel", true, ScanMode.QR);
-      if(barcodeScanRes.startsWith("EleMeter")||barcodeScanRes.startsWith("WMeter")){
+      if((barcodeScanRes.startsWith("EleMeter")&&barcodeScanRes.length==12)||(barcodeScanRes.startsWith("WMeter")&&barcodeScanRes.length==10)){
         await sqlDb.insertData('''
                                             INSERT OR IGNORE INTO Meters (`name`, `balance`, `tariff`)
                                             VALUES ("$barcodeScanRes", 0, 0)
                                             ''');
+        /// insert meter into its specific table
+        await insertMeter(barcodeScanRes);
       }
       _startScanning();
     } on PlatformException {
@@ -56,10 +53,10 @@ abstract class DeviceScannerController extends State<DeviceScannerScreen> {
   }
 
   void _startScanning() {
+    fetchData();
     widget.startScan([]);
     Timer(const Duration(seconds: 5), () {
       widget.stopScan();
-      fetchData();
     });
   }
 
@@ -73,11 +70,6 @@ abstract class DeviceScannerController extends State<DeviceScannerScreen> {
   }
 
   Future<void> handleDeviceTap(DiscoveredDevice device) async {
-    if (device.name.startsWith('W')) {
-      paddingType = "Water";
-    } else {
-      paddingType = "Electricity";
-    }
     meterName = device.name;
 
     if (device.name == "MasterStation") {
@@ -123,28 +115,59 @@ abstract class DeviceScannerController extends State<DeviceScannerScreen> {
       name,
     );
     meterName = "unKnown";
-    /*if (name.startsWith('W')) {
-      paddingType = 'Water';
-      Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (context) =>
-              WaterData(
-                name: name,
-              ),
-        ),
-      );
-    } else {*/
-      paddingType = "Electricity";
-      Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (context) =>
-              DeviceHistoryScreen(
-                name: name,
-              ),
-        ),
-      );
-    // }
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (context) =>
+            DeviceHistoryScreen(
+              name: name,
+            ),
+      ),
+    );
   }
+
+  void _showOptions(BuildContext context, String meterName) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+          decoration: const BoxDecoration(
+            color:Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(
+                  Icons.delete,
+                  color: Color(0xFF047424),
+                ),
+                title: const Text(
+                  'Delete',
+                  style: TextStyle(
+                    color: Color(0xFF047424),
+                  ),
+                ),
+                onTap: () {
+                  var meterType = "Water";
+                  if(meterName.startsWith("Ele")){
+                    meterType = "Electricity";
+                  }
+                  deleteMeter(meterName, meterType);
+                  _startScanning();
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+    );
+  }
+
   @override
   void dispose() {
     super.dispose();

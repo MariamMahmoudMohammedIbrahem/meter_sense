@@ -32,15 +32,7 @@ class _ChargeCenterScreen extends ChargeCenterController {
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => Future.delayed(const Duration(seconds: 1), () {
-            setState(() {
-              if (!widget.viewModel.deviceConnected) {
-                widget.viewModel.connect();
-              } else if (widget.viewModel.deviceConnected) {
-                subscribeCharacteristic();
-              }
-            });
-          }),
+          onRefresh: refreshing,
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: width * .07),
             child: Column(
@@ -54,38 +46,9 @@ class _ChargeCenterScreen extends ChargeCenterController {
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff4CAF50),
+                        backgroundColor: MyColors.lightGreen,
                       ),
-                      onPressed: () {
-                        if (widget.viewModel.connectionStatus ==
-                                DeviceConnectionState.connecting ||
-                            widget.viewModel.connectionStatus ==
-                                DeviceConnectionState.connected) {
-                          widget.viewModel.disconnect();
-                          start = 0;
-                          timer.cancel();
-                        } else if (widget.viewModel.connectionStatus ==
-                                DeviceConnectionState.disconnecting ||
-                            widget.viewModel.connectionStatus ==
-                                DeviceConnectionState.disconnected) {
-                          timer = Timer.periodic(timerInterval, (timer) {
-                            if (start == 15 ||
-                                widget.viewModel.connectionStatus ==
-                                    DeviceConnectionState.connected) {
-                              if (widget.viewModel.connectionStatus !=
-                                  DeviceConnectionState.connected) {
-                                widget.viewModel.disconnect();
-                                showToast(TKeys.timeOut.translate(context), Colors.red, Colors.white);
-                              }
-                              timer.cancel();
-                              start = 0;
-                            } else {
-                              widget.viewModel.connect();
-                                start++;
-                            }
-                          });
-                        }
-                      },
+                      onPressed: connecting,
                       child: Text(
                         (widget.viewModel.connectionStatus ==
                                 DeviceConnectionState.connected)
@@ -122,13 +85,7 @@ class _ChargeCenterScreen extends ChargeCenterController {
                       child: SizedBox(
                         height: 55,
                         child: PopupMenuButton<String>(
-                          onSelected: (String value) {
-                            setState(() {
-                              selectedName = value;
-                              getSpecifiedList(value, 'none');
-                              charging = false;
-                            });
-                          },
+                          onSelected: selectingMeter,
                           itemBuilder: (BuildContext context) {
                             final items = <PopupMenuEntry<String>>[];
                             for (final item in nameList) {
@@ -209,7 +166,7 @@ class _ChargeCenterScreen extends ChargeCenterController {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.normal,
-                              color: Color(0xff4CAF50),
+                              color: MyColors.lightGreen,
                             ),
                           ),
                         ),
@@ -217,27 +174,10 @@ class _ChargeCenterScreen extends ChargeCenterController {
                           width: width * .4,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xff4CAF50),
+                                backgroundColor: MyColors.lightGreen,
                               foregroundColor: Colors.black,
                             ),
-                            onPressed: () async {
-                              if (!widget.viewModel.deviceConnected) {
-                                widget.viewModel.connect();
-                              } else {
-                                await writeCharacteristicWithoutResponse();
-                                Timer(const Duration(seconds: 2), () async {
-                                  await widget.writeWithoutResponse(
-                                      widget.characteristic, [0xAA]);
-                                  await subscribeCharacteristic();
-                                });
-                                setState(() {
-                                  charging = true;
-                                });
-                                await Fluttertoast.showToast(
-                                  msg: TKeys.dataSent.translate(context),
-                                );
-                              }
-                            },
+                            onPressed: submittingMeterData,
                             child: Text(
                               TKeys.submit.translate(context),
                             ),
@@ -375,11 +315,7 @@ class _ChargeCenterScreen extends ChargeCenterController {
                                           backgroundColor:
                                               const Color(0xff4CAF50),
                                         ),
-                                        onPressed: () async {
-                                          await widget.writeWithoutResponse(
-                                              widget.characteristic, [0xAA]);
-                                          await subscribeCharacteristic();
-                                        },
+                                        onPressed: () => widget.writeWithoutResponse(widget.characteristic, [0xAA]),
                                         child: Text(
                                           TKeys.charge.translate(context),
                                         ),
